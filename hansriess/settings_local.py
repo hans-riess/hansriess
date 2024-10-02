@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-q@pacs8vd9hmqn4wk0^6@oa)^w1ue0wp4valau4d(v5nm8ilp%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost','hansriess.com','hansriess.herokuapp.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -51,9 +51,10 @@ MIDDLEWARE = [
     # 'django.middleware.common.BrokenLinkEmailsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-ROOT_URLCONF = 'academic.urls'
+ROOT_URLCONF = 'hansriess.urls'
 
 TEMPLATES = [
     {
@@ -85,20 +86,6 @@ DATABASES = {
     }
 }
 
-# Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mailgun.org'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'postmaster@kiawahbabysitter.com'
-EMAIL_HOST_PASSWORD = 'ca25e6cc37615761edd6aa2949d9410e-afce6020-4884f1d4'
-DEFAULT_FROM_EMAIL = 'inquiry@kiawahbabysitter.com'
-
-# Recaptcha
-RECAPTCHA_PUBLIC_KEY = '6LcQJikqAAAAAK2zht1cyXZ1THWkzmJh9gZRPq0i'
-RECAPTCHA_PRIVATE_KEY = '6LcQJikqAAAAAK3hbR9LXG8F9HkoBA5MHIvFTJi4'
-RECAPTCHA_USE_SSL = True  # Optional, use SSL for verification
-SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [

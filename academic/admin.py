@@ -1,4 +1,5 @@
 from django.contrib import admin
-from .models import Author, ConferenceProceedings, JournalArticle, Thesis
+from .models import Author, Project
 
-admin.register()
+admin.site.register(Author)
+admin.site.register(Project)

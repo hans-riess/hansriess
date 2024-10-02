@@ -2229,10 +2229,14 @@ input, select, textarea {
 }
 
 #header h1 {
-    color: #fff;
-    font-size: 3em;
-    line-height: 1em;
-    text-align: center; /* Ensure text is centered */
+	color: #000000;
+	font-size: 3em;
+	line-height: 1em;
+	text-align: center; /* Ensure text is centered */
+	border: 2px solid #000000; /* Add border */
+	background-color: #ccc1c1c7; /* Fill the box white */
+	padding: 10px; /* Add padding inside the border */
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow around the box */
 }
 
 #header h1 a {
