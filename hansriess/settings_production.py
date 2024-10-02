@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'academic'
 ]
 
-SECURE_SSL = False
+SECURE_SSL = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
