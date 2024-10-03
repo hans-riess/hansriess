@@ -3163,3 +3163,31 @@ body.homepage.is-preload #header:after {
 					}
 
 	}
+
+/* Added padding for mobile */
+@media screen and (max-width: 736px) {
+    .container {
+        padding: 20px; /* Add padding around the main content */
+    }
+
+    #header {
+        background-size: contain; /* Prevent image from being zoomed in */
+        background-attachment: scroll; /* Fix scrolling issue on mobile */
+    }
+
+    #nav { 
+        display: none; /* Hide dropdown navigation on mobile */
+    }
+}
+
+/* Added padding for mobile */
+@media screen and (max-width: 1280px) {
+    .container {
+        padding: 10px; /* Add padding around the main content */
+    }
+
+    #header {
+        background-size: contain; /* Prevent image from being zoomed in */
+        background-attachment: scroll; /* Fix scrolling issue on mobile */
+    }
+}
