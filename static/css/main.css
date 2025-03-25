@@ -3191,3 +3191,126 @@ body.homepage.is-preload #header:after {
         background-attachment: scroll; /* Fix scrolling issue on mobile */
     }
 }
+
+/* ADDITIONS TO THE STYLE SHEET
+
+/* Bio Section Enhancements */
+#bio {
+	background: #ffffff;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+	border-radius: 0.5em;
+	padding: 4em 0;
+  }
+  
+  .bio-title {
+	font-size: 2.5em;
+	font-weight: 600;
+	color: #012169;
+	margin-bottom: 0.25em;
+	transition: color 0.3s ease-in-out;
+  }
+  
+  .bio-title:hover {
+	color: #316cd3;
+  }
+  
+  .bio-subtitle {
+	font-size: 1.25em;
+	font-weight: 300;
+	color: #483949;
+	margin-bottom: 1.5em;
+  }
+  
+  .bio-content p {
+	font-size: 1.1em;
+	line-height: 1.75em;
+	color: #5b5b5b;
+	text-align: justify;
+	margin-bottom: 1.5em;
+  }
+  
+  .bio-image img {
+	border-radius: 0.5em;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	transition: transform 0.3s ease-in-out;
+  }
+  
+  .bio-image img:hover {
+	transform: scale(1.05);
+  }
+  
+  .bio-button {
+	font-size: 1.1em;
+	padding: 0.75em 2.5em;
+	border-radius: 0.5em;
+	background-color: #012169;
+	color: #fff;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	transition: all 0.3s ease-in-out;
+  }
+  
+  .bio-button:hover {
+	background-color: #316cd3;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Responsive Adjustments */
+  @media screen and (max-width: 736px) {
+	#bio {
+	  padding: 2em 0;
+	}
+  
+	.bio-title {
+	  font-size: 2em;
+	}
+  
+	.bio-subtitle {
+	  font-size: 1em;
+	}
+  
+	.bio-content p {
+	  font-size: 1em;
+	  text-align: left;
+	}
+  
+	.bio-button {
+	  font-size: 1em;
+	  padding: 0.65em 2em;
+	  width: 100%;
+	}
+  }
+
+  /* Adjusted Header */
+#header {
+    position: relative;
+    background-image: url("../../static/images/header.jpg");
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    height: 10vh; /* Significantly reduced height */
+    min-height: 200px; /* Minimum height for smaller screens */
+    padding: 0; /* Remove padding to minimize size */
+    border-bottom: 1px solid rgba(192, 192, 192, 0.35); /* Optional subtle border */
+}
+
+/* Remove unnecessary inner styling since it's empty */
+#header .inner {
+    display: none; /* Hide inner div since there's no content */
+}
+
+/* Ensure homepage header is also smaller */
+body.homepage #header {
+    height: 10vh; /* Match reduced height */
+    min-height: 100px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 736px) {
+    #header {
+        height: 8vh; /* Even smaller on mobile */
+        min-height: 80px;
+        background-attachment: scroll; /* Fix scrolling on mobile */
+    }
+}

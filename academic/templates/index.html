@@ -1,152 +1,141 @@
 <!DOCTYPE HTML>
 {% load static %}
 <html>
-	<head>
-		<title>Hans Riess</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="static/css/main.css" />
-		<noscript><link rel="stylesheet" href="static/css/noscript.css" /></noscript>
-	</head>
-	<body class="homepage is-preload">
-		<div id="page-wrapper">
-			<!-- Header -->
-			<div id="header">
-				<!-- Inner -->
-				<div class="inner">
-					<img src="/static/images/headshot.jpeg" alt="Talk" style="width: 50%;">
-				</div>
-			</div>
+<head>
+    <title>Hans Riess</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="static/css/main.css" />
+    <noscript><link rel="stylesheet" href="static/css/noscript.css" /></noscript>
+	<!-- Add Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+</head>
+<body class="homepage is-preload">
+    <div id="page-wrapper">
+        <!-- Header -->
+        <div id="header">
+        </div>
 
-			<section id="bio" style="margin-bottom: 40px;">
-				<div class="wrapper style2">
-					<article id="papers" class="container special" style="text-align: center;">
-						<header>
-							<h2>Hans Matthew Riess</h2>
-							<h3>Research Scientist, Georgia Institute of Technology</h3>
-						</header>
-						<div style="display: flex; align-items: center; gap: 20px;">
-							<p>
-								Hans joined the faculty at the Georgia Institute of Technology in February 2025 where he is a Research Scientist II in the School of Electrical and Computer Engineering.
-								He is affiliated with the Control, Optimization, and Robotics Engineering Lab (directed by Matthew Hale).
-								In his research, Hans utilizes category theory and topology to pioneer advancements in complex systems, machine learning, and optimization.	
-								In 2016, Hans received a B.S. in pure mathematics from Duke University.
-								In 2022, he received a Ph.D. in Electrical and Systems Engineering from the University of Pennsylvania where, with Robert Ghrist, he developed a network sheaf theory for algebraic lattices (pictured right).
-								In 2022, he joined the autonomous systems lab at Duke University (directed by Michael M. Zavlanos).
-							</p>
-							<img src="/static/images/lattice.jpeg" alt="Lattice" style="width: 40%;" class="desktop-only">
-						</div>
-					</article>
-					<footer>
-						<div style="display: flex; justify-content: center; gap: 20px;">
-							<a href="static/files/cv.pdf" style="text-decoration: none;">
-								<button type="button" style="font-size: 20px; padding: 10px 20px;">CV</button>
-							</a>
-							{% comment %} <a href="static/files/resume.pdf" style="text-decoration: none;">
-								<button type="button" style="font-size: 20px; padding: 10px 20px;">Resume</button>
-							</a> {% endcomment %}
-						</div>
-					</footer>
-				</div>
-			</section>
-			<style>
-				@media (max-width: 768px) {
-					.desktop-only {
-						display: none;
-					}
-				}
-			</style>
+        <!-- Bio Section with Email -->
+        <section id="bio" class="wrapper style2">
+            <div class="container special">
+                <article id="papers" class="row aln-middle">
+                    <!-- Header Section -->
+                    <header class="col-12" style="text-align: center; margin-bottom: 2em;">
+                        <h2 class="bio-title">Hans Matthew Riess</h2>
+                        <h3 class="bio-subtitle">Research Scientist, Georgia Institute of Technology</h3>
+                        <p style="font-size: 1.1em; color: #483949;">
+                            Email: <a href="mailto:hans.riess@gatech.edu">hans.riess@gatech.edu</a>
+                        </p>
+                    </header>
 
-			{% comment %} <!-- Carousel -->
-				<section id="projects" class="carousel">
-					<div class="reel">
-						{% for project in projects %}
-							<article>
-								<a href="#" class="image featured"><img src="{% static project.photo %}" alt="{{ project.title }}"></a>
-								<header>
-									<h3><a href="#">{{project.title}}</a></h3>
-								</header>
-								<p> {{project.description}}</p>							
-							</article>
-						{% endfor %}
-					</div>
-				</section> {% endcomment %}
+                    <!-- Content Section -->
+                    <div class="col-7 col-12-mobile bio-content">
+                        <p>
+                            Hans joined the faculty at the Georgia Institute of Technology in February 2025, where he serves as a Research Scientist II in the School of Electrical and Computer Engineering. He is affiliated with the Control, Optimization, and Robotics Engineering Lab, directed by Matthew Hale. In his research, Hans leverages category theory and topology to drive innovations in complex systems, machine learning, and optimization.
+                        </p>
+                        <p>
+                            In 2016, Hans earned a B.S. in Pure Mathematics from Duke University. He later completed his Ph.D. in Electrical and Systems Engineering at the University of Pennsylvania in 2022, working under Robert Ghrist to develop a network sheaf theory for algebraic lattices (see image). Following his doctorate, he joined the Autonomous Systems Lab at Duke University, directed by Michael M. Zavlanos, in 2022.
+                        </p>
+                    </div>
 
-			<section id="papers">
-				<div class="wrapper style2">
-					<article id="papers" class="container special">
-						<header>
-							<h2>Publications</h2>
-						</header>
-						<h3>Preprints</h3>
-						<p> Ghrist, R., Lopez, M., North, P.R., <strong> Riess, H. </strong> (2025). <a href="https://arxiv.org/pdf/2501.03890">Categorical diffusion on weighted lattices</a>.</p>
-						<p><strong>Riess, H.</strong>, Veveakis, M., Zavlanos, M. (2024). <a href="https://arxiv.org/pdf/2402.03558.pdf">Path signatures and graph neural networks for slow earthquake analysis: netter together?</a>.</p>
-						<p>Parada-Mayorga, A., <strong>Riess, H.</strong>, Ribeiro, A., & Ghrist, R. (2020). <a href="https://arxiv.org/pdf/2010.11525.pdf">Quiver signal processing (QSP)</a>.</p>
-						
-						<h3>Journal Publications</h3>
-						
-						<p>Battiloro, C., Wang, Z., <strong>Riess, H.</strong>, Di Lorenzo, P., Ribeiro, A. (2023). <a href="https://arxiv.org/pdf/2303.11323.pdf">Tangent bundle convolutional learning: from manifolds to cellular sheaves and back</a>, in <em>IEEE Transactions on Signal Processing</em>.</p>
-						<p>Ghrist, R., & <strong>Riess, H</strong>. (2022). <a href="https://hansriess.com/static/files/papers/tarski-laplacian.pdf">Cellular sheaves of lattices and the Tarski Laplacian</a>, in <em>Homology, Homotopy and Applications</em>, 24(1), 325-345.</p>
-						<p>Catanzaro, M. J., Curry, J. M., Fasy, B. T., Lazovskis, J., Malen, G., <strong>Riess, H.</strong>, Wang, B., & Zabka, M. (2020). <a href="https://link.springer.com/article/10.1007/s41468-020-00055-x">Moduli spaces of morse functions for persistence</a>, in <em>Journal of Applied and Computational Topology</em>, 4(3), 353-385.</p>
-						
-						<h3>Conference Proceedings</h3>
+                    <!-- Image Section -->
+                    <div class="col-5 col-12-mobile bio-image desktop-only">
+                        <img src="/static/images/lattice.jpeg" alt="Algebraic Lattice" class="image fit" />
+                    </div>
 
-						<p>Konti, X., <strong>Riess, H.</strong>, Giannopoulos, M., Shen, Y., Pencina, M., Economou-Zavlanos, N., Zavlanos, M. (2024). <a href="https://arxiv.org/pdf/2410.07039.pdf">Distributionally robust clustered federated learning: a case study in healthcare</a>, to appear in 63rd IEEE Conference on Control and Decision Systems (CDC), Milan.</p>
-						<p><strong>Riess, H.</strong>, Henselman-Petrusek, G., Munger, M., Ghrist, R., Bell, Z., & Zavlanos, M. (2023). <a href="https://arxiv.org/pdf/2310.00179.pdf">Network preference dynamics using lattice theory</a>, in <em>2024 American Control Conference</em>, Toronto.</p>
-						<p>Hayhoe, M., <strong>Riess, H.</strong>, Preciado, V., & Ribeiro, A. (2023). <a href="https://openreview.net/pdf?id=cHuii4NOB9">Transferable hypergraph neural networks via spectral similarity</a>, in <em>Second Learning on Graphs Conference</em>, virtual.</p>
-						<p><strong>Riess, H.</strong>, Munger, M., & Zavlanos, M. (2023). <a href="https://arxiv.org/pdf/2304.00210.pdf">Max-Plus synchronization in decentralized trading systems</a>, in <em>2023 IEEE 62nd Conference on Decision and Control (CDC)</em>, Singapore.</p>
-						<p>Battiloro, C., Wang, Z., <strong>Riess, H.</strong>, Di Lorenzo, P., & Ribeiro, A. (2022). <a href="https://arxiv.org/pdf/2210.15058.pdf">Tangent bundle filters and neural networks: from manifolds to cellular sheaves and back</a>, in <em>2023 Proceedings of the International Conference on Acoustics, Speech and Signal Processing (ICASSP)</em>.</p>
-						<p><strong>Riess, H.</strong>, Ghrist, R. (2022). <a href="https://arxiv.org/pdf/2204.00167.pdf">Diffusion of information on networked lattices by gossip</a>, in <em>IEEE 61st Conference on Decision and Control (CDC)</em>, Cancun, Mexico, 5946-5952.</p>
-						<p><strong>Riess, H.</strong>, Kantaros, Y., Pappas, G., & Ghrist, R. (2021). <a href="https://arxiv.org/pdf/2009.00669v3.pdf">A Temporal logic-based hierarchical network connectivity controller</a>, in <em>2021 Proceedings of the Conference on Control and its Applications</em>, virtual.</p>
-						
-						<h3>Workshop</h3>
+                    <!-- Footer Section -->
+                    <footer class="col-12" style="text-align: center; margin-top: 2em;">
+                        <ul class="actions">
+                            <li>
+                                <a href="static/files/cv.pdf" class="button alt bio-button">Download CV</a>
+                            </li>
+                            {% comment %}
+                            <li>
+                                <a href="static/files/resume.pdf" class="button alt bio-button">Download Resume</a>
+                            </li>
+                            {% endcomment %}
+                        </ul>
+                    </footer>
+                </article>
+            </div>
+        </section>
 
-						<p><strong>Riess, H.</strong>, & Hansen, J. (2020). <a href="https://arxiv.org/pdf/2011.14057.pdf">Multidimensional persistence module classification via lattice-theoretic convolutions</a>. In <em>NeurIPS Workshop on Topological Data Analysis and Beyond</em>.</p>
+        <!-- Publications Section -->
+        <section id="papers">
+            <div class="wrapper style2">
+                <article id="papers" class="container special">
+                    <header>
+                        <h2>Publications</h2>
+                    </header>
+                    
+                    <h3>Journal Publications</h3>
+                    <p>Ghrist, R., Lopez, M., North, P.R., <strong>Riess, H.</strong> (2025). <a href="https://arxiv.org/pdf/2501.03890">Categorical diffusion on weighted lattices</a>, submitted.</p>
+                    <p>Battiloro, C., Wang, Z., <strong>Riess, H.</strong>, Di Lorenzo, P., Ribeiro, A. (2023). <a href="https://arxiv.org/pdf/2303.11323.pdf">Tangent bundle convolutional learning: from manifolds to cellular sheaves and back</a>, in <em>IEEE Transactions on Signal Processing</em>.</p>
+                    <p>Ghrist, R., & <strong>Riess, H.</strong> (2022). <a href="https://hansriess.com/static/files/papers/tarski-laplacian.pdf">Cellular sheaves of lattices and the Tarski Laplacian</a>, in <em>Homology, Homotopy and Applications</em>, 24(1), 325-345.</p>
+                    <p>Catanzaro, M. J., Curry, J. M., Fasy, B. T., Lazovskis, J., Malen, G., <strong>Riess, H.</strong>, Wang, B., & Zabka, M. (2020). <a href="https://link.springer.com/article/10.1007/s41468-020-00055-x">Moduli spaces of morse functions for persistence</a>, in <em>Journal of Applied and Computational Topology</em>, 4(3), 353-385.</p>
+                    
+                    <h3>Conference Proceedings</h3>
+                    <p>Konti, X., <strong>Riess, H.</strong>, Giannopoulos, M., Shen, Y., Pencina, M., Economou-Zavlanos, N., Zavlanos, M. (2024). <a href="https://arxiv.org/pdf/2410.07039.pdf">Distributionally robust clustered federated learning: a case study in healthcare</a>, to appear in 63rd IEEE Conference on Control and Decision Systems (CDC), Milan.</p>
+                    <p><strong>Riess, H.</strong>, Henselman-Petrusek, G., Munger, M., Ghrist, R., Bell, Z., & Zavlanos, M. (2023). <a href="https://arxiv.org/pdf/2310.00179.pdf">Network preference dynamics using lattice theory</a>, in <em>2024 American Control Conference</em>, Toronto.</p>
+                    <p>Hayhoe, M., <strong>Riess, H.</strong>, Preciado, V., & Ribeiro, A. (2023). <a href="https://openreview.net/pdf?id=cHuii4NOB9">Transferable hypergraph neural networks via spectral similarity</a>, in <em>Second Learning on Graphs Conference</em>, virtual.</p>
+                    <p><strong>Riess, H.</strong>, Munger, M., & Zavlanos, M. (2023). <a href="https://arxiv.org/pdf/2304.00210.pdf">Max-Plus synchronization in decentralized trading systems</a>, in <em>2023 IEEE 62nd Conference on Decision and Control (CDC)</em>, Singapore.</p>
+                    <p>Battiloro, C., Wang, Z., <strong>Riess, H.</strong>, Di Lorenzo, P., & Ribeiro, A. (2022). <a href="https://arxiv.org/pdf/2210.15058.pdf">Tangent bundle filters and neural networks: from manifolds to cellular sheaves and back</a>, in <em>2023 Proceedings of the International Conference on Acoustics, Speech and Signal Processing (ICASSP)</em>.</p>
+                    <p><strong>Riess, H.</strong>, Ghrist, R. (2022). <a href="https://arxiv.org/pdf/2204.00167.pdf">Diffusion of information on networked lattices by gossip</a>, in <em>IEEE 61st Conference on Decision and Control (CDC)</em>, Cancun, Mexico, 5946-5952.</p>
+                    <p><strong>Riess, H.</strong>, Kantaros, Y., Pappas, G., & Ghrist, R. (2021). <a href="https://arxiv.org/pdf/2009.00669v3.pdf">A Temporal logic-based hierarchical network connectivity controller</a>, in <em>2021 Proceedings of the Conference on Control and its Applications</em>, virtual.</p>
+                    <p><strong>Riess, H.</strong>, & Hansen, J. (2020). <a href="https://arxiv.org/pdf/2011.14057.pdf">Multidimensional persistence module classification via lattice-theoretic convolutions</a>. In <em>NeurIPS Workshop on Topological Data Analysis and Beyond</em>.</p>
+                    
+                    <h3>Preprints</h3>
+                    <p>Ghrist, R., Gould, J., Lopez, M., <strong>Riess, H.</strong> (2025). <a href="https://arxiv.org/pdf/2503.17836">Clearing sections of lattice liability networks</a>.</p>
+                    <p><strong>Riess, H.</strong>, Veveakis, M., Zavlanos, M. (2024). <a href="https://arxiv.org/pdf/2402.03558.pdf">Path signatures and graph neural networks for slow earthquake analysis: netter together?</a>.</p>
+                    <p>Parada-Mayorga, A., <strong>Riess, H.</strong>, Ribeiro, A., & Ghrist, R. (2020). <a href="https://arxiv.org/pdf/2010.11525.pdf">Quiver signal processing (QSP)</a>.</p>
+                    
+                    <h3>Thesis</h3>
+                    <p><strong>Riess, H.</strong> (2022). <a href="https://arxiv.org/pdf/2304.02568.pdf">Lattice theory in multi-agent systems</a>. Doctor of Philosophy, University of Pennsylvania.</p>
+                </article>
+            </div>
+        </section>
 
-						<h3>Thesis</h3>
+        <!-- Photo Section -->
+        <section id="photo">
+            <div class="wrapper style2">
+                <article class="container special" style="text-align: center;">
+                    <img src="/static/images/talk.jpeg" alt="Talk" style="width: 90%;" />
+                </article>
+            </div>
+        </section>
 
-						<p><strong>Riess, H.</strong> (2022). <a href="https://arxiv.org/pdf/2304.02568.pdf">Lattice theory in multi-agent systems</a>. Doctor of Philosophy, University of Pennsylvania.</p>
-					</article>
-				</div>
-			</section>
-				
-			<section id="photo">
-				<div class="wrapper style2">
-					<article id="papers" class="container special" style="text-align: center;">
-						<img src="/static/images/talk.jpeg" alt="Talk" style="width: 90%;">
-					</article>
-				</div>
-			</section>
+        <!-- Footer -->
+        <div id="footer">
+            <div class="container">
+                <section class="contact">
+                    <ul class="icons">
+                        <li><a href="/cdn-cgi/l/email-protection#b7859e928484b790968392949fd9929382" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+                        <li><a href="https://x.com/hansmriess" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+                        <li><a href="https://linkedin.com/in/hansriess" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+                        <li><a href="https://github.com/hans-riess" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+                    </ul>
+                    <div class="copyright">
+                        <ul class="menu">
+                            <li>Hans Riess &copy; Copyright 2024. All rights reserved.</li>
+                            <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
 
-	<!-- Footer -->
-		<div id="footer">
-			<div class="container">
-				<!-- Contact & Copyright-->
-					<section class="contact">
-						<ul class="icons">
-							<li><a href="mailto:hans@hansriess.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
-							<li><a href="https://x.com/hansmriess" class="icon brands fa-twitter"><span class = "label">Twitter</span></a></li>
-							<li><a href="https://linkedin.com/in/hansriess" class="icon brands fa-linkedin"><span class = "label">LinkedIn</span></a></li>
-							<li><a href="https://github.com/hans-riess" class="icon brands fa-github"><span class = "label">GitHub</span></a></li>
-						</ul>
-						<div class="copyright">
-							<ul class="menu">
-								<li> Hans Riess &copy; Copyright 2024. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
-							</ul>
-						</div>
-					</section>		
-				</div>
-			</div>
-		</div>
-
-		<!-- Scripts -->
-			<script src="static/js/jquery.min.js"></script>
-			{% comment %} <script src="static/js/jquery.dropotron.min.js"></script> {% endcomment %}
-			<script src="static/js/jquery.scrolly.min.js"></script>
-			<script src="static/js/jquery.scrollex.min.js"></script>
-			<script src="static/js/browser.min.js"></script>
-			<script src="static/js/breakpoints.min.js"></script>
-			<script src="static/js/util.js"></script>
-			<script src="static/js/main.js"></script>
-	</body>
+    <!-- Scripts -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script src="static/js/jquery.min.js"></script>
+    {% comment %} <script src="static/js/jquery.dropotron.min.js"></script> {% endcomment %}
+    <script src="static/js/jquery.scrolly.min.js"></script>
+    <script src="static/js/jquery.scrollex.min.js"></script>
+    <script src="static/js/browser.min.js"></script>
+    <script src="static/js/breakpoints.min.js"></script>
+    <script src="static/js/util.js"></script>
+    <script src="static/js/main.js"></script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f4c8dab3a6da3',t:'MTc0MjkxNTA0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
 </html>
