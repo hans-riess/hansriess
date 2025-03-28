@@ -3288,7 +3288,7 @@ body.homepage.is-preload #header:after {
     background-image: url("../../static/images/header.jpg");
     background-size: cover;
     background-position: center center;
-    background-attachment: fixed;
+    background-attachment: float;
     height: 10vh; /* Significantly reduced height */
     min-height: 200px; /* Minimum height for smaller screens */
     padding: 0; /* Remove padding to minimize size */
