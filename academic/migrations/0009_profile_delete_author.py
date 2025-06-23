@@ -24,6 +24,7 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=100)),
                 ("title", models.CharField(max_length=200)),
                 ("bio", models.TextField(max_length=5000)),
+
                 (
                     "headshot",
                     models.ImageField(blank=True, null=True, upload_to="images/"),
@@ -37,13 +38,16 @@ class Migration(migrations.Migration):
                 ("linkedin", models.URLField(blank=True, null=True)),
                 ("github", models.URLField(blank=True, null=True)),
                 ("google_scholar", models.URLField(blank=True, null=True)),
+
                 ("department", models.CharField(blank=True, max_length=200, null=True)),
                 ("school", models.CharField(blank=True, max_length=200, null=True)),
+
                 (
                     "institution",
                     models.CharField(blank=True, max_length=200, null=True),
                 ),
                 ("address", models.TextField(blank=True, null=True)),
+
             ],
         ),
         migrations.DeleteModel(
