@@ -3208,6 +3208,7 @@ body.homepage.is-preload #header:after {
 	color: #012169;
 	margin-bottom: 0.25em;
 	transition: color 0.3s ease-in-out;
+	text-align: center;
   }
   
   .bio-title:hover {
