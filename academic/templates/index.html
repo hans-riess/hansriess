@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="static/css/main.css" />
     <noscript><link rel="stylesheet" href="static/css/noscript.css" /></noscript>
-	<!-- Add Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 </head>
 <body class="homepage is-preload">
@@ -23,32 +22,34 @@
                     <!-- Header Section -->
                     <header class="col-12" style="text-align: center; margin-bottom: 2em;">
                         <h2 class="bio-title">Hans Riess</h2>
-                        <h3 class="bio-subtitle">Research Scientist, Georgia Institute of Technology</h3>
+                        <h3 class="bio-subtitle"> {{ profile.title }}, {{ profile.institution }}</h3>
                         <p style="font-size: 1em; color: #483949;">
-                            <span><a href="mailto:riess@gatech.edu">riess@gatech.edu</a></span><br>
-                            <span>Office 440A, Techology Square Research Building (TSRB) </span>
+                            <span><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></span><br>
+                            <span>{{ profile.office }}</span>
                         </p>
                     </header>
                      
                     <div class="col-8 col-12-mobile bio-content">
                         <h2 class="bio-title"> Bio </h2> 
                         <p>
-                          Dr. Hans Riess is an applied mathematician and engineer who currently serves as a Research Scientist in the School of Electrical and Computer Engineering at the Georgia Institute of Technology. Hans has established an independent research program which leverages category theory and algebraic topology to drive innovations in multi-agent systems, machine learning, and optimization. At Georgia Tech, Hans also works closely with the Control, Optimization, and Robotics Engineering (CORE) Lab, directed by Dr. Matthew Hale, which engages in research activities ranging from hands-on robotics to developing sophisticated mathematical techniques. In 2016, Hans earned a B.S. in Pure Mathematics from Duke University, where he completed the entire Ph.D.-level topology sequence. He later completed his Ph.D. in Electrical and Systems Engineering (ESE) at the University of Pennsylvania in 2022, working under the supervision of Professor Robert Ghrist to make advances in cellular sheaf theory. Following his doctorate, in 2022, he joined the Autonomous Systems Lab at Duke University, directed by Dr. Michael M. Zavlanos, and, in 2025, he joined the research faculty at the Georgia Institute of Technology.
+                            {{ profile.bio }}
                         </p>
                     </div>
 
                     <!-- Image Section -->
                     <div class="col-4 col-12-mobile bio-image">
-                        <img src="/static/images/headshot.jpeg" alt="Headshot" class="image fit" />
+                        <img src="{{ profile.headshot.url }}" alt="Headshot" class="image fit" />
                     </div>
 
                     <!-- Footer Section -->
                     <footer class="col-12" style="text-align: center; margin-top: 2em;">
-                        <ul class="actions">
-                            <li>
-                                <a href="static/files/cv.pdf" class="button alt bio-button">Download CV</a>
-                            </li>
-                        </ul>
+                        {% if profile.cv %}
+                            <ul class="actions">
+                                <li>
+                                    <a href="{{ profile.cv.url }}" class="button alt bio-button">Download CV</a>
+                                </li>
+                            </ul>
+                        {% endif %}
                     </footer>
                 </article>
             </div>
@@ -61,7 +62,6 @@
                     <header>
                         <h2 class="bio-title">Publications</h2>
                     </header>
-                    
                     <h3>Journal Publications</h3>
                     <p>Ghrist, R., Lopez, M., North, P.R., <strong>Riess, H.</strong> (2025). <a href="https://arxiv.org/pdf/2501.03890">Categorical diffusion on weighted lattices.</a> Submitted.</p>
                     <p>Battiloro, C., Wang, Z., <strong>Riess, H.</strong>, Di Lorenzo, P., Ribeiro, A. (2023). <a href="https://arxiv.org/pdf/2303.11323.pdf">Tangent bundle convolutional learning: from manifolds to cellular sheaves and back</a>, in <em>IEEE Transactions on Signal Processing</em>.</p>
@@ -89,11 +89,11 @@
                 </article>
             </div>
         </section>
-        
+
         <section id="photo">
             <div class="wrapper style2">
                 <article class="container special" style="text-align: center;">
-                    <img src="/static/images/talk.jpeg" alt="Talk" style="width: 90%;" />
+                    <img src="/static/images/talk1.jpeg" alt="Talk" style="width: 90%;" />
                 </article>
             </div>
         </section>
@@ -102,14 +102,15 @@
             <div class="container">
                 <section class="contact">
                     <ul class="icons">
-                        <li><a href="/cdn-cgi/l/email-protection#b7859e928484b790968392949fd9929382" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
-                        <li><a href="https://x.com/hansmriess" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
-                        <li><a href="https://linkedin.com/in/hansriess" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
-                        <li><a href="https://github.com/hans-riess" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+                        <li><a href="mailto:{{ profile.email }}" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+                        <li><a href="{{ profile.twitter }}" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+                        <li><a href="{{ profile.linkedin }}" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+                        <li><a href="{{ profile.github }}" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+                        <li><a href="{{ profile.google_scholar }}" class="icon solid fa-graduation-cap"><span class="label">Google Scholar</span></a></li>
                     </ul>
                     <div class="copyright">
                         <ul class="menu">
-                            <li>Hans Riess &copy; Copyright 2024. All rights reserved.</li>
+                            <li>Hans Riess &copy; Copyright 2025. All rights reserved.</li>
                             <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
                         </ul>
                     </div>
@@ -121,14 +122,21 @@
     <!-- Scripts -->
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="static/js/jquery.min.js"></script>
-    {% comment %} <script src="static/js/jquery.dropotron.min.js"></script> {% endcomment %}
     <script src="static/js/jquery.scrolly.min.js"></script>
     <script src="static/js/jquery.scrollex.min.js"></script>
     <script src="static/js/browser.min.js"></script>
     <script src="static/js/breakpoints.min.js"></script>
     <script src="static/js/util.js"></script>
     <script src="static/js/main.js"></script>
-    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'925f4c8dab3a6da3',t:'MTc0MjkxNTA0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 	<script src="https://embed.ycb.me"	async="true"	data-domain="hansriess"	data-type="button-floating"	data-buttonicon="calendar"	data-buttonposition="bottomRight"	data-buttoncolor="#012169"	data-displaymode="auto" ></script>
+    <script>
+    document.addEventListener('click', function() {
+        // If the widget is closed, remove overflow: hidden from body and html
+        if (!document.querySelector('.ycbm-modal') && !document.querySelector('.ycbm-overlay')) {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+    });
+    </script>
 </body>
 </html>
