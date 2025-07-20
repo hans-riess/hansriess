@@ -1,6 +1,0 @@
-*.pyc
-Pipfile
-Pipfile.lock
-*.DS_Store
-staticfiles/
-media/

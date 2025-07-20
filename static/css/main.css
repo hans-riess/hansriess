@@ -3315,3 +3315,72 @@ body.homepage #header {
         background-attachment: scroll; /* Fix scrolling on mobile */
     }
 }
+
+/* Publication styles */
+.publication {
+    position: relative;
+    margin-bottom: 1em;
+	text-align: left;
+}
+
+.publication .publication-text {
+    margin-bottom: 0;
+}
+
+.publication .publication-details {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 1em;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 0.9em;
+    color: #555;
+    text-align: left;
+}
+
+.publication:hover .publication-details {
+    display: block;
+}
+
+.publication-details .publication-content {
+    display: flex;
+    gap: 1em;
+    margin-bottom: 1em;
+}
+
+.publication-details .publication-abstract {
+    flex: 1;
+}
+
+.publication-details .publication-image {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+.publication-details .publication-image img {
+    width: auto;
+    height: auto;
+    max-height: 150px;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.publication-details p {
+    margin-bottom: 1em;
+}
+
+.publication-details .buttons {
+    margin-top: 1em;
+	text-align: center;
+}
+
+.publication-details .buttons .button {
+    margin-right: 0.5em;
+	margin-bottom: 0.5em;
+}
