@@ -3030,6 +3030,15 @@ body.homepage.is-preload #header:after {
 	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
+#connect footer .bio-title {
+	color: #E5E5E5;
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+	font-size: 1.5125em;
+	font-weight: 300;
+	font-family: 'Oswald', 'Source Sans Pro', sans-serif;
+	text-align: center;
+}
+
 .connect-bio-subtitle {
 	font-size: 1.1em;
 	font-weight: 300;
@@ -3128,6 +3137,10 @@ body.homepage.is-preload #header:after {
 	}
 	
 			#title .bio-subtitle {
+	  font-size: 1.21em;
+	}
+
+	#connect footer .bio-title {
 	  font-size: 1.21em;
 	}
     
@@ -3277,4 +3290,26 @@ body.homepage #header {
 .publication-details .buttons .button {
     margin-right: 0.5em;
 	margin-bottom: 0.5em;
+}
+
+.publication-icons {
+	margin-left: 1em;
+}
+
+.publication-icons a {
+	color: #B3A369;
+	margin-right: 0.5em;
+	font-size: 1.1em;
+	text-decoration: none;
+	border-bottom: none;
+}
+
+.publication-icons a:hover {
+	color: #D4C285;
+}
+
+.publication-icons i {
+	display: inline-block;
+	width: 1.2em;
+	text-align: center;
 }

@@ -9,14 +9,14 @@ class ReferenceAdmin(admin.ModelAdmin):
     
     fieldsets = [
         (None, {
-            'fields': ['title', 'long_title', 'authors', 'alphabetical_order', 'shared_first_author', 'year', 'reference_type']
+            'fields': ['title', 'authors', 'alphabetical_order', 'shared_first_author', 'year', 'reference_type']
         }),
         ('Publication Details', {
             'fields': ['journal', 'volume', 'issue', 'pages', 'doi', 'url', 'pdf_file', 'reference_image'],
             'classes': ['collapse']
         }),
         ('Additional Information', {
-            'fields': ['abstract', 'keywords', 'code', 'slides'],
+            'fields': ['abstract', 'keywords', 'code', 'slides','poster'],
             'classes': ['collapse']
         })
     ]

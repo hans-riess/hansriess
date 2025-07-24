@@ -74,12 +74,13 @@ class Reference(models.Model):
     pages = models.CharField(max_length=50, blank=True)
     doi = models.CharField(max_length=100, blank=True)
     url = models.URLField(blank=True)
-    pdf_file = models.FileField(upload_to='references/', blank=True)
+    pdf_file = models.FileField(upload_to='references/papers/', blank=True)
     reference_image = models.ImageField(upload_to='references/images/', blank=True, null=True, help_text="Optional image for the publication (e.g., graph, diagram)")
     abstract = models.TextField(blank=True)
     keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated list of keywords")
     code = models.URLField(blank=True, help_text="Link to the code repository")
-    slides = models.FileField(upload_to='slides/', blank=True, help_text="Optional slides for the publication")
+    slides = models.FileField(upload_to='references/slides/', blank=True, help_text="Optional slides for the publication")
+    poster = models.FileField(upload_to='references/posters/', blank=True, help_text="Optional poster for the publication")
     
     class Meta:
         ordering = ['-year', 'title']

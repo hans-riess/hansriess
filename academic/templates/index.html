@@ -74,35 +74,24 @@
                     {% for reference in journal_articles %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}. <em>{{ reference.journal }}</em>{% if reference.volume %}, {{ reference.volume }}{% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}.
-                        </p>
-                        {% if reference.abstract %}
-                        <div class="publication-details">
-                            <div class="publication-content">
-                                <div class="publication-abstract">
-                                    <p><b>Abstract:</b> {{ reference.abstract }}</p>
-                                </div>
-                                {% if reference.reference_image %}
-                                <div class="publication-image">
-                                    <img src="{{ reference.reference_image.url }}" alt="Reference image" onerror="this.parentElement.style.display='none';" />
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="buttons">
-                                {% if reference.url %}
-                                <a href="{{ reference.url }}" class="button small">Link</a>
-                                {% elif reference.pdf_file %}
-                                <a href="{{ reference.pdf_file.url }}" class="button small">PDF</a>
+                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %}, {{ reference.volume }}{% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}.
+                            <span class="publication-icons">
+                                {% if reference.pdf_file %}
+                                    <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                {% elif reference.url %}
+                                    <a href="{{ reference.url }}" title="Paper Link"><i class="fa-solid fa-file"></i></a>
                                 {% endif %}
                                 {% if reference.code %}
-                                <a href="{{ reference.code }}" class="button small">Code</a>
+                                    <a href="{{ reference.code }}" title="Code"><i class="fa-solid fa-code"></i></a>
+                                {% endif %}
+                                {% if reference.poster %}
+                                    <a href="{{ reference.poster.url }}" title="Poster"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
                                 {% if reference.slides %}
-                                <a href="{{ reference.slides.url }}" class="button small">Slides</a>
+                                    <a href="{{ reference.slides.url }}" title="Slides"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
+                            </span>
+                        </p>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -112,35 +101,24 @@
                     {% for reference in conference_proceedings %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}, in <em>{{ reference.journal }}</em>.
-                        </p>
-                        {% if reference.abstract %}
-                        <div class="publication-details">
-                            <div class="publication-content">
-                                <div class="publication-abstract">
-                                    <p><b>Abstract:</b> {{ reference.abstract }}</p>
-                                </div>
-                                {% if reference.reference_image %}
-                                <div class="publication-image">
-                                    <img src="{{ reference.reference_image.url }}" alt="Reference image" onerror="this.parentElement.style.display='none';" />
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="buttons">
-                                {% if reference.url %}
-                                <a href="{{ reference.url }}" class="button small">Link</a>
-                                {% elif reference.pdf_file %}
-                                <a href="{{ reference.pdf_file.url }}" class="button small">PDF</a>
+                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}, in <em>{{ reference.journal }}</em>.
+                            <span class="publication-icons">
+                                {% if reference.pdf_file %}
+                                    <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                {% elif reference.url %}
+                                    <a href="{{ reference.url }}" title="Paper Link"><i class="fa-solid fa-file"></i></a>
                                 {% endif %}
                                 {% if reference.code %}
-                                <a href="{{ reference.code }}" class="button small">Code</a>
+                                    <a href="{{ reference.code }}" title="Code"><i class="fa-solid fa-code"></i></a>
+                                {% endif %}
+                                {% if reference.poster %}
+                                    <a href="{{ reference.poster.url }}" title="Poster"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
                                 {% if reference.slides %}
-                                <a href="{{ reference.slides.url }}" class="button small">Slides</a>
+                                    <a href="{{ reference.slides.url }}" title="Slides"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
+                            </span>
+                        </p>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -150,35 +128,24 @@
                     {% for reference in preprints %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
-                        </p>
-                        {% if reference.abstract %}
-                        <div class="publication-details">
-                            <div class="publication-content">
-                                <div class="publication-abstract">
-                                    <p><b>Abstract:</b> {{ reference.abstract }}</p>
-                                </div>
-                                {% if reference.reference_image %}
-                                <div class="publication-image">
-                                    <img src="{{ reference.reference_image.url }}" alt="Reference image" onerror="this.parentElement.style.display='none';" />
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="buttons">
-                                {% if reference.url %}
-                                <a href="{{ reference.url }}" class="button small">Link</a>
-                                {% elif reference.pdf_file %}
-                                <a href="{{ reference.pdf_file.url }}" class="button small">PDF</a>
+                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}.
+                            <span class="publication-icons">
+                                {% if reference.pdf_file %}
+                                    <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                {% elif reference.url %}
+                                    <a href="{{ reference.url }}" title="Paper Link"><i class="fa-solid fa-file"></i></a>
                                 {% endif %}
                                 {% if reference.code %}
-                                <a href="{{ reference.code }}" class="button small">Code</a>
+                                    <a href="{{ reference.code }}" title="Code"><i class="fa-solid fa-code"></i></a>
+                                {% endif %}
+                                {% if reference.poster %}
+                                    <a href="{{ reference.poster.url }}" title="Poster"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
                                 {% if reference.slides %}
-                                <a href="{{ reference.slides.url }}" class="button small">Slides</a>
+                                    <a href="{{ reference.slides.url }}" title="Slides"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
+                            </span>
+                        </p>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -188,35 +155,24 @@
                     {% for reference in books %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). <em>{% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}</em>.
-                        </p>
-                        {% if reference.abstract %}
-                        <div class="publication-details">
-                            <div class="publication-content">
-                                <div class="publication-abstract">
-                                    <p><b>Abstract:</b> {{ reference.abstract }}</p>
-                                </div>
-                                {% if reference.reference_image %}
-                                <div class="publication-image">
-                                    <img src="{{ reference.reference_image.url }}" alt="Reference image" onerror="this.parentElement.style.display='none';" />
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="buttons">
-                                {% if reference.url %}
-                                <a href="{{ reference.url }}" class="button small">Link</a>
-                                {% elif reference.pdf_file %}
-                                <a href="{{ reference.pdf_file.url }}" class="button small">PDF</a>
+                            {{ reference.authors }}. ({{ reference.year }}). <em>{{ reference.title }}</em>.
+                            <span class="publication-icons">
+                                {% if reference.pdf_file %}
+                                    <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                {% elif reference.url %}
+                                    <a href="{{ reference.url }}" title="Paper Link"><i class="fa-solid fa-file"></i></a>
                                 {% endif %}
                                 {% if reference.code %}
-                                <a href="{{ reference.code }}" class="button small">Code</a>
+                                    <a href="{{ reference.code }}" title="Code"><i class="fa-solid fa-code"></i></a>
+                                {% endif %}
+                                {% if reference.poster %}
+                                    <a href="{{ reference.poster.url }}" title="Poster"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
                                 {% if reference.slides %}
-                                <a href="{{ reference.slides.url }}" class="button small">Slides</a>
+                                    <a href="{{ reference.slides.url }}" title="Slides"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
+                            </span>
+                        </p>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -227,34 +183,23 @@
                     <div class="publication">
                         <p class="publication-text">
                             {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}. In <em>{{ reference.journal }}</em>{% if reference.pages %} (pp. {{ reference.pages }}){% endif %}.
-                        </p>
-                        {% if reference.abstract %}
-                        <div class="publication-details">
-                            <div class="publication-content">
-                                <div class="publication-abstract">
-                                    <p><b>Abstract:</b> {{ reference.abstract }}</p>
-                                </div>
-                                {% if reference.reference_image %}
-                                <div class="publication-image">
-                                    <img src="{{ reference.reference_image.url }}" alt="Reference image" onerror="this.parentElement.style.display='none';" />
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="buttons">
-                                {% if reference.url %}
-                                <a href="{{ reference.url }}" class="button small">Link</a>
-                                {% elif reference.pdf_file %}
-                                <a href="{{ reference.pdf_file.url }}" class="button small">PDF</a>
+                            <span class="publication-icons">
+                                {% if reference.pdf_file %}
+                                    <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                {% elif reference.url %}
+                                    <a href="{{ reference.url }}" title="Paper Link"><i class="fa-solid fa-file"></i></a>
                                 {% endif %}
                                 {% if reference.code %}
-                                <a href="{{ reference.code }}" class="button small">Code</a>
+                                    <a href="{{ reference.code }}" title="Code"><i class="fa-solid fa-code"></i></a>
+                                {% endif %}
+                                {% if reference.poster %}
+                                    <a href="{{ reference.poster.url }}" title="Poster"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
                                 {% if reference.slides %}
-                                <a href="{{ reference.slides.url }}" class="button small">Slides</a>
+                                    <a href="{{ reference.slides.url }}" title="Slides"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
+                            </span>
+                        </p>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -264,35 +209,24 @@
                     {% for reference in theses %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
-                        </p>
-                        {% if reference.abstract %}
-                        <div class="publication-details">
-                            <div class="publication-content">
-                                <div class="publication-abstract">
-                                    <p><b>Abstract:</b> {{ reference.abstract }}</p>
-                                </div>
-                                {% if reference.reference_image %}
-                                <div class="publication-image">
-                                    <img src="{{ reference.reference_image.url }}" alt="Reference image" onerror="this.parentElement.style.display='none';" />
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="buttons">
-                                {% if reference.url %}
-                                <a href="{{ reference.url }}" class="button small">Link</a>
-                                {% elif reference.pdf_file %}
-                                <a href="{{ reference.pdf_file.url }}" class="button small">PDF</a>
+                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}.
+                            <span class="publication-icons">
+                                {% if reference.pdf_file %}
+                                    <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                {% elif reference.url %}
+                                    <a href="{{ reference.url }}" title="Paper Link"><i class="fa-solid fa-file"></i></a>
                                 {% endif %}
                                 {% if reference.code %}
-                                <a href="{{ reference.code }}" class="button small">Code</a>
+                                    <a href="{{ reference.code }}" title="Code"><i class="fa-solid fa-code"></i></a>
+                                {% endif %}
+                                {% if reference.poster %}
+                                    <a href="{{ reference.poster.url }}" title="Poster"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
                                 {% if reference.slides %}
-                                <a href="{{ reference.slides.url }}" class="button small">Slides</a>
+                                    <a href="{{ reference.slides.url }}" title="Slides"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
+                            </span>
+                        </p>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -302,35 +236,24 @@
                     {% for reference in other %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
-                        </p>
-                        {% if reference.abstract %}
-                        <div class="publication-details">
-                            <div class="publication-content">
-                                <div class="publication-abstract">
-                                    <p><b>Abstract:</b> {{ reference.abstract }}</p>
-                                </div>
-                                {% if reference.reference_image %}
-                                <div class="publication-image">
-                                    <img src="{{ reference.reference_image.url }}" alt="Reference image" onerror="this.parentElement.style.display='none';" />
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="buttons">
-                                {% if reference.url %}
-                                <a href="{{ reference.url }}" class="button small">Link</a>
-                                {% elif reference.pdf_file %}
-                                <a href="{{ reference.pdf_file.url }}" class="button small">PDF</a>
+                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}.
+                            <span class="publication-icons">
+                                {% if reference.pdf_file %}
+                                    <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                {% elif reference.url %}
+                                    <a href="{{ reference.url }}" title="Paper Link"><i class="fa-solid fa-file"></i></a>
                                 {% endif %}
                                 {% if reference.code %}
-                                <a href="{{ reference.code }}" class="button small">Code</a>
+                                    <a href="{{ reference.code }}" title="Code"><i class="fa-solid fa-code"></i></a>
+                                {% endif %}
+                                {% if reference.poster %}
+                                    <a href="{{ reference.poster.url }}" title="Poster"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
                                 {% if reference.slides %}
-                                <a href="{{ reference.slides.url }}" class="button small">Slides</a>
+                                    <a href="{{ reference.slides.url }}" title="Slides"><i class="fa-solid fa-person-chalkboard"></i></a>
                                 {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
+                            </span>
+                        </p>
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -343,7 +266,7 @@
             <div class="wrapper style2">
                 <article class="container special">
                     <header>
-                        <h2 class="bio-title">Connec with a {{ profile.occupation }}</h2>
+                        <h2 class="bio-title">Connect</h2>
                     </header>
                     <div class="row">
                         <!-- Professional Information Column -->
@@ -389,6 +312,8 @@
                         </ul>
                     </div>
                 </article>
+
+                    
             </div>
         </section>
 
