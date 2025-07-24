@@ -59,7 +59,7 @@
         <!-- Publications Section -->
         <section id="papers">
             <div class="wrapper style2">
-                <article id="papers" class="container special">
+                <article class="container-narrow special">
                     <header>
                         <h2 class="bio-title">Publications</h2>
                     </header>
@@ -69,7 +69,7 @@
                     {% for reference in journal_articles %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.get_authors_display|safe }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}. <em>{{ reference.journal }}</em>{% if reference.volume %}, {{ reference.volume }}{% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}.
+                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}. <em>{{ reference.journal }}</em>{% if reference.volume %}, {{ reference.volume }}{% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}.
                         </p>
                         {% if reference.abstract %}
                         <div class="publication-details">
@@ -107,7 +107,7 @@
                     {% for reference in conference_proceedings %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.get_authors_display|safe }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}, in <em>{{ reference.journal }}</em>.
+                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}, in <em>{{ reference.journal }}</em>.
                         </p>
                         {% if reference.abstract %}
                         <div class="publication-details">
@@ -145,7 +145,7 @@
                     {% for reference in preprints %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.get_authors_display|safe }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
+                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
                         </p>
                         {% if reference.abstract %}
                         <div class="publication-details">
@@ -183,7 +183,7 @@
                     {% for reference in books %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.get_authors_display|safe }}. ({{ reference.year }}). <em>{% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}</em>.
+                            {{ reference.authors }}. ({{ reference.year }}). <em>{% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}</em>.
                         </p>
                         {% if reference.abstract %}
                         <div class="publication-details">
@@ -221,7 +221,7 @@
                     {% for reference in book_chapters %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.get_authors_display|safe }}. ({{ reference.year }}). {{ reference.title }}. In <em>{{ reference.journal }}</em>{% if reference.pages %} (pp. {{ reference.pages }}){% endif %}.
+                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}. In <em>{{ reference.journal }}</em>{% if reference.pages %} (pp. {{ reference.pages }}){% endif %}.
                         </p>
                         {% if reference.abstract %}
                         <div class="publication-details">
@@ -259,7 +259,7 @@
                     {% for reference in theses %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.get_authors_display|safe }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
+                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
                         </p>
                         {% if reference.abstract %}
                         <div class="publication-details">
@@ -297,7 +297,7 @@
                     {% for reference in other %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.get_authors_display|safe }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
+                            {{ reference.authors }}. ({{ reference.year }}). {% if reference.url %}<a href="{{ reference.url }}">{% elif reference.pdf_file %}<a href="{{ reference.pdf_file.url }}">{% endif %}{{ reference.title }}{% if reference.url or reference.pdf_file %}</a>{% endif %}.
                         </p>
                         {% if reference.abstract %}
                         <div class="publication-details">
@@ -335,7 +335,7 @@
 
         <section id="photo">
             <div class="wrapper style2">
-                <article class="container special" style="text-align: center;">
+                <article class="container-narrow special" style="text-align: center;">
                     <img src="/static/images/talk.jpeg" alt="Talk" style="width: 90%;" />
                 </article>
             </div>
@@ -350,6 +350,7 @@
                         <li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>
                         <li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>
                         <li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>
+                        <li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>
                     </ul>
                     <div class="copyright">
                         <ul class="menu">
