@@ -16,42 +16,47 @@
         <div id="header">
         </div>
 
-        <!-- Bio Section with Email -->
-        <section id="bio" class="wrapper style2">
+        <!-- Title Section -->
+        <section id="title" class="wrapper style2">
             <div class="container special">
-                <article id="papers" class="row aln-middle">
-                    <!-- Header Section -->
-                    <header class="col-12" style="text-align: center; margin-bottom: 2em;">
+                <article class="row aln-middle">
+                    <header class="col-12" style="text-align: center;">
                         <h2 class="bio-title">{{profile.name}}</h2>
                         <h3 class="bio-subtitle">
-                            {{ profile.title }}<br>
-                            {{ profile.department }}<br>
-                            {{ profile.institution }}
+                            {{ profile.title }} at {{ profile.institution}}
                         </h3>
+                        <ul class="actions" style="margin-top: 1em;">
+                            <li>
+                                <a href="#connect" class="button bio-button">Contact Info</a>
+                            </li>
+                        </ul>
                     </header>
-                     
+                </article>
+            </div>
+        </section>
+
+        <!-- Bio Section -->
+        <section id="bio" class="wrapper style2">
+            <div class="container special">
+                <article class="row aln-middle">
                     <div class="col-8 col-12-mobile bio-content">
-                        <h2 class="bio-title"> Bio </h2> 
+                        <h3 class="bio-title">Bio</h3> 
                         <p>
                             {{ profile.bio }}
                         </p>
+                        {% if profile.cv %}
+                            <ul class="actions" style="margin-top: 1.5em;">
+                                <li>
+                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
+                                </li>
+                            </ul>
+                        {% endif %}
                     </div>
 
                     <!-- Image Section -->
                     <div class="col-4 col-12-mobile bio-image">
                         <img src="/static/images/headshot.jpeg" alt="Headshot" class="image fit" />
                     </div>
-
-                    <!-- Footer Section -->
-                    <footer class="col-12" style="text-align: center; margin-top: 2em;">
-                        {% if profile.cv %}
-                            <ul class="actions">
-                                <li>
-                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
-                                </li>
-                            </ul>
-                        {% endif %}
-                    </footer>
                 </article>
             </div>
         </section>
@@ -333,23 +338,67 @@
             </div>
         </section>
 
-        <div id="footer">
-            <div class="container">
-                <section class="contact">
-                    <ul class="icons">
-                        <li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>
-                        <li><a href="{{ profile.twitter }}" class="fa-brands fa-x-twitter"><span class="label"></span></a></li>
-                        <li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>
-                        <li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>
-                        <li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>
-                        <li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>
-                    </ul>
-                    <div class="copyright">
-                        <ul class="menu">
-                            <li>Hans Riess &copy; Copyright 2025. All rights reserved.</li>
+        <!-- Connect Section -->
+        <section id="connect">
+            <div class="wrapper style2">
+                <article class="container special">
+                    <header>
+                        <h2 class="bio-title">Connec with a {{ profile.occupation }}</h2>
+                    </header>
+                    <div class="row">
+                        <!-- Professional Information Column -->
+                        <div class="col-6 col-12-mobile">
+                            <div class="connect-card">
+                                <div class="profile-info connect-bio-subtitle">
+                                    {{ profile.name }}<br>
+                                    {% if profile.long_title %}{{ profile.long_title }}<br>{% endif %}
+                                    {% if profile.department %}{{ profile.department }}<br>{% endif %}
+                                    {% if profile.sub_department %}{{ profile.sub_department }}<br>{% endif %}
+                                    {% if profile.school %}{{ profile.school }}<br>{% endif %}
+                                    {% if profile.long_institution %}{{ profile.long_institution }}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                                                <!-- Address Information Column -->
+                        <div class="col-6 col-12-mobile">
+                            <div class="connect-card">
+                                <div class="address-info connect-bio-subtitle">
+                                    {% if profile.room_number %}Room {{ profile.room_number }}<br>{% endif %}
+                                    {% if profile.building %}{{ profile.building }}<br>{% endif %}
+                                    {% if profile.street %}{{ profile.street }}<br>{% endif %}
+                                    {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.state %}, {{ profile.state }}{% endif %}{% if profile.zip_code %} {{ profile.zip_code }}<br>{% endif %}
+                                    {% if profile.country %}{{ profile.country }}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Media Icons Below Cards -->
+                    <div class="contact" style="text-align: center; margin-top: 2em;">
+                        <ul class="icons">
+                            <li><a href="tel:{{profile.phone}}" class="fa-solid fa-phone"><span class="label"></span></a></li>
+                            <li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>
+                            <li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>
+                            <li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>
+                            <li><a href="{{ profile.twitter }}" class="fa-brands fa-x-twitter"><span class="label"></span></a></li>
+                            <li><a href="{{ profile.youtube }}" class="fa-brands fa-youtube"><span class="label"></span></a></li>
+                            <li><a href="{{ profile.blue_sky }}" class="fa-brands fa-bluesky"><span class="label"></span></a></li>
+                            <li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>
+                            <li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>
                         </ul>
                     </div>
-                </section>
+                </article>
+            </div>
+        </section>
+
+        <div id="footer">
+            <div class="container">
+                <div class="copyright">
+                    <ul class="menu">
+                        <li>Hans Riess &copy; Copyright 2025. All rights reserved.</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

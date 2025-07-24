@@ -9,14 +9,14 @@ class ReferenceAdmin(admin.ModelAdmin):
     
     fieldsets = [
         (None, {
-            'fields': ['title', 'authors', 'year', 'reference_type']
+            'fields': ['title', 'long_title', 'authors', 'alphabetical_order', 'shared_first_author', 'year', 'reference_type']
         }),
         ('Publication Details', {
-            'fields': ['journal', 'volume', 'pages', 'doi', 'url', 'pdf_file', 'reference_image'],
+            'fields': ['journal', 'volume', 'issue', 'pages', 'doi', 'url', 'pdf_file', 'reference_image'],
             'classes': ['collapse']
         }),
         ('Additional Information', {
-            'fields': ['abstract', 'keywords'],
+            'fields': ['abstract', 'keywords', 'code', 'slides'],
             'classes': ['collapse']
         })
     ]
@@ -27,18 +27,18 @@ class ProfileAdmin(admin.ModelAdmin):
     
     fieldsets = [
         ('Basic Information', {
-            'fields': ['name', 'title', 'bio']
+            'fields': ['name', 'occupation', 'title','long_title', 'bio']
         }),
         ('Contact Information', {
-            'fields': ['email', 'office', 'website'],
+            'fields': ['email', 'room_number', 'building', 'street', 'city', 'state', 'zip_code', 'country', 'website','phone'],
             'classes': ['collapse']
         }),
         ('Academic Information', {
-            'fields': ['department', 'school', 'institution', 'cv'],
+            'fields': ['department', 'sub_department', 'school', 'institution', 'long_institution', 'cv'],
             'classes': ['collapse']
         }),
         ('Social Media', {
-            'fields': ['twitter', 'linkedin', 'github', 'google_scholar', 'orcid'],
+            'fields': ['twitter','blue_sky','youtube','linkedin', 'github', 'google_scholar', 'orcid'],
             'classes': ['collapse']
         })
     ]

@@ -1781,7 +1781,7 @@ input, select, textarea {
 /* Sections/Article */
 
 	section, article {
-		margin-bottom: 3em;
+		margin-bottom: 0.75em;
 	}
 
 		section > :last-child, section:last-child, article > :last-child, article:last-child {
@@ -2207,11 +2207,11 @@ input, select, textarea {
 /* Wrapper */
 
 	.wrapper {
-		background: #fff;
-		margin: 0 0 4em 0;
-		padding: 4em 0 4em 0;
+		background: transparent;
+		margin: 0 0 1em 0;
+		padding: 2em 0 2em 0;
 		border-radius: 0.5em;
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		box-shadow: none;
 	}
 
 		.wrapper.style2 {
@@ -2587,9 +2587,17 @@ body.homepage.is-preload #header:after {
 		/* Wrapper */
 
 			.wrapper {
-				padding: 3em 2em 3em 2em;
-				margin: 0 0 3em 0;
+				padding: 1.5em 2em 1.5em 2em;
+				margin: 0 0 0.75em 0;
 			}
+
+		/* Title Card Medium Screen Styling */
+		#title .container {
+			padding: 2.5em 2em;
+			background: transparent;
+			border: none;
+			box-shadow: none;
+		}
 
 		/* Bio Card Medium Screen Styling */
 		#bio .container {
@@ -2601,6 +2609,21 @@ body.homepage.is-preload #header:after {
 		#papers .container {
 			padding: 2.5em 2em;
 			border-radius: 0.85em;
+		}
+
+		/* Connect Card Medium Screen Styling */
+		#connect .container {
+			padding: 2.5em 2em;
+			background: transparent;
+			border: none;
+			box-shadow: none;
+		}
+
+		#connect .connect-card {
+			padding: 1.5em 1em;
+			background: transparent;
+			border: none;
+			box-shadow: none;
 		}
 
 		/* Header */
@@ -2705,9 +2728,9 @@ body.homepage.is-preload #header:after {
 
 		/* Section/Article */
 
-			section, article {
-				margin-bottom: 2em;
-			}
+					section, article {
+			margin-bottom: 0.5em;
+		}
 
 				section:last-child, article:last-child {
 					margin-bottom: 0;
@@ -2797,8 +2820,8 @@ body.homepage.is-preload #header:after {
 		/* Wrapper */
 
 			.wrapper {
-				padding: 2em 1em 2em 1em;
-				margin: 0 0 3em 0;
+				padding: 1em 1em 1em 1em;
+				margin: 0 0 0.75em 0;
 			}
 
 		/* Header */
@@ -2923,14 +2946,36 @@ body.homepage.is-preload #header:after {
 	background: transparent;
   }
 
-#bio .wrapper {
+/* Title Card Styling */
+#title .container {
 	background: transparent;
+	border-radius: 1em;
+	padding: 3em 2em;
 	box-shadow: none;
+	border: none;
 }
 
-#papers .wrapper {
-	background: transparent;
-	box-shadow: none;
+/* Title Section Text for Dark Background */
+#title .bio-title {
+	color: #D4C285;
+	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+	font-size: 3.025em;
+}
+
+#title .bio-subtitle {
+	color: #E5E5E5;
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+	font-size: 1.5125em;
+}
+
+#title .bio-button {
+	background-color: #B3A369;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+#title .bio-button:hover {
+	background-color: #D4C285;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* Bio Card Styling */
@@ -2951,9 +2996,52 @@ body.homepage.is-preload #header:after {
 	border: 1px solid rgba(179, 163, 105, 0.2);
 }
 
-/* Title Section Enhancements */
-#title {
-	background: #ffffff;
+/* Connect Section Styling */
+#connect .container {
+	background: transparent;
+	border-radius: 1em;
+	padding: 3em 2em;
+	box-shadow: none;
+	border: none;
+}
+
+#connect .bio-title {
+	color: #D4C285;
+	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+	font-size: 3.025em;
+}
+
+#connect .connect-card {
+	background: transparent;
+	border-radius: 1em;
+	padding: 2em 1.5em;
+	box-shadow: none;
+	border: none;
+	margin-bottom: 1em;
+}
+
+#connect .icons li a {
+	color: #fff;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+#connect .icons li a:hover {
+	color: #D4C285;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.connect-bio-subtitle {
+	font-size: 1.1em;
+	font-weight: 300;
+	color: #E5E5E5;
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+	font-family: 'Source Sans Pro', sans-serif;
+	text-align: left;
+	line-height: 1.5em;
+}
+
+#bio {
+	background: transparent;
   }
   
   .bio-title {
@@ -2978,12 +3066,20 @@ body.homepage.is-preload #header:after {
 	font-family: 'Oswald', 'Source Sans Pro', sans-serif;
   }
   
+  .bio-content h3.bio-title {
+	text-align: center;
+  }
+
   .bio-content p {
 	font-size: 1.1em;
 	line-height: 1.75em;
 	color: #5b5b5b;
 	text-align: justify;
 	margin-bottom: 1.5em;
+  }
+
+  .bio-content .actions {
+	text-align: center;
   }
   
   .bio-image img {
@@ -3015,18 +3111,26 @@ body.homepage.is-preload #header:after {
   
   /* Responsive Adjustments */
   @media screen and (max-width: 736px) {
-	#bio {
+	#bio, #title {
 	  padding: 2em 0;
 	}
   
 	.bio-title {
 	  font-size: 2em;
 	}
-	hans.riess
+	
+	#title .bio-title {
+	  font-size: 2.42em;
+	}
+	
 	.bio-subtitle {
 	  font-size: 1em;
 	}
-  
+	
+			#title .bio-subtitle {
+	  font-size: 1.21em;
+	}
+    
 	.bio-content p {
 	  font-size: 1em;
 	  text-align: left;
@@ -3036,6 +3140,14 @@ body.homepage.is-preload #header:after {
 	  font-size: 1em;
 	  padding: 0.65em 2em;
 	  width: 100%;
+	}
+
+	/* Title Card Mobile Styling */
+	#title .container {
+	  padding: 2em 1.5em;
+	  background: transparent;
+	  border: none;
+	  box-shadow: none;
 	}
 
 	/* Bio Card Mobile Styling */
@@ -3048,6 +3160,21 @@ body.homepage.is-preload #header:after {
 	#papers .container {
 	  padding: 2em 1.5em;
 	  border-radius: 0.75em;
+	}
+
+	/* Connect Card Mobile Styling */
+	#connect .container {
+	  padding: 2em 1.5em;
+	  background: transparent;
+	  border: none;
+	  box-shadow: none;
+	}
+
+	#connect .connect-card {
+	  padding: 1.5em 1em;
+	  background: transparent;
+	  border: none;
+	  box-shadow: none;
 	}
   }
 
