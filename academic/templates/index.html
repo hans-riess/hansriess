@@ -16,6 +16,17 @@
         <div id="header">
         </div>
 
+        <!-- Under Construction Notice -->
+        {% if profile.under_construction %}
+        <section id="construction-notice" style="background: rgba(179, 163, 105, 0.9); padding: 1em 0; text-align: center; margin-bottom: 2em;">
+            <div class="container">
+                <p style="color: #fff; font-size: 1.2em; margin: 0; font-weight: 600;">
+                    This website is currently under construction. Content may be incomplete or change frequently.
+                </p>
+            </div>
+        </section>
+        {% endif %}
+
         <!-- Title Section -->
         <section id="title" class="wrapper style2">
             <div class="container special">
@@ -40,7 +51,7 @@
             <div class="container special">
                 <article class="row aln-middle">
                     <div class="col-8 col-12-mobile bio-content">
-                        <h3 class="bio-title">Bio</h3> 
+                        <h3 class="bio-title">{{profile.occupation}}</h3> 
                         <p>
                             {{ profile.bio }}
                         </p>
@@ -270,31 +281,48 @@
                     </header>
                     <div class="row">
                         <!-- Professional Information Column -->
-                        <div class="col-6 col-12-mobile">
+                        <div class="col-5 col-12-mobile">
                             <div class="connect-card">
                                 <div class="profile-info connect-bio-subtitle">
-                                    {{ profile.name }}<br>
+                                    <h3>{{profile.name}}</h3>
                                     {% if profile.long_title %}{{ profile.long_title }}<br>{% endif %}
-                                    {% if profile.department %}{{ profile.department }}<br>{% endif %}
                                     {% if profile.sub_department %}{{ profile.sub_department }}<br>{% endif %}
+                                    {% if profile.department %}{{ profile.department }}<br>{% endif %}
                                     {% if profile.school %}{{ profile.school }}<br>{% endif %}
                                     {% if profile.long_institution %}{{ profile.long_institution }}{% endif %}
                                 </div>
                             </div>
                         </div>
-                        
-                                                <!-- Address Information Column -->
-                        <div class="col-6 col-12-mobile">
+
+                         <!-- Address Information Column -->
+                        <div class="col-4 col-12-mobile">
                             <div class="connect-card">
                                 <div class="address-info connect-bio-subtitle">
+                                    <h3>Address</h3>
+                                    <p>
                                     {% if profile.room_number %}Room {{ profile.room_number }}<br>{% endif %}
                                     {% if profile.building %}{{ profile.building }}<br>{% endif %}
                                     {% if profile.street %}{{ profile.street }}<br>{% endif %}
-                                    {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.state %}, {{ profile.state }}{% endif %}{% if profile.zip_code %} {{ profile.zip_code }}<br>{% endif %}
+                                    {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.state %}, {{ profile.state }}{% endif %}{% if profile.zip_code %} {{ profile.zip_code }}{% endif %}<br>
                                     {% if profile.country %}{{ profile.country }}{% endif %}
+                                    </p>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Contact Information Column -->
+                        <div class="col-3 col-12-mobile">
+                            <div class="connect-card">
+                                <div class="contact-info connect-bio-subtitle">
+                                    <h3>Contact</h3>
+                                    <p>
+                                        {% if profile.phone %}Phone: {{ profile.phone }}<br>{% endif %}
+                                        {% if profile.email %}Email: {{ profile.email }}<br>{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>  
+
                     </div>
                     
                     <!-- Social Media Icons Below Cards -->

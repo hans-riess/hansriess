@@ -30,6 +30,7 @@ class Profile(models.Model):
     github = models.URLField(blank=True, null=True)
     google_scholar = models.URLField(blank=True, null=True)
     orcid = models.URLField(blank=True, null=True)
+    under_construction = models.BooleanField(default=False, help_text="Show under construction notice on website")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
