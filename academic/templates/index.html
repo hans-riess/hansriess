@@ -22,12 +22,12 @@
                 <article id="papers" class="row aln-middle">
                     <!-- Header Section -->
                     <header class="col-12" style="text-align: center; margin-bottom: 2em;">
-                        <h2 class="bio-title">Hans Riess</h2>
-                        <h3 class="bio-subtitle"> {{ profile.title }}, {{ profile.institution }}</h3>
-                        <p style="font-size: 1em; color: #483949;">
-                            <span><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></span><br>
-                            <span>{{ profile.office }}</span>
-                        </p>
+                        <h2 class="bio-title">{{profile.name}}</h2>
+                        <h3 class="bio-subtitle">
+                            {{ profile.title }}<br>
+                            {{ profile.department }}<br>
+                            {{ profile.institution }}
+                        </h3>
                     </header>
                      
                     <div class="col-8 col-12-mobile bio-content">
@@ -47,7 +47,7 @@
                         {% if profile.cv %}
                             <ul class="actions">
                                 <li>
-                                    <a href="{{ profile.cv.url }}" class="button alt bio-button">Download CV</a>
+                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
                                 </li>
                             </ul>
                         {% endif %}
@@ -59,7 +59,7 @@
         <!-- Publications Section -->
         <section id="papers">
             <div class="wrapper style2">
-                <article class="container-narrow special">
+                <article class="container special">
                     <header>
                         <h2 class="bio-title">Publications</h2>
                     </header>
@@ -333,14 +333,6 @@
             </div>
         </section>
 
-        <section id="photo">
-            <div class="wrapper style2">
-                <article class="container-narrow special" style="text-align: center;">
-                    <img src="/static/images/talk.jpeg" alt="Talk" style="width: 90%;" />
-                </article>
-            </div>
-        </section>
-
         <div id="footer">
             <div class="container">
                 <section class="contact">
@@ -355,7 +347,6 @@
                     <div class="copyright">
                         <ul class="menu">
                             <li>Hans Riess &copy; Copyright 2025. All rights reserved.</li>
-                            <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
                         </ul>
                     </div>
                 </section>

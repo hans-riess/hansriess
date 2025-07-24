@@ -38,28 +38,31 @@
 			}, 100);
 		});
 
-	// Dropdowns.
-		$('#nav > ul').dropotron({
-			mode: 'fade',
-			speed: 350,
-			noOpenerFade: true,
-			alignment: 'center'
-		});
+	// Dropdowns - Disabled
+	// $('#nav > ul').dropotron({
+	//	mode: 'fade',
+	//	speed: 350,
+	//	noOpenerFade: true,
+	//	alignment: 'center'
+	// });
 
 	// Scrolly.
 		$('.scrolly').scrolly();
 
-	// Nav.
+	// Nav - Completely Disabled
 
-		// Button.
+		// Button - Disabled
+		/*
 			$(
 				'<div id="navButton">' +
 					'<a href="#navPanel" class="toggle"></a>' +
 				'</div>'
 			)
 				.appendTo($body);
+		*/
 
-		// Panel.
+		// Panel - Disabled
+		/*
 			$(
 				'<div id="navPanel">' +
 					'<nav>' +
@@ -77,6 +80,7 @@
 					target: $body,
 					visibleClass: 'navPanel-visible'
 				});
+		*/
 
 	// Carousels.
 		$('.carousel').each(function() {
