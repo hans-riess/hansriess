@@ -5,9 +5,9 @@
     <title>Hans Riess</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-    <link rel="stylesheet" href="static/css/main.css" />
-    <noscript><link rel="stylesheet" href="static/css/noscript.css" /></noscript>
-    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+    <noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
 </head>
 
 <body class="homepage is-preload">
@@ -66,7 +66,7 @@
 
                     <!-- Image Section -->
                     <div class="col-4 col-12-mobile bio-image">
-                        <img src="/static/images/headshot.jpeg" alt="Headshot" class="image fit" />
+                        <img src="{% static 'images/headshot.jpeg' %}" alt="Headshot" class="image fit" />
                     </div>
                 </article>
             </div>
@@ -358,13 +358,13 @@
 
     <!-- Scripts -->
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
-    <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/jquery.scrolly.min.js"></script>
-    <script src="static/js/jquery.scrollex.min.js"></script>
-    <script src="static/js/browser.min.js"></script>
-    <script src="static/js/breakpoints.min.js"></script>
-    <script src="static/js/util.js"></script>
-    <script src="static/js/main.js"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'js/jquery.scrollex.min.js' %}"></script>
+    <script src="{% static 'js/browser.min.js' %}"></script>
+    <script src="{% static 'js/breakpoints.min.js' %}"></script>
+    <script src="{% static 'js/util.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
     <script src="https://kit.fontawesome.com/ff0bf837c9.js" crossorigin="anonymous"></script>
 </body>
 </html>
