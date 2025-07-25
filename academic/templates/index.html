@@ -9,7 +9,6 @@
     <noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
 </head>
-
 <body class="homepage is-preload">
     <div id="page-wrapper">
         <!-- Header -->
@@ -53,7 +52,7 @@
                     <div class="col-8 col-12-mobile bio-content">
                         <h3 class="bio-title">{{profile.occupation}}</h3> 
                         <p>
-                            {{ profile.bio }}
+                          Dr. Hans Riess is an applied mathematician and engineer who currently serves as a Research Scientist in the School of Electrical and Computer Engineering at the Georgia Institute of Technology. Hans has established an independent research program which leverages category theory and algebraic topology to drive innovations in multi-agent systems, machine learning, and optimization. At Georgia Tech, Hans also works closely with the Control, Optimization, and Robotics Engineering (CORE) Lab, directed by Dr. Matthew Hale, which engages in research activities ranging from hands-on robotics to developing sophisticated mathematical techniques. In 2016, Hans earned a B.S. in Pure Mathematics from Duke University, where he completed the entire Ph.D.-level topology sequence. He later completed his Ph.D. in Electrical and Systems Engineering (ESE) at the University of Pennsylvania in 2022, working under the supervision of Professor Robert Ghrist to make advances in cellular sheaf theory. Following his doctorate, in 2022, he joined the Autonomous Systems Lab at Duke University, directed by Dr. Michael M. Zavlanos, and, in 2025, he joined the research faculty at the Georgia Institute of Technology.
                         </p>
                         {% if profile.cv %}
                             <ul class="actions" style="margin-top: 1.5em;">
