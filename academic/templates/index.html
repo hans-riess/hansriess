@@ -78,13 +78,6 @@
                         <p class="bio-mobile">
                             {% if profile.short_bio %}{{profile.short_bio}}{% else %}{{profile.bio}}{% endif %}
                         </p>
-                        {% if profile.cv %}
-                            <ul class="actions" style="margin-top: 1.5em;">
-                                <li>
-                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
-                                </li>
-                            </ul>
-                        {% endif %}
                     </div>
 
                     <!-- Image Section -->
@@ -321,7 +314,7 @@
                                 <div class="profile-info connect-bio-subtitle">
                                     <h3>Address</h3>
                                     <p>
-                                    {% if profile.room_number %}Room {{ profile.room_number }}<br>{% endif %}
+                                    {% if profile.room_number %}{{ profile.room_number }}<br>{% endif %}
                                     {% if profile.building %}{{ profile.building }}<br>{% endif %}
                                     {% if profile.street %}{{ profile.street }}<br>{% endif %}
                                     {% if profile.city %}{{ profile.city }}{% endif %}{% if profile.state %}, {{ profile.state }}{% endif %}{% if profile.zip_code %} {{ profile.zip_code }}{% endif %}<br>
@@ -350,15 +343,15 @@
         <div id="footer">
             <div class="contact" style="text-align: center; margin-top: 2em;">
                 <ul class="icons">
-                    <li><a href="tel:{{profile.phone}}" class="fa-solid fa-phone"><span class="label"></span></a></li>
-                    <li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>
-                    <li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>
-                    <li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>
-                    <li><a href="{{ profile.twitter }}" class="fa-brands fa-x-twitter"><span class="label"></span></a></li>
-                    <li><a href="{{ profile.youtube }}" class="fa-brands fa-youtube"><span class="label"></span></a></li>
-                    <li><a href="{{ profile.blue_sky }}" class="fa-brands fa-bluesky"><span class="label"></span></a></li>
-                    <li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>
-                    <li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>
+                    {% if profile.phone %}<li><a href="tel:{{profile.phone}}" class="fa-solid fa-phone"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.email %}<li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.github %}<li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.google_scholar %}<li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.twitter %}<li><a href="{{ profile.twitter }}" class="fa-brands fa-x-twitter"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.youtube %}<li><a href="{{ profile.youtube }}" class="fa-brands fa-youtube"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.blue_sky %}<li><a href="{{ profile.blue_sky }}" class="fa-brands fa-bluesky"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.linkedin %}<li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.orcid %}<li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>{% endif %}
                 </ul>
             </div>
             <div class="container">
