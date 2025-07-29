@@ -328,6 +328,11 @@ p {
     border: none;
 }
 
+/* Reduce space between title section and bio section */
+#title.wrapper {
+    padding: 6em 0 1em 0;
+}
+
 #title .bio-title {
     color: #D4C285;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
@@ -419,6 +424,15 @@ p {
     position: relative;
     margin-bottom: 1em;
     text-align: left;
+}
+
+/* Publication section headers */
+#papers h3 {
+    font-size: 1.4em;
+    margin: 2em 0 1em 0;
+    color: #B3A369;
+    border-bottom: 2px solid rgba(179, 163, 105, 0.3);
+    padding-bottom: 0.4em;
 }
 
 .publication .publication-text {
@@ -800,24 +814,24 @@ ul.icons li a:hover {
     
     /* Improved typography scaling */
     .bio-title {
-        font-size: 1.8em;
+        font-size: 2.2em;
         line-height: 1.2;
         margin-bottom: 0.5em;
     }
     
     #title .bio-title {
-        font-size: 2.2em;
+        font-size: 2.8em;
         text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     }
     
     .bio-subtitle {
-        font-size: 1em;
+        font-size: 1.3em;
         line-height: 1.4;
         margin-bottom: 1em;
     }
     
     #title .bio-subtitle {
-        font-size: 1.1em;
+        font-size: 1.5em;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     }
     
@@ -1056,19 +1070,19 @@ ul.icons li a:hover {
     }
     
     .bio-title {
-        font-size: 1.6em;
+        font-size: 2em;
     }
     
     #title .bio-title {
-        font-size: 1.9em;
+        font-size: 2.4em;
     }
     
     .bio-subtitle {
-        font-size: 0.95em;
+        font-size: 1.2em;
     }
     
     #title .bio-subtitle {
-        font-size: 1em;
+        font-size: 1.3em;
     }
     
     .bio-content p {
@@ -1119,19 +1133,19 @@ ul.icons li a:hover {
     }
     
     .bio-title {
-        font-size: 1.6em;
+        font-size: 2em;
     }
     
     #title .bio-title {
-        font-size: 1.8em;
+        font-size: 2.4em;
     }
     
     .bio-subtitle {
-        font-size: 0.95em;
+        font-size: 1.2em;
     }
     
     #title .bio-subtitle {
-        font-size: 1em;
+        font-size: 1.3em;
     }
     
     .bio-content p {
