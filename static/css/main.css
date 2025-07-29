@@ -333,6 +333,11 @@ p {
     padding: 6em 0 1em 0;
 }
 
+/* Reduce top padding of bio section to minimize gap */
+#bio.wrapper {
+    padding: 1em 0 4em 0;
+}
+
 #title .bio-title {
     color: #D4C285;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);

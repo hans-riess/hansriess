@@ -39,7 +39,10 @@
                         </div>
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
-                                <a href="#footer" class="button bio-button">Contact Info</a>
+                                <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
+                                {% if profile.cv %}
+                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
+                                {% endif %}
                             </li>
                         </ul>
                     </header>
