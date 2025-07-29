@@ -13,8 +13,19 @@
     <div id="page-wrapper">
         <!-- Header -->
         <div id="header">
+            <div class="container">
+                <div class="logo">
+                    <a href="/">
+                        <span>{{profile.occupation}}</span>
+                    </a>
+                </div>
+                <nav class="main-nav">
+                    <a href="#bio">Bio</a>
+                    <a href="#papers">Publications</a>
+                    <a href="#connect">Contact</a>
+                </nav>
+            </div>
         </div>
-
         <!-- Under Construction Notice -->
         {% if profile.under_construction %}
         <section id="construction-notice" style="background: rgba(179, 163, 105, 0.9); padding: 1em 0; text-align: center; margin-bottom: 2em;">
@@ -44,13 +55,14 @@
                 </article>
             </div>
         </section>
+    </div>
 
         <!-- Bio Section -->
         <section id="bio" class="wrapper style2">
             <div class="container special">
                 <article class="row aln-middle">
                     <div class="col-8 col-12-mobile bio-content">
-                        <h3 class="bio-title">{{profile.occupation}}</h3> 
+                        <h3 class="bio-title">Bio</h3> 
                         <p>
                           Dr. Hans Riess is an applied mathematician and engineer who currently serves as a Research Scientist in the School of Electrical and Computer Engineering at the Georgia Institute of Technology. Hans has established an independent research program which leverages category theory and algebraic topology to drive innovations in multi-agent systems, machine learning, and optimization. At Georgia Tech, Hans also works closely with the Control, Optimization, and Robotics Engineering (CORE) Lab, directed by Dr. Matthew Hale, which engages in research activities ranging from hands-on robotics to developing sophisticated mathematical techniques. In 2016, Hans earned a B.S. in Pure Mathematics from Duke University, where he completed the entire Ph.D.-level topology sequence. He later completed his Ph.D. in Electrical and Systems Engineering (ESE) at the University of Pennsylvania in 2022, working under the supervision of Professor Robert Ghrist to make advances in cellular sheaf theory. Following his doctorate, in 2022, he joined the Autonomous Systems Lab at Duke University, directed by Dr. Michael M. Zavlanos, and, in 2025, he joined the research faculty at the Georgia Institute of Technology.
                         </p>
@@ -273,7 +285,6 @@
 
         <!-- Connect Section -->
         <section id="connect">
-            <div class="wrapper style2">
                 <article class="container special">
                     <header>
                         <h2 class="bio-title">Connect</h2>
@@ -315,34 +326,30 @@
                                 <div class="contact-info connect-bio-subtitle">
                                     <h3>Contact</h3>
                                     <p>
-                                        {% if profile.phone %}Phone: {{ profile.phone }}<br>{% endif %}
-                                        {% if profile.email %}Email: {{ profile.email }}<br>{% endif %}
+                                        {% if profile.phone %}{{ profile.phone }}<br>{% endif %}
+                                        {% if profile.email %}{{ profile.email }}<br>{% endif %}
                                     </p>
                                 </div>
                             </div>
                         </div>  
-
-                    </div>
-                    
-                    <!-- Social Media Icons Below Cards -->
-                    <div class="contact" style="text-align: center; margin-top: 2em;">
-                        <ul class="icons">
-                            <li><a href="tel:{{profile.phone}}" class="fa-solid fa-phone"><span class="label"></span></a></li>
-                            <li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>
-                            <li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>
-                            <li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>
-                            <li><a href="{{ profile.twitter }}" class="fa-brands fa-x-twitter"><span class="label"></span></a></li>
-                            <li><a href="{{ profile.youtube }}" class="fa-brands fa-youtube"><span class="label"></span></a></li>
-                            <li><a href="{{ profile.blue_sky }}" class="fa-brands fa-bluesky"><span class="label"></span></a></li>
-                            <li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>
-                            <li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>
-                        </ul>
                     </div>
                 </article>
-            </div>
         </section>
 
         <div id="footer">
+            <div class="contact" style="text-align: center; margin-top: 2em;">
+                <ul class="icons">
+                    <li><a href="tel:{{profile.phone}}" class="fa-solid fa-phone"><span class="label"></span></a></li>
+                    <li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>
+                    <li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>
+                    <li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>
+                    <li><a href="{{ profile.twitter }}" class="fa-brands fa-x-twitter"><span class="label"></span></a></li>
+                    <li><a href="{{ profile.youtube }}" class="fa-brands fa-youtube"><span class="label"></span></a></li>
+                    <li><a href="{{ profile.blue_sky }}" class="fa-brands fa-bluesky"><span class="label"></span></a></li>
+                    <li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>
+                    <li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>
+                </ul>
+            </div>
             <div class="container">
                 <div class="copyright">
                     <ul class="menu">
