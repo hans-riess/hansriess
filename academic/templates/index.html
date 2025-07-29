@@ -35,7 +35,22 @@
                             {{ profile.title }} at {{ profile.institution}}
                         </h3>
                         <div class="container special">
-                            <img src="{% static 'images/sheaf.png' %}" alt="Sheaf" class="image fit" />
+                            <div class="carousel">
+                                <div class="carousel-container">
+                                    <div class="carousel-slide active">
+                                        <img src="{% static 'images/sheaf.png' %}" alt="Sheaf" class="image fit" />
+                                    </div>
+                                    <div class="carousel-slide">
+                                        <img src="{% static 'images/drones.png' %}" alt="Drones" class="image fit" />
+                                    </div>
+                                </div>
+                                <button class="carousel-btn prev" onclick="changeSlide(-1)">&#10094;</button>
+                                <button class="carousel-btn next" onclick="changeSlide(1)">&#10095;</button>
+                                <div class="carousel-dots">
+                                    <span class="dot active" onclick="goToSlide(1)"></span>
+                                    <span class="dot" onclick="goToSlide(2)"></span>
+                                </div>
+                            </div>
                         </div>
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
@@ -79,6 +94,8 @@
                 </article>
             </div>
         </section>
+
+
 
         <!-- Publications Section -->
         <section id="papers">
@@ -363,5 +380,47 @@
     <script src="{% static 'js/util.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
     <script src="https://kit.fontawesome.com/ff0bf837c9.js" crossorigin="anonymous"></script>
+    
+    <!-- Carousel JavaScript -->
+    <script>
+        let currentSlide = 0;
+        let slides, dots, totalSlides;
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            slides = document.querySelectorAll('.carousel-slide');
+            dots = document.querySelectorAll('.dot');
+            totalSlides = slides.length;
+
+            // Auto-advance carousel every 5 seconds
+            setInterval(() => {
+                changeSlide(1);
+            }, 5000);
+
+            // Initialize first slide
+            showSlide(0);
+        });
+
+        function showSlide(n) {
+            if (!slides || !dots) return;
+            
+            // Hide all slides
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            // Show current slide
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        function goToSlide(n) {
+            showSlide(n - 1);
+        }
+    </script>
 </body>
 </html>
