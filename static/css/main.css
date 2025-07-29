@@ -69,6 +69,7 @@ body {
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
+    background-repeat: no-repeat;
     color: #333;
     font-size: 15pt;
     line-height: 1.85em;
@@ -79,8 +80,32 @@ body {
 /* Mobile background handling */
 @media screen and (max-width: 736px) {
     body {
+        background-image: url("../images/header-mobile.jpeg");
         background-attachment: scroll;
         background-position: center top;
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+}
+
+/* High DPI mobile devices */
+@media screen and (max-width: 736px) and (-webkit-min-device-pixel-ratio: 2),
+       screen and (max-width: 736px) and (min-resolution: 192dpi) {
+    body {
+        background-image: url("../images/header-mobile.jpeg");
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+    }
+}
+
+/* Very small mobile devices */
+@media screen and (max-width: 480px) {
+    body {
+        background-image: url("../images/header-mobile.jpeg");
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
     }
 }
 
@@ -448,18 +473,32 @@ p {
 
 .publication-icons {
     margin-left: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    align-items: center;
 }
 
 .publication-icons a {
     color: #B3A369;
-    margin-right: 0.5em;
     font-size: 1.1em;
     text-decoration: none;
     border-bottom: none;
+    padding: 0.3em;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.3em;
+    background: rgba(179, 163, 105, 0.1);
+    transition: all 0.2s ease;
 }
 
 .publication-icons a:hover {
     color: #D4C285;
+    background: rgba(179, 163, 105, 0.2);
+    transform: scale(1.1);
 }
 
 .publication-icons i {
