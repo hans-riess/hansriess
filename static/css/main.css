@@ -1060,6 +1060,7 @@ ul.icons li a:hover {
     #construction-notice p {
         font-size: 1em;
         padding: 0 1em;
+        line-height: 1.4;
     }
 }
 
@@ -1245,6 +1246,25 @@ ul.icons li a:hover {
     }
 }
 
+/* Construction Notice Styles */
+#construction-notice {
+    background: rgba(179, 163, 105, 0.9);
+    padding: 1em 0;
+    text-align: center;
+    margin-bottom: 2em;
+    position: relative;
+    z-index: 100;
+}
+
+#construction-notice p {
+    color: #fff;
+    font-size: 1.2em;
+    margin: 0;
+    font-weight: 600;
+    padding: 0 1em;
+    line-height: 1.3;
+}
+
 /* Carousel Styles */
 .carousel {
     position: relative;
@@ -1345,6 +1365,33 @@ ul.icons li a:hover {
 
 .dot:hover {
     background-color: rgba(179, 163, 105, 0.8);
+}
+
+/* Mobile responsive construction notice */
+@media screen and (max-width: 736px) {
+    #construction-notice {
+        padding: 0.8em 0;
+        margin-bottom: 1em;
+    }
+    
+    #construction-notice p {
+        font-size: 1em;
+        padding: 0 1em;
+        line-height: 1.4;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #construction-notice {
+        padding: 0.6em 0;
+        margin-bottom: 0.8em;
+    }
+    
+    #construction-notice p {
+        font-size: 0.95em;
+        padding: 0 0.8em;
+        line-height: 1.5;
+    }
 }
 
 /* Mobile responsive carousel */
