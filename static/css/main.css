@@ -69,11 +69,19 @@ body {
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
-    color: #5b5b5b;
+    color: #333;
     font-size: 15pt;
     line-height: 1.85em;
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 300;
+}
+
+/* Mobile background handling */
+@media screen and (max-width: 736px) {
+    body {
+        background-attachment: scroll;
+        background-position: center top;
+    }
 }
 
 body.is-preload *, body.is-preload *:before, body.is-preload *:after {
@@ -140,6 +148,8 @@ p, ul, ol, dl, table {
 
 p {
     text-align: justify;
+    color: #333;
+    font-weight: 300;
 }
 
 /* Container */
@@ -192,7 +202,7 @@ p {
 
 /* Header */
 #header {
-    background-color: #F9F6E5;
+    background-color: transparent;
     color: #333;
     cursor: default;
     height: 80px;
@@ -202,14 +212,12 @@ p {
     top: 0;
     width: 100%;
     z-index: 10000;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 #header .container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     height: 100%;
     max-width: 1200px;
     margin: 0 auto;
@@ -230,35 +238,14 @@ p {
     font-size: 1.8em;
     font-weight: 600;
     letter-spacing: 0.5px;
-    color: #483949;
+    color: #fff;
     font-family: 'Oswald', 'Source Sans Pro', sans-serif;
     transition: color 0.2s ease;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
 }
 
 #header .logo a:hover span {
-    color: #B3A369;
-}
-
-#header .main-nav {
-    display: flex;
-    gap: 3em;
-    align-items: center;
-}
-
-#header .main-nav a {
-    color: #483949;
-    font-weight: 500;
-    text-decoration: none;
-    font-size: 1.1em;
-    padding: 0.5em 0;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-#header .main-nav a:hover {
-    color: #B3A369;
-    border-bottom-color: #B3A369;
+    color: #D4C285;
 }
 
 /* Footer */
@@ -300,9 +287,15 @@ p {
 .bio-content p {
     font-size: 1.1em;
     line-height: 1.75em;
-    color: #5b5b5b;
+    color: #333;
     text-align: justify;
     margin-bottom: 1.5em;
+    font-weight: 300;
+}
+
+/* Bio text display control */
+.bio-mobile {
+    display: none;
 }
 
 .bio-content .actions {
@@ -359,21 +352,21 @@ p {
 
 /* Bio Card Styling */
 #bio .container {
-    background: rgba(249, 246, 229, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 1em;
     padding: 3em 2em;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(179, 163, 105, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(179, 163, 105, 0.3);
     backdrop-filter: blur(10px);
 }
 
 /* Publications Card Styling */
 #papers .container {
-    background: rgba(249, 246, 229, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 1em;
     padding: 3em 2em;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(179, 163, 105, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(179, 163, 105, 0.3);
     backdrop-filter: blur(10px);
 }
 
@@ -404,11 +397,21 @@ p {
 .connect-bio-subtitle {
     font-size: 1.1em;
     font-weight: 300;
-    color: #E5E5E5;
+    color: #fff !important;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     font-family: 'Source Sans Pro', sans-serif;
     text-align: left;
     line-height: 1.5em;
+}
+
+.connect-bio-subtitle p {
+    color: #fff !important;
+    font-weight: 300;
+    line-height: 1.5em;
+}
+
+.connect-bio-subtitle h3 {
+    color: #D4C285 !important;
 }
 
 /* Publication styles */
@@ -420,6 +423,8 @@ p {
 
 .publication .publication-text {
     margin-bottom: 0;
+    color: #333;
+    font-weight: 300;
 }
 
 .publication-icons {
@@ -472,11 +477,23 @@ ul.icons li {
 ul.icons li a {
     color: #fff;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    font-size: 1.5em;
+    padding: 0.4em;
+    min-width: 45px;
+    min-height: 45px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.3em;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
 }
 
 ul.icons li a:hover {
     color: #D4C285;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    background: rgba(212, 194, 133, 0.2);
+    transform: scale(1.1);
 }
 
 /* Image */
@@ -737,79 +754,474 @@ ul.icons li a:hover {
 
 /* Mobile responsive for bio sections */
 @media screen and (max-width: 736px) {
-    #bio, #title {
-        padding: 2em 0;
+    /* Hide contact area on mobile */
+    #connect {
+        display: none;
     }
     
+    /* Improved mobile typography and spacing */
+    body, input, textarea, select {
+        font-size: 16px; /* Prevent zoom on iOS */
+        line-height: 1.6;
+    }
+    
+    /* Better container spacing for mobile */
+    .container {
+        width: calc(100% - 0.5em);
+        padding: 0 0.25em;
+    }
+    
+    /* Improved header for mobile */
+    #header {
+        height: 60px;
+        min-height: 60px;
+        background-attachment: scroll;
+        padding: 0;
+    }
+    
+    #header .container {
+        padding: 0 1em;
+        justify-content: center;
+    }
+    
+    #header .logo span {
+        font-size: 1.5em;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Better section spacing */
+    #bio, #title {
+        padding: 1.5em 0;
+    }
+    
+    .wrapper {
+        padding: 2em 0 1em 0;
+    }
+    
+    /* Improved typography scaling */
     .bio-title {
-        font-size: 2em;
+        font-size: 1.8em;
+        line-height: 1.2;
+        margin-bottom: 0.5em;
     }
     
     #title .bio-title {
-        font-size: 2.42em;
+        font-size: 2.2em;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     }
     
     .bio-subtitle {
         font-size: 1em;
+        line-height: 1.4;
+        margin-bottom: 1em;
     }
     
     #title .bio-subtitle {
-        font-size: 1.21em;
+        font-size: 1.1em;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     }
     
     #connect footer .bio-title {
-        font-size: 1.21em;
+        font-size: 1.1em;
     }
     
+    /* Better content readability */
     .bio-content p {
-        font-size: 1em;
+        font-size: 1.1em;
         text-align: left;
+        line-height: 1.7;
+        margin-bottom: 1.2em;
+        color: #333;
+        font-weight: 400;
     }
     
+    /* Bio text display control for mobile */
+    .bio-desktop {
+        display: none;
+    }
+    
+    .bio-mobile {
+        display: block;
+    }
+    
+    /* Hide contact button on mobile */
     .bio-button {
-        font-size: 1em;
-        padding: 0.65em 2em;
-        width: 100%;
+        display: none;
     }
     
-    /* Title Card Mobile Styling */
+    /* Better card styling for mobile */
     #title .container {
-        padding: 2em 1.5em;
+        padding: 1.5em 1em;
         background: transparent;
         border: none;
         box-shadow: none;
+        margin: 0;
     }
     
-    /* Bio Card Mobile Styling */
     #bio .container {
-        padding: 2em 1.5em;
+        padding: 1.5em 0.25em;
         border-radius: 0.75em;
+        margin: 0 0.1em;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(179, 163, 105, 0.3);
     }
     
-    /* Publications Card Mobile Styling */
     #papers .container {
-        padding: 2em 1.5em;
+        padding: 1.5em 1em;
         border-radius: 0.75em;
+        margin: 0 0.5em;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(179, 163, 105, 0.3);
     }
     
-    /* Connect Card Mobile Styling */
     #connect .container {
-        padding: 2em 1.5em;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-    
-    #connect .connect-card {
         padding: 1.5em 1em;
         background: transparent;
         border: none;
         box-shadow: none;
     }
     
+    #connect .connect-card {
+        padding: 1em 0.5em;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        margin-bottom: 1em;
+    }
+    
+    /* Improved publication layout for mobile */
+    .publication {
+        margin-bottom: 1.5em;
+        padding: 0;
+    }
+    
+    .publication .publication-text {
+        font-size: 1.05em;
+        line-height: 1.6;
+        text-align: left;
+        color: #333;
+        font-weight: 400;
+    }
+    
+    .publication-icons {
+        margin-left: 0;
+        margin-top: 0.5em;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5em;
+    }
+    
+    .publication-icons a {
+        font-size: 1.2em;
+        padding: 0.3em;
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.3em;
+        background: rgba(179, 163, 105, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .publication-icons a:hover {
+        background: rgba(179, 163, 105, 0.2);
+        transform: scale(1.1);
+    }
+    
+    /* Better section headers */
+    #papers h3 {
+        font-size: 1.3em;
+        margin: 1.5em 0 1em 0;
+        color: #B3A369;
+        border-bottom: 2px solid rgba(179, 163, 105, 0.3);
+        padding-bottom: 0.3em;
+    }
+    
+    /* Improved connect section layout */
+    .connect-bio-subtitle {
+        font-size: 1em;
+        line-height: 1.5;
+        text-align: left;
+        color: #fff;
+        font-weight: 300;
+    }
+    
+    .connect-bio-subtitle h3 {
+        font-size: 1.2em;
+        margin-bottom: 0.5em;
+        color: #D4C285;
+    }
+    
+    .connect-bio-subtitle p {
+        margin-bottom: 0.5em;
+        color: #fff;
+        font-weight: 300;
+    }
+    
+    /* Better footer for mobile */
+    #footer {
+        padding: 2em 0 1em 0;
+    }
+    
+    #footer .icons {
+        margin-bottom: 1em;
+    }
+    
+    #footer .icons li a {
+        font-size: 1.8em;
+        padding: 0.5em;
+        min-width: 40px;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.3em;
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    #footer .icons li a:hover {
+        background: rgba(212, 194, 133, 0.2);
+        transform: scale(1.1);
+    }
+    
+    /* Hide headshot on mobile */
+    .bio-image {
+        display: none;
+    }
+    
+    /* Better row system for mobile */
+    .row {
+        margin-top: -1em;
+        margin-left: -1em;
+    }
+    
+    .row > * {
+        padding: 1em 0 0 1em;
+    }
+    
+    /* Mobile-specific column classes */
     .col-12-mobile { width: 100%; }
-    .col-8-mobile { width: 66.66667%; }
-    .col-4-mobile { width: 33.33333%; }
-    .col-5-mobile { width: 41.66667%; }
-    .col-3-mobile { width: 25%; }
+    .col-8-mobile { width: 100%; } /* Stack on mobile */
+    .col-4-mobile { width: 100%; } /* Stack on mobile */
+    .col-5-mobile { width: 100%; } /* Stack on mobile */
+    .col-3-mobile { width: 100%; } /* Stack on mobile */
+    
+    /* Force bio content to full width on mobile */
+    .bio-content {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Improved actions for mobile */
+    ul.actions {
+        margin: 1em 0;
+    }
+    
+    ul.actions li {
+        display: block;
+        padding: 0 0 0.5em 0;
+        width: 100%;
+    }
+    
+    /* Better spacing for mobile */
+    section, article {
+        margin: 0 0 1em 0;
+    }
+    
+    /* Improved construction notice for mobile */
+    #construction-notice {
+        padding: 0.8em 0;
+        margin-bottom: 1em;
+    }
+    
+    #construction-notice p {
+        font-size: 1em;
+        padding: 0 1em;
+    }
+}
+
+/* Additional mobile improvements for very small screens */
+@media screen and (max-width: 480px) {
+    .container {
+        width: calc(100% - 0.5em);
+        padding: 0 0.25em;
+    }
+    
+    #header .logo span {
+        font-size: 1.3em;
+    }
+    
+    .bio-title {
+        font-size: 1.6em;
+    }
+    
+    #title .bio-title {
+        font-size: 1.9em;
+    }
+    
+    .bio-subtitle {
+        font-size: 0.95em;
+    }
+    
+    #title .bio-subtitle {
+        font-size: 1em;
+    }
+    
+    .bio-content p {
+        font-size: 1.05em;
+        color: #333;
+        font-weight: 400;
+    }
+    
+    .publication .publication-text {
+        font-size: 1em;
+        color: #333;
+        font-weight: 400;
+    }
+    
+    .connect-bio-subtitle {
+        font-size: 0.95em;
+        color: #fff;
+        font-weight: 300;
+    }
+    
+    #footer .icons li a {
+        font-size: 1.6em;
+        padding: 0.4em;
+        min-width: 45px;
+        min-height: 45px;
+    }
+    
+
+}
+
+/* Landscape mobile improvements */
+@media screen and (max-width: 736px) and (orientation: landscape) {
+    #header {
+        height: 50px;
+        min-height: 50px;
+    }
+    
+    #header .logo span {
+        font-size: 1.3em;
+    }
+    
+    .wrapper {
+        padding: 1.5em 0 0.5em 0;
+    }
+    
+    #bio, #title {
+        padding: 1em 0;
+    }
+    
+    .bio-title {
+        font-size: 1.6em;
+    }
+    
+    #title .bio-title {
+        font-size: 1.8em;
+    }
+    
+    .bio-subtitle {
+        font-size: 0.95em;
+    }
+    
+    #title .bio-subtitle {
+        font-size: 1em;
+    }
+    
+    .bio-content p {
+        font-size: 1em;
+        color: #333;
+        font-weight: 400;
+    }
+    
+    .bio-button {
+        padding: 0.6em 1.5em;
+        font-size: 0.95em;
+    }
+    
+
+}
+
+/* Touch-friendly improvements for all mobile devices */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    a, button, .bio-button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Better hover states for touch devices */
+    .bio-button:hover {
+        transform: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .bio-image img:hover {
+        transform: none;
+    }
+    
+    .publication-icons a:hover {
+        transform: none;
+        background: rgba(179, 163, 105, 0.2);
+    }
+    
+    #footer .icons li a:hover {
+        transform: none;
+        background: rgba(212, 194, 133, 0.2);
+    }
+    
+    /* Improved focus states for accessibility */
+    a:focus, button:focus, .bio-button:focus {
+        outline: 2px solid #D4C285;
+        outline-offset: 2px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .bio-title, h1, h2, h3, h4, h5, h6 {
+        color: #000;
+    }
+    
+    .bio-button {
+        background-color: #000;
+        color: #fff;
+        border: 2px solid #000;
+    }
+    
+    .publication-icons a {
+        background: rgba(0, 0, 0, 0.1);
+        border: 1px solid #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .bio-button:hover {
+        transform: none;
+    }
+    
+    .bio-image img:hover {
+        transform: none;
+    }
+    
+    .publication-icons a:hover {
+        transform: none;
+    }
+    
+    #footer .icons li a:hover {
+        transform: none;
+    }
 }

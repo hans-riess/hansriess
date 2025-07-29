@@ -4,7 +4,7 @@
 <head>
     <title>Hans Riess</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover" />
     <link rel="stylesheet" href="{% static 'css/main.css' %}" />
     <noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
@@ -13,25 +13,13 @@
     <div id="page-wrapper">
         <!-- Header -->
         <div id="header">
-            <div class="container">
-                <div class="logo">
-                    <a href="/">
-                        <span>{{profile.occupation}}</span>
-                    </a>
-                </div>
-                <nav class="main-nav">
-                    <a href="#bio">Bio</a>
-                    <a href="#papers">Publications</a>
-                    <a href="#connect">Contact</a>
-                </nav>
-            </div>
         </div>
         <!-- Under Construction Notice -->
         {% if profile.under_construction %}
         <section id="construction-notice" style="background: rgba(179, 163, 105, 0.9); padding: 1em 0; text-align: center; margin-bottom: 2em;">
             <div class="container">
                 <p style="color: #fff; font-size: 1.2em; margin: 0; font-weight: 600;">
-                    This website is currently under construction. Content may be incomplete or change frequently.
+                    This website is currently under construction.
                 </p>
             </div>
         </section>
@@ -48,7 +36,7 @@
                         </h3>
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
-                                <a href="#connect" class="button bio-button">Contact Info</a>
+                                <a href="#footer" class="button bio-button">Contact Info</a>
                             </li>
                         </ul>
                     </header>
@@ -63,8 +51,11 @@
                 <article class="row aln-middle">
                     <div class="col-8 col-12-mobile bio-content">
                         <h3 class="bio-title">Bio</h3> 
-                        <p>
-                          Dr. Hans Riess is an applied mathematician and engineer who currently serves as a Research Scientist in the School of Electrical and Computer Engineering at the Georgia Institute of Technology. Hans has established an independent research program which leverages category theory and algebraic topology to drive innovations in multi-agent systems, machine learning, and optimization. At Georgia Tech, Hans also works closely with the Control, Optimization, and Robotics Engineering (CORE) Lab, directed by Dr. Matthew Hale, which engages in research activities ranging from hands-on robotics to developing sophisticated mathematical techniques. In 2016, Hans earned a B.S. in Pure Mathematics from Duke University, where he completed the entire Ph.D.-level topology sequence. He later completed his Ph.D. in Electrical and Systems Engineering (ESE) at the University of Pennsylvania in 2022, working under the supervision of Professor Robert Ghrist to make advances in cellular sheaf theory. Following his doctorate, in 2022, he joined the Autonomous Systems Lab at Duke University, directed by Dr. Michael M. Zavlanos, and, in 2025, he joined the research faculty at the Georgia Institute of Technology.
+                        <p class="bio-desktop">
+                            {{profile.bio}}
+                        </p>
+                        <p class="bio-mobile">
+                            {% if profile.short_bio %}{{profile.short_bio}}{% else %}{{profile.bio}}{% endif %}
                         </p>
                         {% if profile.cv %}
                             <ul class="actions" style="margin-top: 1.5em;">
@@ -307,7 +298,7 @@
                          <!-- Address Information Column -->
                         <div class="col-4 col-12-mobile">
                             <div class="connect-card">
-                                <div class="address-info connect-bio-subtitle">
+                                <div class="profile-info connect-bio-subtitle">
                                     <h3>Address</h3>
                                     <p>
                                     {% if profile.room_number %}Room {{ profile.room_number }}<br>{% endif %}
@@ -323,7 +314,7 @@
                         <!-- Contact Information Column -->
                         <div class="col-3 col-12-mobile">
                             <div class="connect-card">
-                                <div class="contact-info connect-bio-subtitle">
+                                <div class="profile-info connect-bio-subtitle">
                                     <h3>Contact</h3>
                                     <p>
                                         {% if profile.phone %}{{ profile.phone }}<br>{% endif %}
