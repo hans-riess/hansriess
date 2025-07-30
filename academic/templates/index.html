@@ -354,6 +354,17 @@
                     {% if profile.orcid %}<li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>{% endif %}
                 </ul>
             </div>
+            
+            <!-- Stylized Quote Section -->
+            {% if profile.quote %}
+            <div class="quote-section" style="text-align: center; margin: 3em 0 2em 0; padding: 0 2em;">
+                <blockquote style="font-style: italic; font-size: 1.1em; line-height: 1.6; color: #666; max-width: 800px; margin: 0 auto; position: relative;">
+                    <span style="font-size: 2em; color: #ccc; position: absolute; left: -20px; top: -10px;">"</span>
+                    {{ profile.quote }}
+                    <span style="font-size: 2em; color: #ccc; position: absolute; right: -20px; bottom: -10px;">"</span>
+                </blockquote>
+            </div>
+            {% endif %}
             <div class="container">
                 <div class="copyright">
                     <ul class="menu">

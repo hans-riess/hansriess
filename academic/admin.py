@@ -27,7 +27,7 @@ class ProfileAdmin(admin.ModelAdmin):
     
     fieldsets = [
         ('Basic Information', {
-            'fields': ['name', 'occupation', 'title','long_title', 'bio', 'short_bio', 'under_construction']
+            'fields': ['name', 'occupation', 'title','long_title', 'bio', 'short_bio', 'quote', 'under_construction']
         }),
         ('Contact Information', {
             'fields': ['email', 'room_number', 'building', 'street', 'city', 'state', 'zip_code', 'country', 'website','phone'],
