@@ -673,6 +673,11 @@ ul.icons li a:hover {
     object-fit: cover;
 }
 
+/* Hide mobile headshot on desktop */
+.mobile-headshot {
+    display: none;
+}
+
 /* Responsive */
 @media screen and (max-width: 1680px) {
     body, input, textarea, select {
@@ -1234,6 +1239,25 @@ ul.icons li a:hover {
         margin: 0 0 1em 0;
     }
     
+    /* Mobile headshot */
+    .mobile-headshot {
+        display: block;
+        margin: 0 auto 1.5em auto;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .mobile-headshot img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    
     /* Improved construction notice for mobile */
     #construction-notice {
         padding: 0.8em 0;
@@ -1278,6 +1302,13 @@ ul.icons li a:hover {
         font-size: 1.05em;
         color: #333;
         font-weight: 400;
+    }
+    
+    /* Adjust mobile headshot for very small screens */
+    .mobile-headshot {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 1em;
     }
     
     /* Quote styling for very small screens */

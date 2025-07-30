@@ -30,29 +30,14 @@
             <div class="container special">
                 <article class="row aln-middle">
                     <header class="col-12" style="text-align: center;">
+                        <!-- Mobile Headshot -->
+                        <div class="mobile-headshot">
+                            <img src="{% static 'images/headshot.jpeg' %}" alt="Hans Riess" />
+                        </div>
                         <h2 class="bio-title">{{profile.name}}</h2>
                         <h3 class="bio-subtitle">
                             {{ profile.title }} at {{ profile.institution}}
                         </h3>
-                        <!-- Carousel -->
-                        <div class="container special">
-                            <div class="carousel">
-                                <div class="carousel-container">
-                                    <div class="carousel-slide active">
-                                        <img src="{% static 'images/sheaf.png' %}" alt="Sheaf" class="image fit" />
-                                    </div>
-                                    <div class="carousel-slide">
-                                        <img src="{% static 'images/MCM.png' %}" alt="Drones" class="image fit" />
-                                    </div>
-                                </div>
-                                <button class="carousel-btn prev" onclick="changeSlide(-1)">&#10094;</button>
-                                <button class="carousel-btn next" onclick="changeSlide(1)">&#10095;</button>
-                                <div class="carousel-dots">
-                                    <span class="dot active" onclick="goToSlide(1)"></span>
-                                    <span class="dot" onclick="goToSlide(2)"></span>
-                                </div>
-                            </div>
-                        </div>
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
                                 <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
@@ -89,21 +74,25 @@
             </div>
         </section>
 
-        <!-- Quote Section - Single Column -->
-        {% if profile.quote %}
-        <article class="container special">
-                <div class="bio-quote">
-                    <blockquote class="quote-block">
-                        <span class="quote-mark quote-mark-left">"</span>
-                        {{ profile.quote }}
-                        {% if profile.quote_author %}
-                        <div class="quote-author">— {{ profile.quote_author }}</div>
-                        {% endif %}
-                        <span class="quote-mark quote-mark-right">"</span>
-                    </blockquote>
+        <!-- Carousel -->
+        <div class="container special">
+            <div class="carousel">
+                <div class="carousel-container">
+                    <div class="carousel-slide active">
+                        <img src="{% static 'images/sheaf.png' %}" alt="Sheaf" class="image fit" />
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="{% static 'images/MCM.png' %}" alt="Drones" class="image fit" />
+                    </div>
                 </div>
-        </article>
-        {% endif %}
+                <button class="carousel-btn prev" onclick="changeSlide(-1)">&#10094;</button>
+                <button class="carousel-btn next" onclick="changeSlide(1)">&#10095;</button>
+                <div class="carousel-dots">
+                    <span class="dot active" onclick="goToSlide(1)"></span>
+                    <span class="dot" onclick="goToSlide(2)"></span>
+                </div>
+            </div>
+        </div>
 
         <!-- Publications Section -->
         <section id="papers">
@@ -305,9 +294,28 @@
             </div>
         </section>
 
+        <!-- Quote Section - Single Column -->
+        {% if profile.quote %}
+        <article class="container special">
+                <div class="bio-quote">
+                    <blockquote class="quote-block">
+                        <span class="quote-mark quote-mark-left">"</span>
+                        {{ profile.quote }}
+                        {% if profile.quote_author %}
+                        <div class="quote-author">— {{ profile.quote_author }}</div>
+                        {% endif %}
+                        <span class="quote-mark quote-mark-right">"</span>
+                    </blockquote>
+                </div>
+        </article>
+        {% endif %}
+
         <!-- Connect Section -->
         <section id="connect">
                 <article class="container special">
+                    <header>
+                        <h2 class="bio-title">Connect</h2>
+                    </header>
                     <div class="row">
                         <!-- Professional Information Column -->
                         <div class="col-5 col-12-mobile">
@@ -355,9 +363,10 @@
                 </article>
         </section>
 
+
         <!-- Footer -->
         <div id="footer">
-            <div class="contact" style="text-align: center; margin-top: 2em;">
+            <div class="contact" style="text-align: center">
                 <ul class="icons">
                     {% if profile.phone %}<li><a href="tel:{{profile.phone}}" class="fa-solid fa-phone"><span class="label"></span></a></li>{% endif %}
                     {% if profile.email %}<li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>{% endif %}
@@ -370,7 +379,6 @@
                     {% if profile.orcid %}<li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>{% endif %}
                 </ul>
             </div>
-            
 
             <div class="container">
                 <div class="copyright">
