@@ -78,6 +78,17 @@
                         <p class="bio-mobile">
                             {% if profile.short_bio %}{{profile.short_bio}}{% else %}{{profile.bio}}{% endif %}
                         </p>
+                        
+                        <!-- Quote Section -->
+                        {% if profile.quote %}
+                        <div class="bio-quote">
+                            <blockquote class="quote-block">
+                                <span class="quote-mark quote-mark-left">"</span>
+                                {{ profile.quote }}
+                                <span class="quote-mark quote-mark-right">"</span>
+                            </blockquote>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Image Section -->
@@ -355,16 +366,7 @@
                 </ul>
             </div>
             
-            <!-- Stylized Quote Section -->
-            {% if profile.quote %}
-            <div class="quote-section" style="text-align: center; margin: 3em 0 2em 0; padding: 0 2em;">
-                <blockquote style="font-style: italic; font-size: 1.1em; line-height: 1.6; color: #666; max-width: 800px; margin: 0 auto; position: relative;">
-                    <span style="font-size: 2em; color: #ccc; position: absolute; left: -20px; top: -10px;">"</span>
-                    {{ profile.quote }}
-                    <span style="font-size: 2em; color: #ccc; position: absolute; right: -20px; bottom: -10px;">"</span>
-                </blockquote>
-            </div>
-            {% endif %}
+
             <div class="container">
                 <div class="copyright">
                     <ul class="menu">
