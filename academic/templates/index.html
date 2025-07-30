@@ -34,6 +34,7 @@
                         <h3 class="bio-subtitle">
                             {{ profile.title }} at {{ profile.institution}}
                         </h3>
+                        <!-- Carousel -->
                         <div class="container special">
                             <div class="carousel">
                                 <div class="carousel-container">
@@ -41,7 +42,7 @@
                                         <img src="{% static 'images/sheaf.png' %}" alt="Sheaf" class="image fit" />
                                     </div>
                                     <div class="carousel-slide">
-                                        <img src="{% static 'images/drones.png' %}" alt="Drones" class="image fit" />
+                                        <img src="{% static 'images/MCM.png' %}" alt="Drones" class="image fit" />
                                     </div>
                                 </div>
                                 <button class="carousel-btn prev" onclick="changeSlide(-1)">&#10094;</button>
@@ -103,7 +104,7 @@
                     {% for reference in journal_articles %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %}, {{ reference.volume }}{% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}.
+                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %} {{ reference.volume }}{% endif %}{% if reference.issue %}({{ reference.issue }}){% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}.
                             <span class="publication-icons">
                                 {% if reference.pdf_file %}
                                     <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
@@ -130,7 +131,7 @@
                     {% for reference in conference_proceedings %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}, in <em>{{ reference.journal }}</em>.
+                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}, in <em>{{ reference.journal }}</em>.
                             <span class="publication-icons">
                                 {% if reference.pdf_file %}
                                     <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
@@ -157,7 +158,7 @@
                     {% for reference in preprints %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}.
+                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}.
                             <span class="publication-icons">
                                 {% if reference.pdf_file %}
                                     <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
@@ -184,7 +185,7 @@
                     {% for reference in books %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). <em>{{ reference.title }}</em>.
+                            {{ reference.authors }} ({{ reference.year }}). <em>{{ reference.title }}</em>.
                             <span class="publication-icons">
                                 {% if reference.pdf_file %}
                                     <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
@@ -211,7 +212,7 @@
                     {% for reference in book_chapters %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}. In <em>{{ reference.journal }}</em>{% if reference.pages %} (pp. {{ reference.pages }}){% endif %}.
+                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. In <em>{{ reference.journal }}</em>{% if reference.pages %} (pp. {{ reference.pages }}){% endif %}.
                             <span class="publication-icons">
                                 {% if reference.pdf_file %}
                                     <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
@@ -238,7 +239,7 @@
                     {% for reference in theses %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}.
+                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}.
                             <span class="publication-icons">
                                 {% if reference.pdf_file %}
                                     <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
@@ -265,7 +266,7 @@
                     {% for reference in other %}
                     <div class="publication">
                         <p class="publication-text">
-                            {{ reference.authors }}. ({{ reference.year }}). {{ reference.title }}.
+                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}.
                             <span class="publication-icons">
                                 {% if reference.pdf_file %}
                                     <a href="{{ reference.pdf_file.url }}" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>

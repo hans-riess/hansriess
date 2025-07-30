@@ -9,6 +9,8 @@ Developed/planning many features to make it easier for researchers to interact w
   * basic info and bio
   * publications list
   * contact info icons
+* Chalkboard redesign
+  * Carousel with math figures
 
 ### In progress...
 * Organized publications page from Reference objects
@@ -26,6 +28,7 @@ Developed/planning many features to make it easier for researchers to interact w
 * Utilize [Google scholar](https://serpapi.com/google-scholar-api) API to automatically update publicaitons list
 * Interactive hypergraph / map of coauthor locations with headshots displaying on hover
 * Keyword interactive graph or world cloud like graphic
+* Research page automatically generated from publications by AI
 * Meeting booking system
   * not using a 3rd party API
   * directly use google calendar and Zoom APIs
