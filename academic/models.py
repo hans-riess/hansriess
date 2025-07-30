@@ -32,6 +32,7 @@ class Profile(models.Model):
     google_scholar = models.URLField(blank=True, null=True)
     orcid = models.URLField(blank=True, null=True)
     quote = models.TextField(max_length=2000, blank=True, null=True, help_text="A stylized quote to display in the footer")
+    quote_author = models.CharField(max_length=200, blank=True, null=True, help_text="Author of the quote")
     under_construction = models.BooleanField(default=False, help_text="Show under construction notice on website")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

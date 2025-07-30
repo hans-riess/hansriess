@@ -78,17 +78,6 @@
                         <p class="bio-mobile">
                             {% if profile.short_bio %}{{profile.short_bio}}{% else %}{{profile.bio}}{% endif %}
                         </p>
-                        
-                        <!-- Quote Section -->
-                        {% if profile.quote %}
-                        <div class="bio-quote">
-                            <blockquote class="quote-block">
-                                <span class="quote-mark quote-mark-left">"</span>
-                                {{ profile.quote }}
-                                <span class="quote-mark quote-mark-right">"</span>
-                            </blockquote>
-                        </div>
-                        {% endif %}
                     </div>
 
                     <!-- Image Section -->
@@ -96,6 +85,24 @@
                         <img src="{% static 'images/headshot.jpeg' %}" alt="Headshot" class="image fit" />
                     </div>
                 </article>
+                
+                <!-- Quote Section - Single Column -->
+                {% if profile.quote %}
+                <article class="row">
+                    <div class="col-12">
+                        <div class="bio-quote">
+                            <blockquote class="quote-block">
+                                <span class="quote-mark quote-mark-left">"</span>
+                                {{ profile.quote }}
+                                {% if profile.quote_author %}
+                                <div class="quote-author">— {{ profile.quote_author }}</div>
+                                {% endif %}
+                                <span class="quote-mark quote-mark-right">"</span>
+                            </blockquote>
+                        </div>
+                    </div>
+                </article>
+                {% endif %}
             </div>
         </section>
 
