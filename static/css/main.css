@@ -333,31 +333,32 @@ p {
     text-align: center;
     max-width: 100%;
     margin: 0 auto;
-    padding: 1.5em 2em;
-    background: linear-gradient(135deg, rgba(179, 163, 105, 0.05) 0%, rgba(212, 194, 133, 0.1) 100%);
+    padding: 2em 2.5em;
+    background: linear-gradient(135deg, rgba(179, 163, 105, 0.08) 0%, rgba(212, 194, 133, 0.12) 100%);
     border-left: 4px solid #B3A369;
     border-radius: 0 8px 8px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
 }
 
 .quote-mark {
     font-family: 'Georgia', serif;
-    font-size: 1.5em;
+    font-size: 2em;
     color: #B3A369;
     font-weight: bold;
     line-height: 1;
     position: absolute;
-    top: -0.1em;
+    top: -0.2em;
+    opacity: 0.8;
 }
 
 .quote-mark-left {
-    left: -0.3em;
+    left: -0.5em;
 }
 
 .quote-mark-right {
-    right: -0.3em;
+    right: -0.5em;
     top: auto;
-    bottom: -0.1em;
+    bottom: -0.2em;
 }
 
 .quote-author {
@@ -963,17 +964,18 @@ ul.icons li a:hover {
     }
     
     .quote-mark {
-        font-size: 1.2em;
-        top: -0.05em;
+        font-size: 1.5em;
+        top: -0.1em;
+        opacity: 0.8;
     }
     
     .quote-mark-left {
-        left: -0.2em;
+        left: -0.3em;
     }
     
     .quote-mark-right {
-        right: -0.2em;
-        bottom: -0.05em;
+        right: -0.3em;
+        bottom: -0.1em;
     }
     
     .quote-author {
@@ -1242,17 +1244,18 @@ ul.icons li a:hover {
     }
     
     .quote-mark {
-        font-size: 1.1em;
-        top: -0.03em;
+        font-size: 1.3em;
+        top: -0.08em;
+        opacity: 0.8;
     }
     
     .quote-mark-left {
-        left: -0.15em;
+        left: -0.25em;
     }
     
     .quote-mark-right {
-        right: -0.15em;
-        bottom: -0.03em;
+        right: -0.25em;
+        bottom: -0.08em;
     }
     
     .quote-author {
