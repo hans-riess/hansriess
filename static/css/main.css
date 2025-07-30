@@ -318,6 +318,48 @@ p {
     font-weight: 300;
 }
 
+/* Quote Styling */
+.bio-quote {
+    margin: 2.5em 0 1.5em 0;
+    padding: 0 1em;
+}
+
+.quote-block {
+    position: relative;
+    font-style: italic;
+    font-size: 1.2em;
+    line-height: 1.7;
+    color: #555;
+    text-align: center;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1.5em 2em;
+    background: linear-gradient(135deg, rgba(179, 163, 105, 0.05) 0%, rgba(212, 194, 133, 0.1) 100%);
+    border-left: 4px solid #B3A369;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.quote-mark {
+    font-family: 'Georgia', serif;
+    font-size: 2.5em;
+    color: #B3A369;
+    font-weight: bold;
+    line-height: 1;
+    position: absolute;
+    top: -0.2em;
+}
+
+.quote-mark-left {
+    left: -0.3em;
+}
+
+.quote-mark-right {
+    right: -0.3em;
+    top: auto;
+    bottom: -0.2em;
+}
+
 /* Bio text display control */
 .bio-mobile {
     display: none;
@@ -893,6 +935,37 @@ ul.icons li a:hover {
         font-weight: 400;
     }
     
+    /* Quote styling for mobile */
+    .bio-quote {
+        margin: 2em 0 1em 0;
+        padding: 0 0.5em;
+    }
+    
+    .quote-block {
+        font-size: 1.1em;
+        line-height: 1.6;
+        padding: 1.2em 1.5em;
+        text-align: left;
+        background: linear-gradient(135deg, rgba(179, 163, 105, 0.08) 0%, rgba(212, 194, 133, 0.12) 100%);
+        border-left: 3px solid #B3A369;
+        border-radius: 0 6px 6px 0;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .quote-mark {
+        font-size: 2em;
+        top: -0.1em;
+    }
+    
+    .quote-mark-left {
+        left: -0.2em;
+    }
+    
+    .quote-mark-right {
+        right: -0.2em;
+        bottom: -0.1em;
+    }
+    
     /* Bio text display control for mobile */
     .bio-desktop {
         display: none;
@@ -1134,6 +1207,37 @@ ul.icons li a:hover {
         font-size: 1.05em;
         color: #333;
         font-weight: 400;
+    }
+    
+    /* Quote styling for very small screens */
+    .bio-quote {
+        margin: 1.5em 0 1em 0;
+        padding: 0 0.25em;
+    }
+    
+    .quote-block {
+        font-size: 1em;
+        line-height: 1.5;
+        padding: 1em 1.2em;
+        text-align: left;
+        background: linear-gradient(135deg, rgba(179, 163, 105, 0.1) 0%, rgba(212, 194, 133, 0.15) 100%);
+        border-left: 2px solid #B3A369;
+        border-radius: 0 4px 4px 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .quote-mark {
+        font-size: 1.8em;
+        top: -0.05em;
+    }
+    
+    .quote-mark-left {
+        left: -0.15em;
+    }
+    
+    .quote-mark-right {
+        right: -0.15em;
+        bottom: -0.05em;
     }
     
     .publication .publication-text {

@@ -78,6 +78,17 @@
                         <p class="bio-mobile">
                             {% if profile.short_bio %}{{profile.short_bio}}{% else %}{{profile.bio}}{% endif %}
                         </p>
+                        
+                        <!-- Quote Section -->
+                        {% if profile.quote %}
+                        <div class="bio-quote">
+                            <blockquote class="quote-block">
+                                <span class="quote-mark quote-mark-left">"</span>
+                                {{ profile.quote }}
+                                <span class="quote-mark quote-mark-right">"</span>
+                            </blockquote>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Image Section -->
@@ -354,6 +365,8 @@
                     {% if profile.orcid %}<li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>{% endif %}
                 </ul>
             </div>
+            
+
             <div class="container">
                 <div class="copyright">
                     <ul class="menu">
