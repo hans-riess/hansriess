@@ -5,3 +5,4 @@ Pipfile.lock
 staticfiles/
 media/
 .venv/
+__pycache__/
