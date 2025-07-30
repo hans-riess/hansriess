@@ -86,28 +86,24 @@
                         <img src="{% static 'images/headshot.jpeg' %}" alt="Headshot" class="image fit" />
                     </div>
                 </article>
-                
-                <!-- Quote Section - Single Column -->
-                {% if profile.quote %}
-                <article class="row">
-                    <div class="col-12">
-                        <div class="bio-quote">
-                            <blockquote class="quote-block">
-                                <span class="quote-mark quote-mark-left">"</span>
-                                {{ profile.quote }}
-                                {% if profile.quote_author %}
-                                <div class="quote-author">— {{ profile.quote_author }}</div>
-                                {% endif %}
-                                <span class="quote-mark quote-mark-right">"</span>
-                            </blockquote>
-                        </div>
-                    </div>
-                </article>
-                {% endif %}
             </div>
         </section>
 
-
+        <!-- Quote Section - Single Column -->
+        {% if profile.quote %}
+        <article class="container special">
+                <div class="bio-quote">
+                    <blockquote class="quote-block">
+                        <span class="quote-mark quote-mark-left">"</span>
+                        {{ profile.quote }}
+                        {% if profile.quote_author %}
+                        <div class="quote-author">— {{ profile.quote_author }}</div>
+                        {% endif %}
+                        <span class="quote-mark quote-mark-right">"</span>
+                    </blockquote>
+                </div>
+        </article>
+        {% endif %}
 
         <!-- Publications Section -->
         <section id="papers">
@@ -359,6 +355,7 @@
                 </article>
         </section>
 
+        <!-- Footer -->
         <div id="footer">
             <div class="contact" style="text-align: center; margin-top: 2em;">
                 <ul class="icons">
