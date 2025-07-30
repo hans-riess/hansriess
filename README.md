@@ -1,5 +1,5 @@
-# Academic Landing Page
-Develobed by Hans Riess.
+# My Academic Website
+Developed by Hans Riess.
 
 ## Features
 Developed/planning many features to make it easier for researchers to interact with my work.
