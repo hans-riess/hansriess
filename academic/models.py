@@ -296,6 +296,7 @@ class Grant(models.Model):
     end_year = models.PositiveIntegerField(blank=True, null=True, help_text="End year of the grant (if applicable)")
     co_pis = models.CharField(max_length=300, blank=True, help_text="Co-PIs (optional, comma-separated)")
     grant_number = models.CharField(max_length=100, blank=True, null=True, help_text="Grant/award number (optional)")
+    related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
 
     class Meta:
         ordering = ['-start_year', 'title']
@@ -319,14 +320,7 @@ class Grant(models.Model):
 
 class Education(models.Model):
     """Minimal model for academic degrees (CV style)"""
-    DEGREE_TYPE_CHOICES = [
-        ('phd', 'Ph.D.'),
-        ('masters', 'M.S.'),
-        ('bachelors', 'B.S.'),
-        ('other', 'Other'),
-    ]
-    
-    degree_type = models.CharField(max_length=20, choices=DEGREE_TYPE_CHOICES, help_text="Type of degree")
+    degree_type = models.CharField(max_length=20, help_text="Type of degree")
     field_of_study = models.CharField(max_length=200, help_text="Field of study or major")
     institution = models.CharField(max_length=200, help_text="University or institution name")
     location = models.CharField(max_length=200, blank=True, help_text="City, State/Province, Country")
@@ -345,6 +339,9 @@ class Education(models.Model):
     
     def __str__(self):
         return f"{self.get_degree_type_display()} in {self.field_of_study}, {self.institution} ({self.graduation_year})"
+    
+    def get_degree_type_display(self):
+        return self.degree_type
     
     def get_cv_format(self):
         """Returns CV-friendly format"""
@@ -379,7 +376,7 @@ class Service(models.Model):
         ('other', 'Other'),
     ]
     
-    title = models.CharField(max_length=200, help_text="Title or description of the service")
+    title = models.CharField(max_length=200, blank=True, help_text="Title or description of the service")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
     organization = models.CharField(max_length=200, help_text="Organization, conference, journal, or institution")
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPE_CHOICES, default='other')

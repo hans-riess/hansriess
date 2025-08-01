@@ -9,16 +9,12 @@ class ReferenceAdmin(admin.ModelAdmin):
     
     fieldsets = [
         (None, {
-            'fields': ['title', 'authors', 'alphabetical_order', 'shared_first_author', 'year', 'reference_type']
+            'fields': ['reference_type', 'title', 'authors', 'abstract','keywords','code','alphabetical_order', 'shared_first_author', 'year']
         }),
         ('Publication Details', {
-            'fields': ['journal', 'volume', 'issue', 'pages', 'doi', 'url', 'pdf_file', 'reference_image'],
+            'fields': ['journal', 'volume', 'issue', 'pages', 'url','doi', 'pdf_file', 'reference_image'],
             'classes': ['collapse']
         }),
-        ('Additional Information', {
-            'fields': ['abstract', 'keywords', 'code', 'slides','poster'],
-            'classes': ['collapse']
-        })
     ]
 
 class CourseAdmin(admin.ModelAdmin):
@@ -89,12 +85,15 @@ class GrantAdmin(admin.ModelAdmin):
         ('Funding Details', {
             'fields': ['amount', 'currency', 'co_pis', 'grant_number'],
             'classes': ['collapse']
+        }),
+        ('Related Publications', {
+            'fields': ['related_publications'],
+            'classes': ['collapse']
         })
     ]
 
 class EducationAdmin(admin.ModelAdmin):
     list_display = ['degree_type', 'field_of_study', 'institution', 'graduation_year', 'gpa']
-    list_filter = ['degree_type', 'graduation_year']
     search_fields = ['field_of_study', 'institution', 'location']
     ordering = ['-graduation_year', 'degree_type']
     
@@ -109,9 +108,9 @@ class EducationAdmin(admin.ModelAdmin):
     ]
 
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ['title', 'role', 'organization', 'service_type', 'year']
+    list_display = ['role', 'organization', 'service_type', 'year']
     list_filter = ['role', 'service_type', 'year']
-    search_fields = ['title', 'organization', 'location']
+    search_fields = ['organization', 'location']
     ordering = ['-year', 'title']
     
     fieldsets = [

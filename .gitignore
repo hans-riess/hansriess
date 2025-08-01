@@ -7,3 +7,6 @@ media/
 .venv/
 __pycache__/
 scrap/
+static/files/academic-cv.sty
+static/files/cv.tex
+static/files/cv.pdf
