@@ -6,3 +6,4 @@ staticfiles/
 media/
 .venv/
 __pycache__/
+scrap/

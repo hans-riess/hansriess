@@ -1,0 +1,153 @@
+% academic-cv.sty
+% A LaTeX style for academic CVs, designed to be populated by a Django backend.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{academic-cv}[2025/07/31 Academic CV Style]
+
+% --- OPTIONS -----------------------------------------------------------------
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=ACV, prefix=ACV@}
+\DeclareStringOption[a4paper]{paper}{a4paper}
+\DeclareStringOption[10pt]{fontsize}{10pt}
+\DeclareStringOption[sans]{font}
+\ProcessKeyvalOptions*
+
+% --- PACKAGES ----------------------------------------------------------------
+\documentclass{\ACV@paper, \ACV@fontsize}
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{lmodern} % For better font rendering
+\RequirePackage{textcase} % For \MakeTextUppercase
+
+% Font selection
+\ifthenelse{\equal{\ACV@font}{sans}}{
+    \RequirePackage{helvet}
+    \renewcommand{\familydefault}{\sfdefault}
+}{}
+
+% Page geometry
+\RequirePackage[
+    left=0.75in,
+    right=0.75in,
+    top=0.6in,
+    bottom=0.6in,
+    headheight=0pt,
+    headsep=0pt,
+    footskip=0.4in
+]{geometry}
+
+% Colors
+\RequirePackage[dvipsnames]{xcolor}
+\definecolor{primary}{HTML}{2c3e50} % A dark slate blue
+\definecolor{secondary}{HTML}{3498db} % A bright blue
+\definecolor{muted}{HTML}{7f8c8d}   % A grey color
+
+% Section styling
+\RequirePackage{titlesec}
+\titleformat{\section}
+    {\color{primary}\Large\bfseries\scshape\MakeTextUppercase}
+    {}
+    {0em}
+    {}
+    [\titlerule]
+\titlespacing*{\section}{0pt}{1.5\baselineskip}{0.5\baselineskip}
+
+% For icons and links
+\RequirePackage{hyperref}
+\RequirePackage{fontawesome5}
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=secondary,
+    linkcolor=secondary,
+    pdfborder={0 0 0},
+    pdftitle={Curriculum Vitae},
+    pdfauthor={Hans Riess},
+}
+
+% Remove page numbers
+\pagestyle{empty}
+
+% --- HEADER COMMANDS ---------------------------------------------------------
+\newcommand{\cvname}[1]{\def\@cvname{#1}}
+\newcommand{\cvoccupation}[1]{\def\@cvoccupation{#1}}
+\newcommand{\cvemail}[1]{\def\@cvemail{#1}}
+\newcommand{\cvphone}[1]{\def\@cvphone{#1}}
+\newcommand{\cvwebsite}[1]{\def\@cvwebsite{#1}}
+\newcommand{\cvlinkedin}[1]{\def\@cvlinkedin{#1}}
+\newcommand{\cvgithub}[1]{\def\@cvgithub{#1}}
+\newcommand{\cvorcid}[1]{\def\@cvorcid{#1}}
+\newcommand{\cvaddress}[1]{\def\@cvaddress{#1}}
+
+
+\newcommand{\makecvheader}{%
+    \begin{center}
+        {\Huge\bfseries\color{primary}\@cvname\par}
+        \vspace{2mm}
+        {\Large\color{muted}\@cvoccupation\par}
+        \vspace{3mm}
+        \begin{tabular}{@{}c@{}}
+            \small
+            \ifdefined\@cvemail \faEnvelope\ \href{mailto:\@cvemail}{\@cvemail} \fi
+            \ifdefined\@cvphone \quad \faPhone\ \@cvphone \fi
+            \ifdefined\@cvwebsite \quad \faGlobe\ \href{https://\@cvwebsite}{\@cvwebsite} \        ('bachelors', 'Bachelors'),fi
+            \\
+            \ifdefined\@cvlinkedin \faLinkedin\ \href{https://www.linkedin.com/in/\@cvlinkedin}{\@cvlinkedin} \fi
+            \ifdefined\@github \quad \faGithub\ \href{https://github.com/\@github}{\@github} \fi
+            \ifdefined\@cvorcid \quad \faOrcid\ \href{https://orcid.org/\@cvorcid}{\@cvorcid} \fi
+            \ifdefined\@cvaddress \quad \faMapMarkerAlt\ \@cvaddress \fi
+        \end{tabular}
+    \end{center}
+    \vspace{5mm}
+}
+
+% --- CV ENTRY ENVIRONMENTS ---------------------------------------------------
+
+% A generic entry for Education, Experience, Service, etc.
+% #1: Title (e.g., Ph.D. in Mathematics)
+% #2: Subtitle (e.g., Institution Name)
+% #3: Date range (e.g., 2020 -- 2025)
+% #4: Description (e.g., bullet points)
+\newenvironment{cventries}{
+    \begin{list}{}{\setlength{\leftmargin}{1em}\setlength{\itemsep}{0.5em}}
+}{
+    \end{list}
+}
+\newcommand{\cventry}[4]{
+    \item
+    \textbf{\color{primary}#1} \hfill {\color{muted}#3} \\
+    \textit{\color{secondary}#2}
+    \ifstrempty{#4}{}{\\\small#4}
+}
+
+% A specialized entry for publications
+% #1: Author list
+% #2: Title
+% #3: Publication details (Journal, Year, etc.)
+% #4: Links ([PDF], [Code], etc.)
+\newenvironment{publications}{
+    \begin{list}{\labelitemi}{\setlength{\leftmargin}{1em}\setlength{\itemsep}{0.8em}}
+    \renewcommand{\labelitemi}{\color{secondary}\textbullet}
+}{
+    \end{list}
+}
+\newcommand{\publication}[4]{
+    \item
+    #1. \\
+    \textbf{#2}. \\
+    \textit{#3} \quad #4
+}
+
+% A specialized entry for talks
+% #1: Title
+% #2: Event
+% #3: Location
+% #4: Date
+\newcommand{\cvtalk}[4]{
+    \item
+    \textbf{#1}. \\
+    \textit{#2}, #3. \hfill #4
+}
+
+\endinput

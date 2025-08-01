@@ -401,4 +401,3 @@ class Service(models.Model):
         role_display = self.get_role_display()
         location_str = f", {self.location}" if self.location else ""
         return f"{role_display}, {self.title}, {self.organization}{location_str} ({self.year})"
-
