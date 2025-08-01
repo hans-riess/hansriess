@@ -111,7 +111,10 @@ class Command(BaseCommand):
             tex_content.append("\\section{Academic Appointments}")
             tex_content.append("\\begin{cventries}")
             for item in experiences:
-                dates = f"{item.start_date.year} -- {item.end_date.year if item.end_date else 'Present'}"
+                if item.end_date and item.start_date.year == item.end_date.year:
+                    dates = str(item.start_date.year)
+                else:
+                    dates = f"{item.start_date.year} -- {item.end_date.year if item.end_date else 'Present'}"
                 tex_content.append(f"\\cventry{{{escape_latex(item.title)}}}{{{escape_latex(item.institution)}}}{{{dates}}}{{{escape_latex(item.description)}}}")
             tex_content.append("\\end{cventries}")
 
