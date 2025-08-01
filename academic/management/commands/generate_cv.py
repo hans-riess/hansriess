@@ -75,15 +75,10 @@ class Command(BaseCommand):
         if profile.website:
             tex_content.append(f"\\cvwebsite{{{escape_latex(profile.website)}}}")
         
-        # Format address with multiple lines
-        address_lines = []
-        if profile.room_number:
-            address_lines.append(profile.room_number)
-        if profile.building:
-            address_lines.append(profile.building)
-            
+        # Format address with street, city, state, zip, and country on one line
+        address_parts = []
         if profile.street:
-            address_lines.append(profile.street)
+            address_parts.append(profile.street)
             
         city_state_zip = []
         if profile.city:
@@ -93,14 +88,14 @@ class Command(BaseCommand):
         if profile.zip_code:
             city_state_zip.append(profile.zip_code)
         if city_state_zip:
-            address_lines.append(", ".join(city_state_zip))
+            address_parts.append(", ".join(city_state_zip))
             
         if profile.country:
-            address_lines.append(profile.country)
+            address_parts.append(profile.country)
             
-        if address_lines:
-            # Join with line breaks for LaTeX
-            full_address = " \\\\ ".join([escape_latex(line) for line in address_lines])
+        if address_parts:
+            # Join all parts with commas for one line
+            full_address = " ".join([escape_latex(part) for part in address_parts])
             tex_content.append(f"\\cvaddress{{{full_address}}}")
 
         tex_content.append("\\begin{document}")
@@ -115,7 +110,17 @@ class Command(BaseCommand):
                     dates = str(item.start_date.year)
                 else:
                     dates = f"{item.start_date.year} -- {item.end_date.year if item.end_date else 'Present'}"
-                tex_content.append(f"\\cventry{{{escape_latex(item.title)}}}{{{escape_latex(item.institution)}}}{{{dates}}}{{{escape_latex(item.description)}}}")
+                
+                # Build description with location and original description
+                description_parts = []
+                if item.location:
+                    description_parts.append(escape_latex(item.location))
+                if item.description:
+                    description_parts.append(escape_latex(item.description))
+                
+                description = " \\\\ ".join(description_parts) if description_parts else ""
+                
+                tex_content.append(f"\\cventry{{{escape_latex(item.title)}}}{{{escape_latex(item.institution)}}}{{{dates}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
 
         # Education
@@ -125,14 +130,28 @@ class Command(BaseCommand):
             for item in educations:
                 degree = item.get_degree_type_display()
                 field = item.field_of_study
-                description = f"{field}"
+                
+                # First line: field of study
+                description = escape_latex(field)
+                
+                # Second line: thesis and advisor (if they exist)
+                second_line_parts = []
                 if item.thesis_title:
-                    description += f", Thesis: {item.thesis_title}"
+                    second_line_parts.append(f"Thesis: {escape_latex(item.thesis_title)}")
                 if item.advisor:
-                    description += f", Advisor: {item.advisor}"
+                    second_line_parts.append(f"Advisor: {escape_latex(item.advisor)}")
+                
+                if second_line_parts:
+                    description += f" \\\\ {' • '.join(second_line_parts)}"
+                
+                # Add honors if they exist
                 if item.honors:
-                    description += f", {item.honors}"
-                tex_content.append(f"\\cventry{{{escape_latex(degree)}}}{{{escape_latex(item.institution)}}}{{{item.graduation_year}}}{{{escape_latex(description)}}}")
+                    if second_line_parts:
+                        description += f" {escape_latex(item.honors)}"
+                    else:
+                        description += f" \\\\ {escape_latex(item.honors)}"
+                
+                tex_content.append(f"\\cventry{{{escape_latex(degree)}}}{{{escape_latex(item.institution)}}}{{{item.graduation_year}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
             
         # Publications

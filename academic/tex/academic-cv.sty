@@ -7,7 +7,7 @@
 % --- PACKAGES ----------------------------------------------------------------
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
-\RequirePackage{lmodern}
+\RequirePackage{mathpazo}
 \RequirePackage{geometry}
 \RequirePackage[dvipsnames]{xcolor}
 \RequirePackage{titlesec}
@@ -80,7 +80,7 @@
             \ifdefined\@cvgithub \quad \faGithub\ \href{\@cvgithub}{\@cvgithub} \fi
             \ifdefined\@cvorcid \quad \faOrcid\ \href{\@cvorcid}{\@cvorcid} \fi
             \\
-            \ifdefined\@cvaddress \@cvaddress \fi
+            \ifdefined\@cvaddress \faMapMarker\ \@cvaddress \fi
         \end{tabular}
     \end{center}
     \vspace{5mm}
