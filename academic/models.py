@@ -83,8 +83,6 @@ class Reference(models.Model):
     abstract = models.TextField(blank=True)
     keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated list of keywords")
     code = models.URLField(blank=True, help_text="Link to the code repository")
-    slides = models.FileField(upload_to='references/slides/', blank=True, help_text="Optional slides for the publication")
-    poster = models.FileField(upload_to='references/posters/', blank=True, help_text="Optional poster for the publication")
     
     class Meta:
         ordering = ['-year', 'title']
