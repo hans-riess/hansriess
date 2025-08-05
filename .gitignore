@@ -10,3 +10,12 @@ scrap/
 static/files/academic-cv.sty
 static/files/cv.tex
 static/files/cv.pdf
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.bbl
+*.blg
