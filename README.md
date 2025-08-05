@@ -17,6 +17,7 @@ Developed/planning many features to make it easier for researchers to interact w
   * thumbnail images for each paper
   * my name bolded
   * info about first author 
+* Automatic CV generation
 
 ### Wish list 
 * Generate page for each publication
