@@ -11,17 +11,17 @@ CV_MODELS = [
     Reference
 ]
 
-@receiver([post_save, post_delete], sender=CV_MODELS)
-def trigger_cv_generation(sender, instance, **kwargs):
-    """
-    Calls the management command to regenerate the CV PDF in the background.
+# @receiver([post_save, post_delete], sender=CV_MODELS)
+# def trigger_cv_generation(sender, instance, **kwargs):
+#     """
+#     Calls the management command to regenerate the CV PDF in the background.
     
-    This function is triggered whenever an instance of one of the CV_MODELS
-    is saved or deleted.
-    """
-    print(f"Signal received from {sender.__name__}. Triggering CV generation.")
+#     This function is triggered whenever an instance of one of the CV_MODELS
+#     is saved or deleted.
+#     """
+#     print(f"Signal received from {sender.__name__}. Triggering CV generation.")
     
-    # We use Popen to run the command in a non-blocking way.
-    # This prevents the user from having to wait for the PDF to compile
-    # during a request-response cycle in the admin panel.
-    subprocess.Popen(['python', 'manage.py', 'generate_cv'])
+#     # We use Popen to run the command in a non-blocking way.
+#     # This prevents the user from having to wait for the PDF to compile
+#     # during a request-response cycle in the admin panel.
+#     subprocess.Popen(['python', 'manage.py', 'generate_cv'])
