@@ -1,5 +1,8 @@
-# Aptfile
-texlive-latex-base
-texlive-fonts-recommended
+texlive
 texlive-latex-extra
-fontawesome5
+texlive-fonts-recommended
+texlive-fonts-extra
+texlive-latex-recommended
+texlive-science
+texlive-publishers
+texlive-pictures
