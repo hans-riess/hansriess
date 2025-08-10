@@ -83,6 +83,9 @@ DATABASES = {
         'PASSWORD': '2brswq6j',
         'HOST': 'localhost',  # Set to the hostname of your database server
         'PORT': '5432',       # Default PostgreSQL port
+        'OPTIONS': {
+            'options': '-c timezone=America/New_York',
+        },
     }
 }
 
@@ -108,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/New_York'
 USE_I18N = True
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

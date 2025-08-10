@@ -147,8 +147,6 @@ class Command(BaseCommand):
                 # Add honors if they exist
                 if item.honors:
                     if second_line_parts:
-                        description += f" {escape_latex(item.honors)}"
-                    else:
                         description += f" \\\\ {escape_latex(item.honors)}"
                 
                 tex_content.append(f"\\cventry{{{escape_latex(degree)}}}{{{escape_latex(item.institution)}}}{{{item.graduation_year}}}{{{description}}}")
@@ -158,7 +156,7 @@ class Command(BaseCommand):
         tex_content.append("\\section{Publications}")
         for pub_type, pub_list in publications.items():
             if pub_list.exists():
-                tex_content.append(f"\\subsection*{{{escape_latex(pub_list.first().get_reference_type_display())}s}}")
+                tex_content.append(f"\\subsection*{{{escape_latex(pub_list.first().get_reference_type_display())}}}")
                 tex_content.append("\\begin{publications}")
                 for pub in pub_list:
                     # Format authors

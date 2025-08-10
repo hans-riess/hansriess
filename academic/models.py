@@ -321,6 +321,7 @@ class Grant(models.Model):
 class Education(models.Model):
     """Minimal model for academic degrees (CV style)"""
     degree_type = models.CharField(max_length=20, help_text="Type of degree")
+    degree_type_short = models.CharField(max_length=20, blank=True, null=True, help_text="Short form of degree type")
     field_of_study = models.CharField(max_length=200, help_text="Field of study or major")
     institution = models.CharField(max_length=200, help_text="University or institution name")
     location = models.CharField(max_length=200, blank=True, help_text="City, State/Province, Country")
@@ -329,6 +330,7 @@ class Education(models.Model):
     thesis_title = models.CharField(max_length=300, blank=True, help_text="Thesis title (for graduate degrees)")
     advisor = models.CharField(max_length=200, blank=True, help_text="Thesis advisor (for graduate degrees)")
     honors = models.CharField(max_length=200, blank=True, help_text="Honors or distinctions")
+    related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

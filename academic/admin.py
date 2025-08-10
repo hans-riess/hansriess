@@ -99,10 +99,14 @@ class EducationAdmin(admin.ModelAdmin):
     
     fieldsets = [
         ('Basic Information', {
-            'fields': ['degree_type', 'field_of_study', 'institution', 'location', 'graduation_year']
+            'fields': ['degree_type', 'degree_type_short', 'field_of_study', 'institution', 'location', 'graduation_year']
         }),
         ('Academic Details', {
             'fields': ['gpa', 'thesis_title', 'advisor', 'honors'],
+            'classes': ['collapse']
+        }),
+        ('Related Publications', {
+            'fields': ['related_publications'],
             'classes': ['collapse']
         })
     ]
