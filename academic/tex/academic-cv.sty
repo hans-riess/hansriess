@@ -19,8 +19,8 @@
 \geometry{
     left=0.75in,
     right=0.75in,
-    top=0.6in,
-    bottom=0.6in,
+    top=0.75in,
+    bottom=1in,
     headheight=0pt,
     headsep=0pt,
     footskip=0.4in
@@ -83,7 +83,6 @@
             \ifdefined\@cvaddress \faMapMarker\ \@cvaddress \fi
         \end{tabular}
     \end{center}
-    \vspace{5mm}
 }
 
 % --- SUMMARY SECTION ---------------------------------------------------------
@@ -109,9 +108,11 @@
 }
 \newcommand{\cventry}[4]{
     \item
+    \begin{minipage}[t]{\linewidth}
     \textbf{\color{primary}#1} \hfill {\color{muted}#3} \\
     \textit{\color{secondary}#2}
-    \ifstrempty{#4}{}{\\\small#4}
+    \ifstrempty{#4}{}{\\{\small#4}}
+    \end{minipage}
 }
 
 % A specialized entry for publications
@@ -128,10 +129,12 @@
 }
 \newcommand{\publication}[5]{
     \item
+    \begin{minipage}[t]{\linewidth}
     #1. \\
     \textbf{#2}. \\
     \textit{#3} \quad #4
-    \ifstrempty{#5}{}{\\\small}#5
+    \ifstrempty{#5}{}{\\{\small#5}}
+    \end{minipage}
 }
 
 % A specialized entry for talks
@@ -141,8 +144,11 @@
 % #4: Date
 \newcommand{\cvtalk}[4]{
     \item
+    \begin{minipage}[t]{\linewidth}
     \textbf{#1}. \\
-    \textit{#2}, #3. \hfill #4
+    \textit{#2} \hfill {\color{muted}#4} \\
+    #3
+    \end{minipage}
 }
 
 \endinput

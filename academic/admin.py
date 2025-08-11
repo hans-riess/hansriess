@@ -53,7 +53,7 @@ class ExperienceAdmin(admin.ModelAdmin):
     ]
 
 class TalkAdmin(admin.ModelAdmin):
-    list_display = ['title', 'venue', 'talk_type', 'is_invited', 'date']
+    list_display = ['get_short_title', 'talk_type', 'date']
     list_filter = ['talk_type', 'is_invited', 'date']
     search_fields = ['title', 'venue', 'location']
     ordering = ['-date', 'title']
@@ -73,14 +73,15 @@ class TalkAdmin(admin.ModelAdmin):
     ]
 
 class GrantAdmin(admin.ModelAdmin):
-    list_display = ['title', 'funding_agency', 'role', 'start_year', 'end_year', 'get_formatted_amount']
-    list_filter = ['role', 'start_year', 'end_year']
+    list_display = ['title', 'funding_agency', 'role', 'get_formatted_amount']
+    list_filter = ['role']
     search_fields = ['title', 'funding_agency', 'co_pis']
-    ordering = ['-start_year', 'title']
+    ordering = ['title']
     
     fieldsets = [
         ('Basic Information', {
-            'fields': ['title', 'funding_agency', 'role', 'start_year', 'end_year']
+            # Replaced start_date and end_date with year
+            'fields': ['title', 'funding_agency', 'role', 'start_date','end_date']
         }),
         ('Funding Details', {
             'fields': ['amount', 'currency', 'co_pis', 'grant_number'],
@@ -119,7 +120,7 @@ class ServiceAdmin(admin.ModelAdmin):
     
     fieldsets = [
         ('Basic Information', {
-            'fields': ['title', 'role', 'organization', 'service_type', 'year', 'location']
+            'fields': ['title', 'role', 'organization', 'service_type', 'start_date','end_date','year','end_year', 'location']
         })
     ]
 
@@ -136,7 +137,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
         ('Academic Information', {
-            'fields': ['department', 'sub_department', 'school', 'institution', 'long_institution', 'cv'],
+            'fields': ['department', 'sub_department', 'school', 'institution', 'long_institution', 'cv','cv_button'],
             'classes': ['collapse']
         }),
         ('Social Media', {

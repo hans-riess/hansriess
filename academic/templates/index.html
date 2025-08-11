@@ -41,8 +41,12 @@
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
                                 <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
-                                {% if profile.cv %}
-                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
+                                {% if profile.cv_button %}
+                                    {% if profile.cv%}
+                                        <a href="{{profile.cv.url}}" class="button bio-button">Download CV</a>
+                                    {% else %}
+                                        <a href="{% static 'files/cv.pdf' %}" class="button bio-button">Download CV</a>
+                                    {% endif %}
                                 {% endif %}
                             </li>
                         </ul>

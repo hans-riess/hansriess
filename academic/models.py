@@ -23,6 +23,7 @@ class Profile(models.Model):
     country = models.CharField(max_length=200, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     cv = models.FileField(upload_to='files/', blank=True, null=True)
+    cv_button = models.BooleanField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     twitter = models.URLField(blank=True, null=True)
     blue_sky = models.URLField(blank=True, null=True)
@@ -118,7 +119,7 @@ class Course(models.Model):
         ('other', 'Other'),
     ]
     
-    course_code = models.CharField(max_length=20, help_text="Course code (e.g., CS101, MATH 201)")
+    course_code = models.CharField(max_length=20,blank=True, null=True, help_text="Course code (e.g., CS101, MATH 201)")
     title = models.CharField(max_length=200, help_text="Full course title")
     institution = models.CharField(max_length=200, help_text="Institution where the course was taught")
     department = models.CharField(max_length=200, blank=True, null=True, help_text="Department offering the course")
@@ -274,6 +275,16 @@ class Talk(models.Model):
     def get_formatted_date(self):
         """Returns a formatted date string"""
         return self.date.strftime('%B %d, %Y')
+
+    def get_short_title(self):
+        """Returns the first 3 key words of the title excluding articles and prepositions"""
+        # Define a list of words to exclude
+        exclude_words = ["the", "a", "an", "of", "and", "or", "on", "in", "to", "with", "as", "by", "for", "from", "into", "onto""over","under", "upon", "with", "towards"]
+        
+        # Split the title into words and filter out the excluded words
+        words = [word for word in self.title.split(" ") if word.lower() not in exclude_words]
+
+        return " ".join(words[:3])
     
 class Grant(models.Model):
     """Minimal model for research funding, grants, and awards (CV style)"""
@@ -292,27 +303,38 @@ class Grant(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='pi')
     amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, help_text="Total grant amount")
     currency = models.CharField(max_length=3, default='USD', help_text="Currency code (USD, EUR, etc.)")
-    start_year = models.PositiveIntegerField(help_text="Start year of the grant")
-    end_year = models.PositiveIntegerField(blank=True, null=True, help_text="End year of the grant (if applicable)")
+    start_date = models.DateField(blank=True,null=True,help_text="Start date of the grant")
+    end_date = models.DateField(blank=True,null=True,help_text="End date of the grant")
     co_pis = models.CharField(max_length=300, blank=True, help_text="Co-PIs (optional, comma-separated)")
     grant_number = models.CharField(max_length=100, blank=True, null=True, help_text="Grant/award number (optional)")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
 
     class Meta:
-        ordering = ['-start_year', 'title']
+        ordering = ['-start_date', 'title']
         verbose_name = "Grant"
         verbose_name_plural = "Grants"
 
     def __str__(self):
-        years = f"{self.start_year}"
-        if self.end_year:
-            years += f"–{self.end_year}"
-        return f"{self.title} ({self.funding_agency}, {years})"
+        return f"{self.title} ({self.funding_agency})"
 
     def get_formatted_amount(self):
         if self.amount:
             return f"{self.amount:,.0f} {self.currency}"
         return ""
+    
+    def get_date_range(self):
+        """
+        Returns a date range string in the format 'Feb 2020 - June 2021' or 'Feb 2020 - Present'
+        """
+        if self.start_date:
+            start_str = self.start_date.strftime('%b %Y')
+        else:
+            start_str = ""
+        if self.end_date:
+            end_str = self.end_date.strftime('%b %Y')
+        else:
+            end_str = "Present"
+        return f"{start_str} - {end_str}"
 
     def get_role_display_name(self):
         return self.get_role_display()
@@ -382,7 +404,10 @@ class Service(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
     organization = models.CharField(max_length=200, help_text="Organization, conference, journal, or institution")
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPE_CHOICES, default='other')
+    start_date = models.DateField(null=True,blank=True )
+    end_date = models.DateField(null=True,blank=True)
     year = models.PositiveIntegerField(help_text="Year of service")
+    end_year = models.PositiveBigIntegerField(blank=True,null=True,help_text="End year (if applicable)")
     location = models.CharField(max_length=200, blank=True, help_text="Location if relevant")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

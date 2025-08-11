@@ -7,7 +7,6 @@ media/
 .venv/
 __pycache__/
 scrap/
-static/files/academic-cv.sty
 *.tex
 *.aux
 *.fdb_latexmk

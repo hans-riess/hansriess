@@ -43,7 +43,7 @@ class Command(BaseCommand):
             profile = Profile.objects.first()
             educations = Education.objects.order_by('-graduation_year')
             experiences = Experience.objects.order_by('-start_date')
-            grants = Grant.objects.order_by('-start_year')
+            grants = Grant.objects.order_by('-start_date')
             talks = Talk.objects.order_by('-date')
             services = Service.objects.order_by('-year')
             courses = Course.objects.order_by('-year', '-semester')
@@ -74,30 +74,6 @@ class Command(BaseCommand):
             tex_content.append(f"\\cvemail{{{escape_latex(profile.email)}}}")
         if profile.website:
             tex_content.append(f"\\cvwebsite{{{escape_latex(profile.website)}}}")
-        
-        # Format address with street, city, state, zip, and country on one line
-        address_parts = []
-        if profile.street:
-            address_parts.append(profile.street)
-            
-        city_state_zip = []
-        if profile.city:
-            city_state_zip.append(profile.city)
-        if profile.state:
-            city_state_zip.append(profile.state)
-        if profile.zip_code:
-            city_state_zip.append(profile.zip_code)
-        if city_state_zip:
-            address_parts.append(", ".join(city_state_zip))
-            
-        if profile.country:
-            address_parts.append(profile.country)
-            
-        if address_parts:
-            # Join all parts with commas for one line
-            full_address = " ".join([escape_latex(part) for part in address_parts])
-            tex_content.append(f"\\cvaddress{{{full_address}}}")
-
         tex_content.append("\\begin{document}")
         tex_content.append("\\makecvheader")
 
@@ -106,10 +82,18 @@ class Command(BaseCommand):
             tex_content.append("\\section{Academic Appointments}")
             tex_content.append("\\begin{cventries}")
             for item in experiences:
-                if item.end_date and item.start_date.year == item.end_date.year:
-                    dates = str(item.start_date.year)
+                # Format months as abbreviated names (e.g., Jan, Feb)
+                def format_month_year(date):
+                    if not date:
+                        return ""
+                    return f"{date.strftime('%b')} {date.year}"
+                
+                start_str = format_month_year(item.start_date)
+                if item.end_date:
+                    end_str = format_month_year(item.end_date)
                 else:
-                    dates = f"{item.start_date.year} -- {item.end_date.year if item.end_date else 'Present'}"
+                    end_str = "Present"
+                dates = f"{start_str} -- {end_str}"
                 
                 # Build description with location and original description
                 description_parts = []
@@ -121,6 +105,27 @@ class Command(BaseCommand):
                 description = " \\\\ ".join(description_parts) if description_parts else ""
                 
                 tex_content.append(f"\\cventry{{{escape_latex(item.title)}}}{{{escape_latex(item.institution)}}}{{{dates}}}{{{description}}}")
+            tex_content.append("\\end{cventries}")
+        
+        # Grants
+        if grants.exists():
+            tex_content.append("\\section{Grants}")
+            tex_content.append("\\begin{cventries}")
+            for grant in grants:                               
+                # Include role prominently in the title
+                role_display = grant.get_role_display()
+                title = f"{escape_latex(role_display)}: {escape_latex(grant.title)}"
+                
+                # Create description with amount and grant number
+                description_parts = []
+                if grant.amount:
+                    description_parts.append(f"\${grant.amount:,.0f}")
+                if grant.grant_number:
+                    description_parts.append(escape_latex(grant.grant_number))
+                
+                description = " • ".join(description_parts) if description_parts else ""
+                
+                tex_content.append(f"\\cventry{{{title}}}{{{escape_latex(grant.funding_agency)}}}{{{grant.get_date_range()}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
 
         # Education
@@ -152,6 +157,19 @@ class Command(BaseCommand):
                 tex_content.append(f"\\cventry{{{escape_latex(degree)}}}{{{escape_latex(item.institution)}}}{{{item.graduation_year}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
             
+        # Teaching
+        if courses.exists():
+            tex_content.append("\\section{Teaching}")
+            tex_content.append("\\begin{cventries}")
+            for course in courses:
+                if course.course_code:
+                    title = f"{escape_latex(course.course_code)}: {escape_latex(course.title)}"
+                else:
+                    title = f"{escape_latex(course.title)}"
+                dates = capitalize_semester(f"{course.semester} {course.year}")
+                tex_content.append(f"\\cventry{{{title}}}{{{escape_latex(course.institution)}}}{{{dates}}}{{{escape_latex(course.get_role_display())}}}")
+            tex_content.append("\\end{cventries}")
+        
         # Publications
         tex_content.append("\\section{Publications}")
         for pub_type, pub_list in publications.items():
@@ -193,53 +211,28 @@ class Command(BaseCommand):
 
         # Talks
         if talks.exists():
-            tex_content.append("\\section{Talks}")
+            tex_content.append("\\section{Selected Invited Talks}")
             tex_content.append("\\begin{publications}") # Reusing publication style for talks
             for talk in talks:
                 tex_content.append(f"\\cvtalk{{{escape_latex(talk.title)}}}{{{escape_latex(talk.venue)}}}{{{escape_latex(talk.location)}}}{{{talk.date.strftime('%B %Y')}}}")
             tex_content.append("\\end{publications}")
 
-        # Grants (renamed from Funding)
-        if grants.exists():
-            tex_content.append("\\section{Grants}")
-            tex_content.append("\\begin{cventries}")
-            for grant in grants:
-                years = f"{grant.start_year}"
-                if grant.end_year:
-                    years += f" -- {grant.end_year}"
-                
-                # Include role prominently in the title
-                role_display = grant.get_role_display()
-                title = f"{escape_latex(role_display)}: {escape_latex(grant.title)}"
-                
-                # Create description with amount and grant number
-                description_parts = []
-                if grant.amount:
-                    description_parts.append(f"\${grant.amount:,.0f}")
-                if grant.grant_number:
-                    description_parts.append(escape_latex(grant.grant_number))
-                
-                description = " • ".join(description_parts) if description_parts else ""
-                
-                tex_content.append(f"\\cventry{{{title}}}{{{escape_latex(grant.funding_agency)}}}{{{years}}}{{{description}}}")
-            tex_content.append("\\end{cventries}")
-            
-        # Teaching
-        if courses.exists():
-            tex_content.append("\\section{Teaching Experience}")
-            tex_content.append("\\begin{cventries}")
-            for course in courses:
-                title = f"{escape_latex(course.course_code)}: {escape_latex(course.title)}"
-                dates = capitalize_semester(f"{course.semester} {course.year}")
-                tex_content.append(f"\\cventry{{{title}}}{{{escape_latex(course.institution)}}}{{{dates}}}{{}}")
-            tex_content.append("\\end{cventries}")
-
         # Service
         if services.exists():
-            tex_content.append("\\section{Professional Service}")
+            tex_content.append("\\section{Selected Professional Service}")
             tex_content.append("\\begin{cventries}")
+            def format_month_year(date):
+                    if not date:
+                        return ""
+                    return f"{date.strftime('%b')} {date.year}"
             for service in services:
-                tex_content.append(f"\\cventry{{{escape_latex(service.get_role_display())}}}{{{escape_latex(service.organization)}}}{{{service.year}}}{{{escape_latex(service.title)}}}")
+                start_str = format_month_year(service.start_date)
+                if service.end_date:
+                    end_str = format_month_year(service.end_date)
+                    dates = f"{start_str} -- {end_str}"
+                else:
+                    dates = f"{start_str}"
+                tex_content.append(f"\\cventry{{{escape_latex(service.get_role_display())}}}{{{escape_latex(service.organization)}}}{{{dates}}}{{{escape_latex(service.title)}}}")
             tex_content.append("\\end{cventries}")
 
 
@@ -284,7 +277,7 @@ class Command(BaseCommand):
                 return
 
         # Clean up auxiliary files
-        for ext in ['aux', 'log', 'out']:
+        for ext in ['aux', 'log', 'out','fls','fdb_latexmk','fdb_latexmk','synctex.gz']:
             try:
                 os.remove(os.path.join(output_dir, f'cv.{ext}'))
             except FileNotFoundError:
