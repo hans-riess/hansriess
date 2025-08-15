@@ -1,8 +1,8 @@
-# academic/management/commands/generate_cv.py
-
 import os
 import subprocess
 import logging
+import boto3
+import shutil
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from academic.models import Profile, Education, Experience, Grant, Talk, Service, Course, Reference
@@ -16,10 +16,22 @@ def escape_latex(text):
     """
     if not text:
         return ""
-    return text.replace('&', '\\&').replace('%', '\\%').replace('$', '\\$') \
-               .replace('#', '\\#').replace('_', '\\_').replace('{', '\\{') \
-               .replace('}', '\\}').replace('~', '\\textasciitilde{}') \
-               .replace('^', '\\textasciicircum{}').replace('\\', '\\textbackslash{}')
+    # In order of replacement to avoid re-escaping
+    replacements = {
+        '\\': '\\textbackslash{}',
+        '&': '\\&',
+        '%': '\\%',
+        '$': '\\$',
+        '#': '\\#',
+        '_': '\\_',
+        '{': '\\{',
+        '}': '\\}',
+        '~': '\\textasciitilde{}',
+        '^': '\\textasciicircum{}',
+    }
+    for char, replacement in replacements.items():
+        text = text.replace(char, replacement)
+    return text
 
 def capitalize_semester(text):
     """
@@ -33,7 +45,7 @@ def capitalize_semester(text):
     return text
 
 class Command(BaseCommand):
-    help = 'Generates the CV as a PDF from the database content.'
+    help = 'Generates the CV as a PDF from the database content and uploads it to S3.'
 
     def handle(self, *args, **options):
         self.stdout.write("Starting CV generation...")
@@ -62,12 +74,8 @@ class Command(BaseCommand):
 
         # --- 2. BUILD THE LATEX STRING ---
         tex_content = []
-
-        # Preamble
         tex_content.append("\\documentclass{article}")
         tex_content.append("\\usepackage{academic-cv}")
-
-        # Header Info
         tex_content.append(f"\\cvname{{{escape_latex(profile.name)}}}")
         tex_content.append(f"\\cvoccupation{{{escape_latex(profile.occupation or profile.title or '')}}}")
         if profile.email:
@@ -76,168 +84,95 @@ class Command(BaseCommand):
             tex_content.append(f"\\cvwebsite{{{escape_latex(profile.website)}}}")
         tex_content.append("\\begin{document}")
         tex_content.append("\\makecvheader")
-
-        # Academic Appointments
         if experiences.exists():
             tex_content.append("\\section{Academic Appointments}")
             tex_content.append("\\begin{cventries}")
             for item in experiences:
-                # Format months as abbreviated names (e.g., Jan, Feb)
                 def format_month_year(date):
-                    if not date:
-                        return ""
+                    if not date: return ""
                     return f"{date.strftime('%b')} {date.year}"
-                
                 start_str = format_month_year(item.start_date)
-                if item.end_date:
-                    end_str = format_month_year(item.end_date)
-                else:
-                    end_str = "Present"
+                end_str = "Present" if not item.end_date else format_month_year(item.end_date)
                 dates = f"{start_str} -- {end_str}"
-                
-                # Build description with location and original description
-                description_parts = []
-                if item.location:
-                    description_parts.append(escape_latex(item.location))
-                if item.description:
-                    description_parts.append(escape_latex(item.description))
-                
-                description = " \\\\ ".join(description_parts) if description_parts else ""
-                
+                description_parts = [escape_latex(p) for p in [item.location, item.description] if p]
+                description = " \\\\ ".join(description_parts)
                 tex_content.append(f"\\cventry{{{escape_latex(item.title)}}}{{{escape_latex(item.institution)}}}{{{dates}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
-        
-        # Grants
         if grants.exists():
             tex_content.append("\\section{Grants}")
             tex_content.append("\\begin{cventries}")
-            for grant in grants:                               
-                # Include role prominently in the title
+            for grant in grants:
                 role_display = grant.get_role_display()
                 title = f"{escape_latex(role_display)}: {escape_latex(grant.title)}"
-                
-                # Create description with amount and grant number
                 description_parts = []
-                if grant.amount:
-                    description_parts.append(f"\${grant.amount:,.0f}")
-                if grant.grant_number:
-                    description_parts.append(escape_latex(grant.grant_number))
-                
-                description = " • ".join(description_parts) if description_parts else ""
-                
+                if grant.amount: description_parts.append(f"\\${grant.amount:,.0f}")
+                if grant.grant_number: description_parts.append(escape_latex(grant.grant_number))
+                description = " • ".join(description_parts)
                 tex_content.append(f"\\cventry{{{title}}}{{{escape_latex(grant.funding_agency)}}}{{{grant.get_date_range()}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
-
-        # Education
         if educations.exists():
             tex_content.append("\\section{Education}")
             tex_content.append("\\begin{cventries}")
             for item in educations:
                 degree = item.get_degree_type_display()
                 field = item.field_of_study
-                
-                # First line: field of study
-                description = escape_latex(field)
-                
-                # Second line: thesis and advisor (if they exist)
+                description_parts = [escape_latex(field)]
                 second_line_parts = []
-                if item.thesis_title:
-                    second_line_parts.append(f"Thesis: {escape_latex(item.thesis_title)}")
-                if item.advisor:
-                    second_line_parts.append(f"Advisor: {escape_latex(item.advisor)}")
-                
-                if second_line_parts:
-                    description += f" \\\\ {' • '.join(second_line_parts)}"
-                
-                # Add honors if they exist
-                if item.honors:
-                    if second_line_parts:
-                        description += f" \\\\ {escape_latex(item.honors)}"
-                
+                if item.thesis_title: second_line_parts.append(f"Thesis: {escape_latex(item.thesis_title)}")
+                if item.advisor: second_line_parts.append(f"Advisor: {escape_latex(item.advisor)}")
+                if second_line_parts: description_parts.append(' • '.join(second_line_parts))
+                if item.honors: description_parts.append(escape_latex(item.honors))
+                description = " \\\\ ".join(description_parts)
                 tex_content.append(f"\\cventry{{{escape_latex(degree)}}}{{{escape_latex(item.institution)}}}{{{item.graduation_year}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
-            
-        # Teaching
         if courses.exists():
             tex_content.append("\\section{Teaching}")
             tex_content.append("\\begin{cventries}")
             for course in courses:
-                if course.course_code:
-                    title = f"{escape_latex(course.course_code)}: {escape_latex(course.title)}"
-                else:
-                    title = f"{escape_latex(course.title)}"
+                title = f"{escape_latex(course.course_code)}: {escape_latex(course.title)}" if course.course_code else escape_latex(course.title)
                 dates = capitalize_semester(f"{course.semester} {course.year}")
                 tex_content.append(f"\\cventry{{{title}}}{{{escape_latex(course.institution)}}}{{{dates}}}{{{escape_latex(course.get_role_display())}}}")
             tex_content.append("\\end{cventries}")
-        
-        # Publications
         tex_content.append("\\section{Publications}")
         for pub_type, pub_list in publications.items():
             if pub_list.exists():
                 tex_content.append(f"\\subsection*{{{escape_latex(pub_list.first().get_reference_type_display())}}}")
                 tex_content.append("\\begin{publications}")
                 for pub in pub_list:
-                    # Format authors
                     authors = escape_latex(pub.authors)
                     title = escape_latex(pub.title)
-                    
-                    details_parts = []
-                    if pub.journal: details_parts.append(escape_latex(pub.journal))
-                    if pub.volume: details_parts.append(f"Vol. {pub.volume}")
-                    if pub.issue: details_parts.append(f"Issue {pub.issue}")
-                    if pub.pages: details_parts.append(f"pp. {pub.pages}")
-                    if pub.year: details_parts.append(str(pub.year))
-                    details = ", ".join(filter(None, details_parts))
-
+                    details_parts = [escape_latex(p) for p in [pub.journal, f"Vol. {pub.volume}" if pub.volume else None, f"Issue {pub.issue}" if pub.issue else None, f"pp. {pub.pages}" if pub.pages else None, str(pub.year) if pub.year else None] if p]
+                    details = ", ".join(details_parts)
                     links = []
-                    if pub.pdf_file:
-                        links.append(f"\\href{{{pub.pdf_file.url}}}{{[PDF]}}")
-                    if pub.doi:
-                        links.append(f"\\href{{https://doi.org/{pub.doi}}}{{[DOI]}}")
-                    if pub.url:
-                        links.append(f"\\href{{{pub.url}}}{{[URL]}}")
+                    if pub.pdf_file: links.append(f"\\href{{{pub.pdf_file.url}}}{{[PDF]}}")
+                    if pub.doi: links.append(f"\\href{{https://doi.org/{pub.doi}}}{{[DOI]}}")
+                    if pub.url: links.append(f"\\href{{{pub.url}}}{{[URL]}}")
                     link_str = " ".join(links)
-
-                    # Add special indicators
                     indicators = []
-                    if pub.alphabetical_order:
-                        indicators.append("(Authors listed alphabetically)")
-                    if pub.shared_first_author:
-                        indicators.append("(Shared first authorship)")
+                    if pub.alphabetical_order: indicators.append("(Authors listed alphabetically)")
+                    if pub.shared_first_author: indicators.append("(Shared first authorship)")
                     indicator_str = " ".join(indicators)
-
                     tex_content.append(f"\\publication{{{authors}}}{{{title}}}{{{details}}}{{{link_str}}}{{{indicator_str}}}")
                 tex_content.append("\\end{publications}")
-
-        # Talks
         if talks.exists():
             tex_content.append("\\section{Selected Invited Talks}")
-            tex_content.append("\\begin{publications}") # Reusing publication style for talks
+            tex_content.append("\\begin{publications}")
             for talk in talks:
                 tex_content.append(f"\\cvtalk{{{escape_latex(talk.title)}}}{{{escape_latex(talk.venue)}}}{{{escape_latex(talk.location)}}}{{{talk.date.strftime('%B %Y')}}}")
             tex_content.append("\\end{publications}")
-
-        # Service
         if services.exists():
             tex_content.append("\\section{Selected Professional Service}")
             tex_content.append("\\begin{cventries}")
             def format_month_year(date):
-                    if not date:
-                        return ""
-                    return f"{date.strftime('%b')} {date.year}"
+                if not date: return ""
+                return f"{date.strftime('%b')} {date.year}"
             for service in services:
                 start_str = format_month_year(service.start_date)
-                if service.end_date:
-                    end_str = format_month_year(service.end_date)
-                    dates = f"{start_str} -- {end_str}"
-                else:
-                    dates = f"{start_str}"
+                end_str = format_month_year(service.end_date)
+                dates = f"{start_str} -- {end_str}" if end_str else start_str
                 tex_content.append(f"\\cventry{{{escape_latex(service.get_role_display())}}}{{{escape_latex(service.organization)}}}{{{dates}}}{{{escape_latex(service.title)}}}")
             tex_content.append("\\end{cventries}")
-
-
         tex_content.append("\\end{document}")
-
         final_tex_string = "\n".join(tex_content)
 
         # --- 3. WRITE .TEX FILE AND COMPILE ---
@@ -245,24 +180,20 @@ class Command(BaseCommand):
         output_dir = os.path.join(settings.BASE_DIR, 'static', 'files')
         os.makedirs(output_dir, exist_ok=True)
         
-        # Copy the style file to the output directory
-        style_file_src = os.path.join(tex_dir, 'academic-cv.sty')
-        style_file_dst = os.path.join(output_dir, 'academic-cv.sty')
-        import shutil
-        shutil.copy2(style_file_src, style_file_dst)
+        shutil.copy2(os.path.join(tex_dir, 'academic-cv.sty'), os.path.join(output_dir, 'academic-cv.sty'))
         
         tex_file_path = os.path.join(output_dir, 'cv.tex')
+        pdf_file_path = os.path.join(output_dir, 'cv.pdf')
         with open(tex_file_path, 'w', encoding='utf-8') as f:
             f.write(final_tex_string)
         
         self.stdout.write(f".tex file written to {tex_file_path}")
 
-        # Compile with pdflatex
-        for i in range(2): # Run twice to ensure cross-references are correct
+        for i in range(2):
             self.stdout.write(f"Running pdflatex compilation (Pass {i+1}/2)...")
             process = subprocess.run(
                 ['pdflatex', '-interaction=nonstopmode', f'-output-directory={output_dir}', tex_file_path],
-                capture_output=True, text=True
+                capture_output=True, text=True, encoding='utf-8'
             )
             if process.returncode != 0:
                 self.stderr.write(self.style.ERROR('PDFLaTeX compilation failed!'))
@@ -275,12 +206,33 @@ class Command(BaseCommand):
                     self.stderr.write(process.stdout)
                     self.stderr.write(process.stderr)
                 return
+        
+        self.stdout.write(self.style.SUCCESS(f"Successfully generated cv.pdf in {output_dir}"))
 
-        # Clean up auxiliary files
-        for ext in ['aux', 'log', 'out','fls','fdb_latexmk','fdb_latexmk','synctex.gz']:
+        # --- 4. UPLOAD TO S3 ---
+        bucket_name = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+        if bucket_name:
+            self.stdout.write("AWS credentials found. Attempting to upload to S3...")
+            try:
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+                )
+                object_name = 'cv.pdf'
+
+                # The ACL parameter has been removed from this call
+                s3.upload_file(pdf_file_path, bucket_name, object_name, ExtraArgs={'ContentType': 'application/pdf'})
+                self.stdout.write(self.style.SUCCESS(f'Successfully uploaded {object_name} to S3 bucket {bucket_name}'))
+            except Exception as e:
+                self.stderr.write(self.style.ERROR(f'Failed to upload to S3: {e}'))
+        else:
+            self.stdout.write(self.style.WARNING('AWS credentials not found. Skipping S3 upload.'))
+
+        # --- 5. CLEAN UP AUXILIARY FILES ---
+        for ext in ['aux', 'log', 'out', 'fls', 'fdb_latexmk', 'synctex.gz', 'sty', 'tex']:
             try:
                 os.remove(os.path.join(output_dir, f'cv.{ext}'))
             except FileNotFoundError:
                 pass
-
-        self.stdout.write(self.style.SUCCESS(f"Successfully generated cv.pdf in {output_dir}"))
+        self.stdout.write("Cleaned up auxiliary files.")
