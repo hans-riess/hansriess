@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Reference, Course, Experience, Talk, Grant, Education, Service
+from .models import Profile, Reference, Course, Experience, Talk, Grant, Education, Service, Quote, Figure
 
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['get_short_title', 'year', 'reference_type']
@@ -9,12 +9,16 @@ class ReferenceAdmin(admin.ModelAdmin):
     
     fieldsets = [
         (None, {
-            'fields': ['reference_type', 'title', 'authors', 'abstract','keywords','code','alphabetical_order', 'shared_first_author', 'year']
+            'fields': ['reference_type', 'title', 'authors', 'alphabetical_order', 'shared_first_author']
         }),
         ('Publication Details', {
-            'fields': ['journal', 'volume', 'issue', 'pages', 'url','doi', 'pdf_file', 'reference_image'],
+            'fields': ['year','journal', 'volume', 'issue', 'pages','abstract','keywords'],
             'classes': ['collapse']
         }),
+        ('Materials', {
+            'fields': ['url','code','pdf_file', 'reference_image'],
+            'classes': ['collapse']
+        })
     ]
 
 class CourseAdmin(admin.ModelAdmin):
@@ -63,7 +67,7 @@ class TalkAdmin(admin.ModelAdmin):
             'fields': ['title', 'abstract', 'venue', 'location', 'talk_type', 'is_invited', 'date']
         }),
         ('Materials', {
-            'fields': ['slides', 'event_url'],
+            'fields': ['slides','talk', 'event_url'],
             'classes': ['collapse']
         }),
         ('Related Publications', {
@@ -130,7 +134,7 @@ class ProfileAdmin(admin.ModelAdmin):
     
     fieldsets = [
         ('Basic Information', {
-            'fields': ['name', 'occupation', 'title','long_title', 'bio', 'short_bio', 'quote', 'quote_author', 'under_construction']
+            'fields': ['name', 'occupation', 'title','long_title','headshot', 'bio', 'short_bio', 'under_construction']
         }),
         ('Contact Information', {
             'fields': ['email', 'room_number', 'building', 'street', 'city', 'state', 'zip_code', 'country', 'website','phone'],
@@ -146,6 +150,23 @@ class ProfileAdmin(admin.ModelAdmin):
         })
     ]
 
+class QuoteAdmin(admin.ModelAdmin):
+    list_display = ['author']
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['author','quote' ]
+        })
+    ]
+
+class FigureAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    fieldsets = [
+        (None, {
+            'fields': ['name','image','caption']
+        })
+    ]
+
+
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(Course, CourseAdmin)
@@ -154,3 +175,5 @@ admin.site.register(Talk, TalkAdmin)
 admin.site.register(Grant, GrantAdmin)
 admin.site.register(Education, EducationAdmin)
 admin.site.register(Service, ServiceAdmin)
+admin.site.register(Quote, QuoteAdmin)
+admin.site.register(Figure,FigureAdmin)

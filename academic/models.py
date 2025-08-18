@@ -22,8 +22,9 @@ class Profile(models.Model):
     zip_code = models.CharField(max_length=20, blank=True, null=True)
     country = models.CharField(max_length=200, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    cv = models.FileField(upload_to='files/', blank=True, null=True)
+    cv = models.FileField(upload_to='profile/', blank=True, null=True)
     cv_button = models.BooleanField(blank=True, null=True)
+    headshot = models.ImageField(upload_to='profile/', blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     twitter = models.URLField(blank=True, null=True)
     blue_sky = models.URLField(blank=True, null=True)
@@ -32,14 +33,21 @@ class Profile(models.Model):
     github = models.URLField(blank=True, null=True)
     google_scholar = models.URLField(blank=True, null=True)
     orcid = models.URLField(blank=True, null=True)
-    quote = models.TextField(max_length=2000, blank=True, null=True, help_text="A stylized quote to display in the footer")
-    quote_author = models.CharField(max_length=200, blank=True, null=True, help_text="Author of the quote")
     under_construction = models.BooleanField(default=False, help_text="Show under construction notice on website")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+class Quote(models.Model):
+    author = models.CharField(max_length=200, blank=True, null=True, help_text="Author of the quote")
+    quote = models.TextField(max_length=2000, blank=True, null=True, help_text="A stylized quote to display in the footer")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.author}"
 
 class Collaborator(models.Model):
     name = models.CharField(max_length=100)
@@ -51,6 +59,14 @@ class Collaborator(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def __str__(self):
+        return self.name
+
+class Figure(models.Model):
+    name = models.CharField (max_length=100)
+    image = models.ImageField(upload_to='figures/', blank=True, null=True)
+    caption = models.TextField(blank=True)
+
     def __str__(self):
         return self.name
 
@@ -84,7 +100,7 @@ class Reference(models.Model):
     abstract = models.TextField(blank=True)
     keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated list of keywords")
     code = models.URLField(blank=True, help_text="Link to the code repository")
-    
+
     class Meta:
         ordering = ['-year', 'title']
 
@@ -255,6 +271,7 @@ class Talk(models.Model):
     is_invited = models.BooleanField(default=False, help_text="Check if this is an invited talk") 
     date = models.DateField(help_text="Date of the talk")
     slides = models.FileField(upload_to='talks/slides/', blank=True, null=True, help_text="Upload slides file")
+    poster = models.FileField(upload_to='talks/posters/', blank=True, null=True, help_text="Upload poster file")
     event_url = models.URLField(blank=True, null=True, help_text="URL to the event website")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
     created_at = models.DateTimeField(auto_now_add=True)

@@ -220,8 +220,6 @@ class Command(BaseCommand):
                     aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
                 )
                 object_name = 'cv.pdf'
-
-                # The ACL parameter has been removed from this call
                 s3.upload_file(pdf_file_path, bucket_name, object_name, ExtraArgs={'ContentType': 'application/pdf'})
                 self.stdout.write(self.style.SUCCESS(f'Successfully uploaded {object_name} to S3 bucket {bucket_name}'))
             except Exception as e:
