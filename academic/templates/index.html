@@ -30,7 +30,7 @@
                     <header class="col-12" style="text-align: center;">
                         <!-- Mobile Headshot -->
                         <div class="mobile-headshot">
-                            <img src="{% static 'images/headshot.jpeg' %}" alt="Hans Riess" />
+                            <img src="{{profile.headshot.url}}" alt="Hans Riess" />
                         </div>
                         <h2 class="bio-title">{{profile.name}}</h2>
                         <h3 class="bio-subtitle">
@@ -39,12 +39,8 @@
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
                                 <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
-                                {% if profile.cv_button %}
-                                    {% if profile.cv%}
-                                        <a href="{{profile.cv.url}}" class="button bio-button">Download CV</a>
-                                    {% else %}
-                                        <a href="{% static 'files/cv.pdf' %}" class="button bio-button">Download CV</a>
-                                    {% endif %}
+                                {% if profile.cv %}
+                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
                                 {% endif %}
                             </li>
                         </ul>
@@ -70,7 +66,7 @@
 
                     <!-- Image Section -->
                     <div class="col-4 col-12-mobile bio-image">
-                        <img src="{% static 'images/headshot.jpeg' %}" alt="Headshot" class="image fit" />
+                        <img src="{{profile.headshot.url}}" alt="Headshot" class="image fit" />
                     </div>
                 </article>
             </div>
@@ -83,7 +79,7 @@
                 <div class="carousel-container">
                     {% for figure in figures %}
                     <div class="carousel-slide">
-                        <img src="{{figure.image.url}}" alt="{{figure.name}}" class="image fit" />
+                        <img src="{{figure.image.url}}" alt="{{figure.name}}" class="image fit"/>
                     </div>
                     {% endfor %}
                 </div>
@@ -106,7 +102,12 @@
                     {% for reference in journal_articles %}
                     <div class="publication">
                         <article class="row aln-middle">
-                            <div class="col-10">
+                            {% if reference.reference_image %}
+                            <div class="col-2">
+                                <img src="{{reference.reference_image.url}}" class="image fit" />
+                            </div>
+                            {% endif %}
+                            <div class="col-8">
                                 {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %} {{ reference.volume }}{% endif %}{% if reference.issue %}({{ reference.issue }}){% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %} {% if reference.url %} 
                             </div>
                             <div class="col-2">
