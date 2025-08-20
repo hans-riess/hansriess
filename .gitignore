@@ -6,3 +6,17 @@ staticfiles/
 media/
 .venv/
 __pycache__/
+scrap/
+*.tex
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.bbl
+*.blg
+hansriess-django-app_accessKeys.csv
+hansriess/settings_local.py
+.env
