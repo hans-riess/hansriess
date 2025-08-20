@@ -102,12 +102,7 @@
                     {% for reference in journal_articles %}
                     <div class="publication">
                         <article class="row aln-middle">
-                            {% if reference.reference_image %}
-                            <div class="col-2">
-                                <img src="{{reference.reference_image.url}}" class="image fit" />
-                            </div>
-                            {% endif %}
-                            <div class="col-8">
+                            <div class="col-10">
                                 {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %} {{ reference.volume }}{% endif %}{% if reference.issue %}({{ reference.issue }}){% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %} {% if reference.url %} 
                             </div>
                             <div class="col-2">

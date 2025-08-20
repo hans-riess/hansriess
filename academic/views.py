@@ -48,15 +48,20 @@ def index(request):
     return render(request, 'index.html', context)
 
 def generate_cv_pdf(request):
-    # This command now generates the .tex file, compiles it, and uploads it to S3
+    """
+    Runs the command to generate and upload the CV, then redirects to the 
+    file's public URL.
+    """
+    # Run the management command to generate the CV
     call_command('generate_cv')
 
-    # Redirect the user directly to the known S3 URL for the CV
-    bucket_name = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-    if bucket_name:
-        s3_url = f"https://{bucket_name}.s3.amazonaws.com/cv.pdf"
-        return redirect(s3_url)
+    # Get the updated profile object
+    profile = Profile.objects.first()
+
+    # Redirect to the CV's URL, whether it's on S3 or local
+    if profile and profile.cv:
+        return redirect(profile.cv.url)
     else:
-        # Fallback for local development if S3 is not configured
-        # This will likely result in a 404 unless you have a cv.pdf in your local static files
-        return redirect('/static/files/cv.pdf')
+        # Fallback if the CV doesn't exist for some reason
+        # You can customize this to redirect to the homepage with an error message
+        return redirect('index') 

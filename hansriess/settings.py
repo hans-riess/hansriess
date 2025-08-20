@@ -13,6 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG') == 'True'
 PRODUCTION = os.environ.get('PRODUCTION') == 'True'
+RUNNING_LOCALLY = os.environ.get('RUNNING_LOCALLY') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS','localhost').split(',')
 
@@ -95,6 +96,8 @@ USE_TZ = True
 
 
 # --- Static & Media Files ---
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] # Moved to here
+
 if PRODUCTION:
     # --- Production Static & Media (S3) ---
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
@@ -108,19 +111,17 @@ if PRODUCTION:
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Storage'
-    
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'    
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-    # --- Production Security ---
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    
+    if not RUNNING_LOCALLY:
+        SECURE_SSL_REDIRECT = True
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
 
 else:
     # --- Development Static & Media ---
     STATIC_URL = '/static/'
-    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

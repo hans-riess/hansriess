@@ -231,14 +231,12 @@ class Command(BaseCommand):
                         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
                         aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
                     
-                    # Respect the model's upload_to path
-                    object_name = profile.cv.field.upload_to + 'cv.pdf'
-                    s3.upload_file(pdf_file_path, bucket_name, object_name, ExtraArgs={'ContentType': 'application/pdf'})
-                    
-                    profile.cv.name = object_name
-                    profile.save()
+                    # Save the new CV using the model's save method
+                    with open(pdf_file_path, 'rb') as pdf_file:
+                        profile.cv.save('cv.pdf', File(pdf_file), save=True)
 
-                    self.stdout.write(self.style.SUCCESS(f'Successfully uploaded and linked {object_name} to profile.'))
+                    self.stdout.write(self.style.SUCCESS(f'Successfully uploaded and linked {profile.cv.name} to profile.'))
+
                 except Exception as e:
                     self.stderr.write(self.style.ERROR(f'Failed to upload to S3: {e}'))
             else:
