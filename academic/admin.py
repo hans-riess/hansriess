@@ -67,7 +67,8 @@ class TalkAdmin(admin.ModelAdmin):
             'fields': ['title', 'abstract', 'venue', 'location', 'talk_type', 'is_invited', 'date']
         }),
         ('Materials', {
-            'fields': ['slides','talk', 'event_url'],
+            # 'talk' has been removed from this list
+            'fields': ['slides', 'event_url'],
             'classes': ['collapse']
         }),
         ('Related Publications', {
