@@ -49,19 +49,12 @@ def index(request):
 
 def generate_cv_pdf(request):
     """
-    Runs the command to generate and upload the CV, then redirects to the 
-    file's public URL.
+    Runs the command to generate and upload the CV, but does not redirect to
+    the file's public URL to avoid serving potentially cached content.
     """
     # Run the management command to generate the CV
     call_command('generate_cv')
-
-    # Get the updated profile object
-    profile = Profile.objects.first()
-
-    # Redirect to the CV's URL, whether it's on S3 or local
-    if profile and profile.cv:
-        return redirect(profile.cv.url)
-    else:
-        # Fallback if the CV doesn't exist for some reason
-        # You can customize this to redirect to the homepage with an error message
-        return redirect('index') 
+    
+    # Intentionally return no content to avoid redirecting to potentially
+    # stale cached files on S3.
+    return HttpResponse(status=204)
