@@ -6,7 +6,7 @@ import shutil
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.core.files import File
-from academic.models import Profile, Education, Experience, Grant, Talk, Service, Course, Reference, ProfessionalDevelopment, Mentorship
+from academic.models import Profile, Education, Experience, Grant, Talk, Service, Course, Reference
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -64,8 +64,6 @@ class Command(BaseCommand):
             talks = Talk.objects.order_by('-date')
             services = Service.objects.order_by('-year')
             courses = Course.objects.order_by('-year', '-semester')
-            professional_development = ProfessionalDevelopment.objects.order_by('-start_date')
-            mentorships = Mentorship.objects.order_by('-start_date')
             pub_types = ['journal_article', 'conference_proceedings', 'preprint', 'book', 'book_chapter', 'thesis', 'other']
             publications = {pt: Reference.objects.filter(reference_type=pt).order_by('-year') for pt in pub_types}
 
@@ -143,22 +141,6 @@ class Command(BaseCommand):
                 tex_content.append(f"\\cventry{{{title}}}{{{escape_latex(course.institution)}}}{{{dates}}}{{{escape_latex(course.get_role_display())}}}")
             tex_content.append("\\end{cventries}")
 
-        # Professional Development
-        if professional_development.exists():
-            tex_content.append("\\section{Professional Development}")
-            tex_content.append("\\begin{cventries}")
-            def format_month_year_pd(date):
-                if not date: return ""
-                return f"{date.strftime('%b')} {date.year}"
-            for pd in professional_development:
-                start_str = format_month_year_pd(pd.start_date)
-                end_str = "Present" if (pd.start_date and not pd.end_date) else format_month_year_pd(pd.end_date)
-                dates = f"{start_str} -- {end_str}" if end_str else start_str
-                description_parts = [escape_latex(p) for p in [pd.location, pd.description] if p]
-                description = " \\\\ ".join(description_parts)
-                tex_content.append(f"\\cventry{{{escape_latex(pd.title)}}}{{{escape_latex(pd.organization)}}}{{{dates}}}{{{description}}}")
-            tex_content.append("\\end{cventries}")
-
         # Publications
         tex_content.append("\\section{Publications}")
         for pub_type, pub_list in publications.items():
@@ -202,28 +184,6 @@ class Command(BaseCommand):
                 end_str = format_month_year(service.end_date)
                 dates = f"{start_str} -- {end_str}" if end_str else start_str
                 tex_content.append(f"\\cventry{{{escape_latex(service.get_role_display())}}}{{{escape_latex(service.organization)}}}{{{dates}}}{{{escape_latex(service.title)}}}")
-            tex_content.append("\\end{cventries}")
-
-        # Mentorship
-        if mentorships.exists():
-            tex_content.append("\\section{Mentorship}")
-            tex_content.append("\\begin{cventries}")
-            def format_month_year_ment(date):
-                if not date: return ""
-                return f"{date.strftime('%b')} {date.year}"
-            for m in mentorships:
-                start_str = format_month_year_ment(m.start_date)
-                end_str = format_month_year_ment(m.end_date) if m.end_date else ("Present" if m.is_current else "")
-                dates = f"{start_str} -- {end_str}" if end_str else start_str
-                title = f"{escape_latex(m.mentee_name)} ({escape_latex(m.get_mentee_level_display())})"
-                subtitle = escape_latex(m.institution)
-                desc_parts = []
-                if m.department: desc_parts.append(escape_latex(m.department))
-                if m.area: desc_parts.append(escape_latex(m.area))
-                if m.outcome: desc_parts.append(escape_latex(m.outcome))
-                if m.notes: desc_parts.append(escape_latex(m.notes))
-                description = " \\\\ ".join(desc_parts)
-                tex_content.append(f"\\cventry{{{title}}}{{{subtitle}}}{{{dates}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
 
         tex_content.append("\\end{document}")
