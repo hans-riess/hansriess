@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Reference, Course, Experience, Talk, Grant, Education, Service, Quote, Figure, ProfessionalDevelopment, Mentorship
+from .models import Profile, Reference, Course, Experience, Talk, Grant, Education, Service, Quote, Figure
 
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['get_short_title', 'year', 'reference_type']
@@ -178,41 +178,3 @@ admin.site.register(Education, EducationAdmin)
 admin.site.register(Service, ServiceAdmin)
 admin.site.register(Quote, QuoteAdmin)
 admin.site.register(Figure,FigureAdmin)
- 
- 
-class ProfessionalDevelopmentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'organization', 'start_date', 'end_date']
-    search_fields = ['title', 'organization', 'location']
-    ordering = ['-start_date', 'title']
-    fieldsets = [
-        ('Basic Information', {
-            'fields': ['title', 'organization', 'location', 'start_date', 'end_date']
-        }),
-        ('Details', {
-            'fields': ['description', 'url'],
-            'classes': ['collapse']
-        })
-    ]
-
-
-class MentorshipAdmin(admin.ModelAdmin):
-    list_display = ['mentee_name', 'mentee_level', 'institution', 'start_date', 'is_current']
-    list_filter = ['mentee_level', 'is_current']
-    search_fields = ['mentee_name', 'institution', 'department', 'area']
-    ordering = ['-start_date', 'mentee_name']
-    fieldsets = [
-        ('Basic Information', {
-            'fields': ['mentee_name', 'mentee_level', 'institution', 'department', 'area']
-        }),
-        ('Dates', {
-            'fields': ['start_date', 'end_date', 'is_current']
-        }),
-        ('Outcome and Notes', {
-            'fields': ['outcome', 'notes'],
-            'classes': ['collapse']
-        })
-    ]
-
-
-admin.site.register(ProfessionalDevelopment, ProfessionalDevelopmentAdmin)
-admin.site.register(Mentorship, MentorshipAdmin)

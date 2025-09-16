@@ -63,19 +63,9 @@ WSGI_APPLICATION = 'hansriess.wsgi.application'
 
 
 # --- Database ---
-# Prefer DATABASE_URL when provided. If it's a sqlite URL, don't force SSL.
-# Fall back to sqlite in local/dev, otherwise use explicit Postgres settings.
-db_url = os.environ.get('DATABASE_URL')
-if db_url:
-    ssl_required = not db_url.startswith('sqlite')
-    DATABASES = {'default': dj_database_url.config(conn_max_age=600, ssl_require=ssl_required)}
-elif os.environ.get('RUNNING_LOCALLY') == 'True' or os.environ.get('DEBUG') == 'True':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
+# Heroku provides a DATABASE_URL env var. For local, we build it from other vars.
+if 'DATABASE_URL' in os.environ:
+    DATABASES = {'default': dj_database_url.config(conn_max_age=600, ssl_require=True)}
 else:
     DATABASES = {
         'default': {
