@@ -895,9 +895,9 @@ ul.icons li a:hover {
 
 /* Mobile responsive for bio sections */
 @media screen and (max-width: 736px) {
-    /* Hide contact area on mobile */
+    /* Keep contact area visible on mobile but improve layout */
     #connect {
-        display: none;
+        display: block;
     }
     
     /* Improved mobile typography and spacing */
@@ -1051,9 +1051,20 @@ ul.icons li a:hover {
         display: block;
     }
     
-    /* Hide contact button on mobile */
+    /* Show contact and CV buttons on mobile with improved styling */
     .bio-button {
-        display: none;
+        display: inline-block;
+        font-size: 1em;
+        padding: 0.8em 1.5em;
+        margin: 0.3em;
+        border-radius: 0.4em;
+        background-color: #B3A369;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease-in-out;
+        min-width: 120px;
+        text-align: center;
     }
     
     /* Better card styling for mobile */
@@ -1171,28 +1182,43 @@ ul.icons li a:hover {
     /* Better footer for mobile */
     #footer {
         padding: 2em 0 1em 0;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(179, 163, 105, 0.3);
     }
     
     #footer .icons {
-        margin-bottom: 1em;
+        margin-bottom: 1.5em;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5em;
+    }
+    
+    #footer .icons li {
+        padding: 0;
     }
     
     #footer .icons li a {
         font-size: 1.8em;
-        padding: 0.5em;
-        min-width: 40px;
-        min-height: 40px;
+        padding: 0.6em;
+        min-width: 50px;
+        min-height: 50px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0.3em;
-        background: rgba(255, 255, 255, 0.1);
-        transition: all 0.2s ease;
+        border-radius: 0.5em;
+        background: rgba(255, 255, 255, 0.15);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(179, 163, 105, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     
     #footer .icons li a:hover {
-        background: rgba(212, 194, 133, 0.2);
+        background: rgba(212, 194, 133, 0.3);
         transform: scale(1.1);
+        border-color: rgba(212, 194, 133, 0.5);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
     /* Hide headshot on mobile */
@@ -1225,13 +1251,17 @@ ul.icons li a:hover {
     
     /* Improved actions for mobile */
     ul.actions {
-        margin: 1em 0;
+        margin: 1.5em 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8em;
     }
     
     ul.actions li {
         display: block;
-        padding: 0 0 0.5em 0;
-        width: 100%;
+        padding: 0;
+        width: auto;
     }
     
     /* Better spacing for mobile */
@@ -1391,9 +1421,13 @@ ul.icons li a:hover {
     
     #footer .icons li a {
         font-size: 1.6em;
-        padding: 0.4em;
-        min-width: 45px;
-        min-height: 45px;
+        padding: 0.5em;
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 0.4em;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(179, 163, 105, 0.2);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     
 
