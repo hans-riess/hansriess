@@ -623,6 +623,18 @@ ul.icons li a {
     border-radius: 0.3em;
     background: rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease;
+    text-decoration: none;
+    border-bottom: none;
+}
+
+ul.icons li a i {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro";
+    font-weight: 900;
 }
 
 ul.icons li a:hover {
@@ -1212,6 +1224,18 @@ ul.icons li a:hover {
         transition: all 0.3s ease;
         border: 1px solid rgba(179, 163, 105, 0.2);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        border-bottom: none;
+    }
+    
+    #footer .icons li a i {
+        display: inline-block;
+        font-style: normal;
+        font-variant: normal;
+        text-rendering: auto;
+        line-height: 1;
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro";
+        font-weight: 900;
     }
     
     #footer .icons li a:hover {
@@ -1428,6 +1452,18 @@ ul.icons li a:hover {
         background: rgba(255, 255, 255, 0.15);
         border: 1px solid rgba(179, 163, 105, 0.2);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        border-bottom: none;
+    }
+    
+    #footer .icons li a i {
+        display: inline-block;
+        font-style: normal;
+        font-variant: normal;
+        text-rendering: auto;
+        line-height: 1;
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro";
+        font-weight: 900;
     }
     
 
