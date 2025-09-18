@@ -1260,12 +1260,17 @@ ul.icons li a:hover {
         padding: 1em 0 0 1em;
     }
     
-    /* Mobile-specific column classes */
-    .col-12-mobile { width: 100%; }
-    .col-8-mobile { width: 100%; } /* Stack on mobile */
-    .col-4-mobile { width: 100%; } /* Stack on mobile */
-    .col-5-mobile { width: 100%; } /* Stack on mobile */
-    .col-3-mobile { width: 100%; } /* Stack on mobile */
+    /* Mobile-specific column classes - override desktop column widths */
+    .row > .col-12-mobile { width: 100% !important; }
+    .row > .col-8-mobile { width: 100% !important; } /* Stack on mobile */
+    .row > .col-4-mobile { width: 100% !important; } /* Stack on mobile */
+    .row > .col-5-mobile { width: 100% !important; } /* Stack on mobile */
+    .row > .col-3-mobile { width: 100% !important; } /* Stack on mobile */
+    
+    /* Also override the regular column classes on mobile for Connect section */
+    .row > .col-3 { width: 100% !important; }
+    .row > .col-4 { width: 100% !important; }
+    .row > .col-5 { width: 100% !important; }
     
     /* Force bio content to full width on mobile */
     .bio-content {
@@ -1331,6 +1336,11 @@ ul.icons li a:hover {
         width: calc(100% - 0.5em);
         padding: 0 0.25em;
     }
+    
+    /* Ensure column stacking on very small screens */
+    .row > .col-3 { width: 100% !important; }
+    .row > .col-4 { width: 100% !important; }
+    .row > .col-5 { width: 100% !important; }
     
     #header .logo span {
         font-size: 1.3em;
