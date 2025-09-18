@@ -286,15 +286,15 @@
         <div id="footer">
             <div class="contact" style="text-align: center">
                 <ul class="icons">
-                    {% if profile.phone %}<li><a href="tel:{{profile.phone}}" class="fa-solid fa-phone"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.email %}<li><a href="mailto:{{ profile.email }}" class="fa-solid fa-envelope"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.github %}<li><a href="{{ profile.github }}" class="fa-brands fa-github"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.google_scholar %}<li><a href="{{ profile.google_scholar }}" class="fa-brands fa-google-scholar"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.twitter %}<li><a href="{{ profile.twitter }}" class="fa-brands fa-x-twitter"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.youtube %}<li><a href="{{ profile.youtube }}" class="fa-brands fa-youtube"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.blue_sky %}<li><a href="{{ profile.blue_sky }}" class="fa-brands fa-bluesky"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.linkedin %}<li><a href="{{ profile.linkedin }}" class="fa-brands fa-linkedin"><span class="label"></span></a></li>{% endif %}
-                    {% if profile.orcid %}<li><a href="{{ profile.orcid }}" class="fa-brands fa-orcid"><span class="label"></span></a></li>{% endif %}
+                    {% if profile.phone %}<li><a href="tel:{{profile.phone}}"><i class="fa-solid fa-phone"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.email %}<li><a href="mailto:{{ profile.email }}"><i class="fa-solid fa-envelope"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.github %}<li><a href="{{ profile.github }}"><i class="fa-brands fa-github"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.google_scholar %}<li><a href="{{ profile.google_scholar }}"><i class="fa-brands fa-google-scholar"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.twitter %}<li><a href="{{ profile.twitter }}"><i class="fa-brands fa-x-twitter"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.youtube %}<li><a href="{{ profile.youtube }}"><i class="fa-brands fa-youtube"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.blue_sky %}<li><a href="{{ profile.blue_sky }}"><i class="fa-brands fa-bluesky"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.linkedin %}<li><a href="{{ profile.linkedin }}"><i class="fa-brands fa-linkedin"></i><span class="label"></span></a></li>{% endif %}
+                    {% if profile.orcid %}<li><a href="{{ profile.orcid }}"><i class="fa-brands fa-orcid"></i><span class="label"></span></a></li>{% endif %}
                 </ul>
             </div>
 
@@ -317,6 +317,7 @@
     <script src="{% static 'js/util.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
     <script src="https://kit.fontawesome.com/ff0bf837c9.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <!-- Carousel JavaScript -->
     <script>
