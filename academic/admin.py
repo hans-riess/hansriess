@@ -186,7 +186,7 @@ class StudentAdmin(admin.ModelAdmin):
     ]
 
 class ReferencePersonAdmin(admin.ModelAdmin):
-    list_display = ['name', 'title', 'institution', 'email', 'phone']
+    list_display = ['name', 'title', 'institution', 'email']
     search_fields = ['name', 'title', 'institution', 'relationship']
     ordering = ['name']
     fieldsets = [

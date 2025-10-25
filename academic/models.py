@@ -106,15 +106,19 @@ class Reference(models.Model):
 
     def get_short_title(self):
         """
-        Returns the first 3 key words of the title excluding articles and prepositions
+        Returns the first 3 key words of the title excluding articles and prepositions,
+        with the first word capitalized.
         """
         # Define a list of words to exclude
-        exclude_words = ["the", "a", "an", "of", "and", "or", "on", "in", "to", "with", "as", "by", "for", "from", "into", "onto""over","under", "upon", "with", "towards"]
+        exclude_words = ["the", "a", "an", "of", "and", "or", "on", "in", "to", "with", "as", "by", "for", "from", "into", "onto", "over", "under", "upon", "with", "towards"]
         
         # Split the title into words and filter out the excluded words
         words = [word for word in self.title.split(" ") if word.lower() not in exclude_words]
         
-        return " ".join(words[:3])
+        short_title_words = words[:3]
+        if short_title_words:
+            short_title_words[0] = short_title_words[0].capitalize()
+        return " ".join(short_title_words)
 
     def __str__(self):
         return f"{self.title} ({self.year})"
@@ -518,3 +522,4 @@ class ReferencePerson(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.title}, {self.institution})"
+
