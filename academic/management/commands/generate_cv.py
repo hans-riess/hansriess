@@ -83,7 +83,9 @@ class Command(BaseCommand):
         if profile.email:
             tex_content.append(f"\\cvemail{{{escape_latex(profile.email)}}}")
         if profile.website:
-            tex_content.append(f"\\cvwebsite{{{escape_latex(profile.website)}}}")
+            tex_content.append(f"\\cvwebsite{{{escape_latex(profile.display_website)}}}{{{escape_latex(profile.website)}}}")
+        if profile.phone:
+            tex_content.append(f"\\cvphone{{{escape_latex(profile.phone)}}}")
         tex_content.append("\\begin{document}")
         tex_content.append("\\makecvheader")
 
@@ -105,7 +107,7 @@ class Command(BaseCommand):
 
         # Grants
         if grants.exists():
-            tex_content.append("\\section{Grants}")
+            tex_content.append("\\section{Grants \& Contracts}")
             tex_content.append("\\begin{cventries}")
             for grant in grants:
                 role_display = grant.get_role_display_name().replace("_", " ").title()
@@ -122,12 +124,12 @@ class Command(BaseCommand):
             tex_content.append("\\section{Education}")
             tex_content.append("\\begin{cventries}")
             for item in educations:
-                degree = escape_latex(item.degree_type_short or item.degree_type)
+                degree = escape_latex(item.degree_type)
                 field = item.field_of_study
                 description_parts = [escape_latex(field)]
                 second_line_parts = []
-                if item.thesis_title: second_line_parts.append(f"Thesis: {escape_latex(item.thesis_title)}")
-                if item.advisor: second_line_parts.append(f"Advisor: {escape_latex(item.advisor)}")
+                # if item.thesis_title: second_line_parts.append(f"Thesis: {escape_latex(item.thesis_title)}")
+                # if item.advisor: second_line_parts.append(f"Advisor: {escape_latex(item.advisor)}")
                 if second_line_parts: description_parts.append(' • '.join(second_line_parts))
                 if item.honors: description_parts.append(escape_latex(item.honors))
                 description = " \\\\ ".join(description_parts)
@@ -178,7 +180,7 @@ class Command(BaseCommand):
 
         # Invited Talks
         if talks.exists():
-            tex_content.append("\\section{Selected Invited Talks}")
+            tex_content.append("\\section{Invited Talks}")
             tex_content.append("\\begin{publications}")
             for talk in talks:
                 poster_link = f" \\href{{{talk.poster.url}}}{{[Poster]}}" if talk.poster else ""
@@ -188,7 +190,7 @@ class Command(BaseCommand):
 
         # --- UPDATED Mentorship SECTION ---
         if students.exists():
-            tex_content.append("\\section{Mentorship}")
+            tex_content.append("\\section{Students Mentored}")
             tex_content.append("\\begin{cventries}")
             for student in students:
                 # Combine level, degree (if present), and institution
@@ -209,7 +211,7 @@ class Command(BaseCommand):
 
         # Professional Service
         if services.exists():
-            tex_content.append("\\section{Selected Professional Service}")
+            tex_content.append("\\section{Service}")
             tex_content.append("\\begin{cventries}")
             def format_month_year_service(date): # Renamed function
                 if not date: return ""
@@ -238,16 +240,15 @@ class Command(BaseCommand):
 
         # Professional References
         if professional_references.exists():
-            tex_content.append("\\section{Professional References}")
+            tex_content.append("\\section{References}")
             tex_content.append("\\begin{cventries}")
             for ref in professional_references:
                 title_inst = f"{escape_latex(ref.title)}, {escape_latex(ref.institution)}"
                 description_parts = []
-                if ref.email: description_parts.append(f"Email: \\href{{mailto:{escape_latex(ref.email)}}}{{{escape_latex(ref.email)}}}")
-                if ref.phone: description_parts.append(f"Phone: {escape_latex(ref.phone)}")
-                if ref.relationship: description_parts.append(f"Relationship: {escape_latex(ref.relationship)}")
-                description = " \\\\ ".join(description_parts)
-                tex_content.append(f"\\cventry{{{escape_latex(ref.name)}}}{{{title_inst}}}{{}}{{{description}}}")
+                if ref.email: description_parts.append(f"\\faEnvelope~\\href{{mailto:{escape_latex(ref.email)}}}{{{escape_latex(ref.email)}}}")
+                # if ref.phone: description_parts.append(f"\\faPhone~{escape_latex(ref.phone)}")
+                description = " \\quad ".join(description_parts)
+                tex_content.append(f"\\cventry{{{escape_latex(ref.name)}}}{{{title_inst}}}{{{escape_latex(ref.get_relationship_display())}}}{{{description}}}")
             tex_content.append("\\end{cventries}")
 
         tex_content.append("\\end{document}")

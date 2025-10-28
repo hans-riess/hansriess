@@ -36,6 +36,14 @@ class Profile(models.Model):
     under_construction = models.BooleanField(default=False, help_text="Show under construction notice on website")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    @property
+    def display_website(self):
+        """
+        Returns the website URL for display, stripped of the 'https://' or 'http://' prefix.
+        """
+        if self.website:
+            return self.website.replace("https://", "").replace("http://", "")
+        return ""
 
     def __str__(self):
         return self.name
@@ -506,12 +514,19 @@ class Student(models.Model):
 
 class ReferencePerson(models.Model):
     """Model for professional references (distinct from Publication References)"""
+    RELATIONSHIP_CHOICES = [
+        ('advisor', 'Ph.D. Advisor'),
+        ('postdoc_mentor', 'Postdoc Mentor'),
+        ('committee_member', 'Committee Member'),
+        ('teaching_mentor', 'Teaching Mentor'),
+        ('research_mentor', 'Research Mentor'),
+        ('other_mentor', 'Other Mentor'),
+    ]
     name = models.CharField(max_length=200)
     title = models.CharField(max_length=200, help_text="Professional title")
     institution = models.CharField(max_length=200, help_text="Institution or company")
     email = models.EmailField(blank=True, null=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    relationship = models.CharField(max_length=200, blank=True, help_text="Your relationship to the reference (e.g., PhD Advisor)")
+    relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES, default='other_mentor')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -519,7 +534,6 @@ class ReferencePerson(models.Model):
         ordering = ['name']
         verbose_name = "Professional Reference"
         verbose_name_plural = "Professional References"
-
+    
     def __str__(self):
-        return f"{self.name} ({self.title}, {self.institution})"
-
+        return f"{self.name}"
