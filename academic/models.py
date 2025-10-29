@@ -45,6 +45,12 @@ class Profile(models.Model):
             return self.website.replace("https://", "").replace("http://", "")
         return ""
 
+    def generate_cv_url(self):
+        """
+        Returns the URL to generate the CV.
+        """
+        return f"{self.website}/generate_cv/"
+
     def __str__(self):
         return self.name
 
