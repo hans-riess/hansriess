@@ -194,7 +194,7 @@ class ReferencePersonAdmin(admin.ModelAdmin):
             'fields': ['name', 'title', 'institution', 'relationship']
         }),
         ('Contact Details', {
-            'fields': ['email', 'phone'],
+            'fields': ['email'],
             'classes': ['collapse']
         })
     ]
