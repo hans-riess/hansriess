@@ -60,7 +60,7 @@
                             {{profile.bio}}
                         </p>
                         <p class="bio-mobile">
-                            {% if profile.short_bio %}{{profile.short_bio}}{% else %}{{profile.bio}}{% endif %}
+                            {% if profile.short_bio %}{{profile.short_bio|safe}}{% else %}{{profile.bio|safe}}{% endif %}
                         </p>
                     </div>
 
