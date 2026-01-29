@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import (Profile, Reference, Course, Experience, Talk, Grant,
+from .models import (Profile, Slide, Reference, Course, Experience, Talk, Grant,
                      Education, Service, Quote, Figure, Student, ReferencePerson)
 
 # ... (Keep existing Admin classes: ReferenceAdmin, CourseAdmin, etc.) ...

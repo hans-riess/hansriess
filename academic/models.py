@@ -1,4 +1,6 @@
 from django.db import models
+from .storage_backends import PrivateMediaStorage
+
 
 
 class Profile(models.Model):
@@ -83,6 +85,17 @@ class Figure(models.Model):
 
     def __str__(self):
         return self.name
+
+class Slide(models.Model):
+    title = models.CharField(max_length=200)
+    # Files are uploaded to private S3 storage by default.
+    # Access is controlled by the View logic (generating signed URLs).
+    file = models.FileField(storage=PrivateMediaStorage(), upload_to='slides/')    
+    password_protected = models.BooleanField(default=False, help_text="Check this to require a password to view.")
+    password = models.CharField(max_length=50, blank=True, null=True, help_text="Required if Password Protected is checked.")
+
+    def __str__(self):
+        return self.title
 
 class Reference(models.Model):
     """Database of papers and books"""
