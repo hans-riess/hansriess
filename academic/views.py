@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from academic.models import Profile, Reference, Talk, Grant, Course, Service, Education, Experience,Quote,Figure
 from django.http import HttpResponse
 from django.core.management import call_command
@@ -58,3 +58,18 @@ def generate_cv_pdf(request):
     # Intentionally return no content to avoid redirecting to potentially
     # stale cached files on S3.
     return HttpResponse(status=204)
+
+def project_view(request, project_slug):
+    grant = get_object_or_404(Grant, slug=project_slug)
+    related_publications = grant.related_publications.all()
+    # Assuming talks related to the grant will have the grant's title or part of it in their title
+    related_talks = Talk.objects.filter(title__icontains=grant.title)
+    
+    context = {
+        'grant': grant,
+        'related_publications': related_publications,
+        'related_talks': related_talks,
+        'profile': Profile.objects.first(),
+    }
+    
+    return render(request, 'project.html', context)

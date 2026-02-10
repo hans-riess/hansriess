@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>{{ grant.title }} - Hans Riess</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover" />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+    <noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+</head>
+<body class="is-preload">
+    <div id="page-wrapper">
+        <!-- Header -->
+        <div id="header">
+        </div>
+
+        <!-- Title Section -->
+        <section id="title" class="wrapper style2">
+            <div class="container special">
+                <header>
+                    <h2 class="bio-title">{{ grant.title }}</h2>
+                </header>
+            </div>
+        </section>
+
+        <!-- Project Description Section -->
+        <section id="project-description" class="wrapper style2">
+            <div class="container special">
+                <article class="row aln-middle">
+                    <div class="col-12">
+                        <h3 class="bio-title">Project Overview</h3>
+                        {% if grant.description %}
+                            <p>{{ grant.description|safe }}</p>
+                        {% else %}
+                            <p>A description of this project will be available here soon.</p>
+                        {% endif %}
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Grant Details Section -->
+        <section id="grant-details" class="wrapper style2">
+            <div class="container special">
+                <h3 class="bio-title">Funding</h3>
+                <p>
+                    <strong>Title:</strong> {{ grant.title }}<br>
+                    <strong>Funding Agency:</strong> {{ grant.funding_agency }}<br>
+                    <strong>Grant Number:</strong> {{ grant.grant_number }}<br>
+                    <strong>Role:</strong> {{ grant.get_role_display_name }}<br>
+                    <strong>Amount:</strong> ${{ grant.get_formatted_amount }}<br>
+                    <strong>Date Range:</strong> {{ grant.get_date_range }}<br>
+                    {% if grant.co_pis %}
+                        <strong>Co-PIs:</strong> {{ grant.co_pis }}
+                    {% endif %}
+                </p>
+            </div>
+        </section>
+
+        <!-- Related Publications Section -->
+        {% if related_publications %}
+        <section id="related-publications" class="wrapper style2">
+            <div class="container special">
+                <h3 class="bio-title">Related Publications</h3>
+                {% for reference in related_publications %}
+                <div class="publication">
+                    <article class="row aln-middle">
+                        <div class="col-10">
+                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %} {{ reference.volume }}{% endif %}{% if reference.issue %}({{ reference.issue }}){% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}
+                        </div>
+                        <div class="col-2">
+                            {% if reference.url %}<a href="{{ reference.url }}">[URL]</a>{% endif %}
+                            {% if reference.code %}<a href="{{ reference.code }}">[CODE]</a>{% endif %}
+                        </div>
+                    </article>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Related Talks Section -->
+        {% if related_talks %}
+        <section id="related-talks" class="wrapper style2">
+            <div class="container special">
+                <h3 class="bio-title">Related Talks</h3>
+                {% for talk in related_talks %}
+                <div class="publication">
+                     <p>{{ talk.title }} ({{ talk.date }}) at {{ talk.venue }}.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Footer -->
+        <div id="footer">
+            <div class="container">
+                <div class="copyright">
+                    <ul class="menu">
+                        <li>Hans Riess &copy; Copyright 2025. All rights reserved.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'js/jquery.scrollex.min.js' %}"></script>
+    <script src="{% static 'js/browser.min.js' %}"></script>
+    <script src="{% static 'js/breakpoints.min.js' %}"></script>
+    <script src="{% static 'js/util.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

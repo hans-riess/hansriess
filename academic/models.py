@@ -334,6 +334,8 @@ class Grant(models.Model):
     ]
 
     title = models.CharField(max_length=300, help_text="Title of the grant or award")
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="URL-friendly version of the title")
+    description = models.TextField(blank=True, help_text="A description of the grant or project")
     funding_agency = models.CharField(max_length=200, help_text="Funding agency or organization")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='pi')
     amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, help_text="Total grant amount")

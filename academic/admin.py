@@ -88,7 +88,7 @@ class GrantAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Basic Information', {
             # Replaced start_date and end_date with year
-            'fields': ['title', 'funding_agency', 'role', 'start_date','end_date']
+            'fields': ['title','description','slug', 'funding_agency', 'role', 'start_date','end_date']
         }),
         ('Funding Details', {
             'fields': ['amount', 'currency', 'co_pis', 'grant_number'],
@@ -169,7 +169,6 @@ class FigureAdmin(admin.ModelAdmin):
         })
     ]
 
-# --- UPDATED STUDENT ADMIN ---
 class StudentAdmin(admin.ModelAdmin):
     list_display = ['name', 'level', 'degree', 'mentorship_role', 'institution', 'start_date', 'end_date'] # Added degree, mentorship_role
     list_filter = ['level', 'mentorship_role', 'institution', 'start_date'] # Added mentorship_role
