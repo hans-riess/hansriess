@@ -64,11 +64,13 @@ def project_view(request, project_slug):
     related_publications = grant.related_publications.all()
     # Assuming talks related to the grant will have the grant's title or part of it in their title
     related_talks = Talk.objects.filter(title__icontains=grant.title)
+    milestones = grant.milestones.all()
     
     context = {
         'grant': grant,
         'related_publications': related_publications,
         'related_talks': related_talks,
+        'milestones': milestones,
         'profile': Profile.objects.first(),
     }
     

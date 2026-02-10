@@ -336,6 +336,7 @@ class Grant(models.Model):
     title = models.CharField(max_length=300, help_text="Title of the grant or award")
     slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="URL-friendly version of the title")
     description = models.TextField(blank=True, help_text="A description of the grant or project")
+    image = models.ImageField(upload_to='grants/', blank=True, null=True, help_text="Image for the grant")
     funding_agency = models.CharField(max_length=200, help_text="Funding agency or organization")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='pi')
     amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, help_text="Total grant amount")
@@ -375,6 +376,26 @@ class Grant(models.Model):
 
     def get_role_display_name(self):
         return self.get_role_display()
+
+
+class Milestone(models.Model):
+    """Model for grant milestones"""
+    grant = models.ForeignKey(Grant, on_delete=models.CASCADE, related_name='milestones')
+    title = models.CharField(max_length=300, help_text="Title of the milestone")
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="URL-friendly version of the title")
+    date = models.DateField(help_text="Date of the milestone")
+    description = models.TextField(blank=True, help_text="A description of the milestone")
+    report = models.FileField(upload_to='milestones/reports/', blank=True, null=True, help_text="Upload report file")
+    slides = models.FileField(upload_to='milestones/slides/', blank=True, null=True, help_text="Upload slides file")
+    figure = models.ForeignKey('Figure', on_delete=models.SET_NULL, blank=True, null=True, help_text="Optional figure for the milestone")
+
+    class Meta:
+        ordering = ['-date', 'title']
+        verbose_name = "Milestone"
+        verbose_name_plural = "Milestones"
+
+    def __str__(self):
+        return f"{self.title} ({self.grant.title})"
 
 
 class Education(models.Model):

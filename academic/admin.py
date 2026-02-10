@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Profile, Reference, Course, Experience, Talk, Grant,
-                     Education, Service, Quote, Figure, Student, ReferencePerson)
+                     Education, Service, Quote, Figure, Student, ReferencePerson, Milestone)
 
 # ... (Keep existing Admin classes: ReferenceAdmin, CourseAdmin, etc.) ...
 class ReferenceAdmin(admin.ModelAdmin):
@@ -88,7 +88,7 @@ class GrantAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Basic Information', {
             # Replaced start_date and end_date with year
-            'fields': ['title','description','slug', 'funding_agency', 'role', 'start_date','end_date']
+            'fields': ['title','description','slug', 'image', 'funding_agency', 'role', 'start_date','end_date']
         }),
         ('Funding Details', {
             'fields': ['amount', 'currency', 'co_pis', 'grant_number'],
@@ -210,3 +210,11 @@ admin.site.register(Quote, QuoteAdmin)
 admin.site.register(Figure,FigureAdmin)
 admin.site.register(Student, StudentAdmin) # Updated registration
 admin.site.register(ReferencePerson, ReferencePersonAdmin)
+
+class MilestoneAdmin(admin.ModelAdmin):
+    list_display = ('title', 'grant', 'date')
+    list_filter = ('grant', 'date')
+    search_fields = ('title', 'description')
+    prepopulated_fields = {'slug': ('title',)}
+
+admin.site.register(Milestone, MilestoneAdmin)

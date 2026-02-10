@@ -27,34 +27,66 @@
         <!-- Project Description Section -->
         <section id="project-description" class="wrapper style2">
             <div class="container special">
-                <article class="row aln-middle">
-                    <div class="col-12">
-                        <h3 class="bio-title">Project Overview</h3>
-                        {% if grant.description %}
-                            <p>{{ grant.description|safe }}</p>
-                        {% else %}
-                            <p>A description of this project will be available here soon.</p>
-                        {% endif %}
-                    </div>
-                </article>
+                <div class="card">
+                    <h3 class="bio-title">Project Overview</h3>
+                    {% if grant.description %}
+                        <p>{{ grant.description|safe }}</p>
+                    {% else %}
+                        <p>A description of this project will be available here soon.</p>
+                    {% endif %}
+                </div>
             </div>
         </section>
+
+        <!-- Milestones Section -->
+        {% if milestones %}
+        <section id="milestones" class="wrapper style2">
+            {% for milestone in milestones %}
+            <div class="container special">
+                <div class="card">
+                    <h3 class="bio-title">{{ milestone.title }}</h3>
+                    <p class="date">{{ milestone.date|date:"F j, Y" }}</p>
+                    {% if milestone.description %}
+                        <p>{{ milestone.description|safe }}</p>
+                    {% endif %}
+                    
+                    {% if milestone.slides %}
+                    <div class="slides-container">
+                        <iframe src="{{ milestone.slides.url }}" width="100%" height="450" allowfullscreen></iframe>
+                    </div>
+                    {% endif %}
+
+                    <ul class="actions">
+                        {% if milestone.report %}
+                            <li><a href="{{ milestone.report.url }}" class="button">Report</a></li>
+                        {% endif %}
+                        {% if milestone.slides %}
+                            <li><a href="{{ milestone.slides.url }}" class="button">Slides</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
 
         <!-- Grant Details Section -->
         <section id="grant-details" class="wrapper style2">
             <div class="container special">
-                <h3 class="bio-title">Funding</h3>
-                <p>
-                    <strong>Title:</strong> {{ grant.title }}<br>
-                    <strong>Funding Agency:</strong> {{ grant.funding_agency }}<br>
-                    <strong>Grant Number:</strong> {{ grant.grant_number }}<br>
-                    <strong>Role:</strong> {{ grant.get_role_display_name }}<br>
-                    <strong>Amount:</strong> ${{ grant.get_formatted_amount }}<br>
-                    <strong>Date Range:</strong> {{ grant.get_date_range }}<br>
-                    {% if grant.co_pis %}
-                        <strong>Co-PIs:</strong> {{ grant.co_pis }}
-                    {% endif %}
-                </p>
+                <div class="card">
+                    <h3 class="bio-title">Funding</h3>
+                    <p>
+                        <strong>Title:</strong> {{ grant.title }}<br>
+                        <strong>Funding Agency:</strong> {{ grant.funding_agency }}<br>
+                        <strong>Grant Number:</strong> {{ grant.grant_number }}<br>
+                        <strong>Role:</strong> {{ grant.get_role_display_name }}<br>
+                        <strong>Amount:</strong> ${{ grant.get_formatted_amount }}<br>
+                        <strong>Date Range:</strong> {{ grant.get_date_range }}<br>
+                        {% if grant.co_pis %}
+                            <strong>Co-PIs:</strong> {{ grant.co_pis }}
+                        {% endif %}
+                    </p>
+                </div>
             </div>
         </section>
 
@@ -62,20 +94,22 @@
         {% if related_publications %}
         <section id="related-publications" class="wrapper style2">
             <div class="container special">
-                <h3 class="bio-title">Related Publications</h3>
-                {% for reference in related_publications %}
-                <div class="publication">
-                    <article class="row aln-middle">
-                        <div class="col-10">
-                            {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %} {{ reference.volume }}{% endif %}{% if reference.issue %}({{ reference.issue }}){% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}
-                        </div>
-                        <div class="col-2">
-                            {% if reference.url %}<a href="{{ reference.url }}">[URL]</a>{% endif %}
-                            {% if reference.code %}<a href="{{ reference.code }}">[CODE]</a>{% endif %}
-                        </div>
-                    </article>
+                <div class="card">
+                    <h3 class="bio-title">Related Publications</h3>
+                    {% for reference in related_publications %}
+                    <div class="publication">
+                        <article class="row aln-middle">
+                            <div class="col-10">
+                                {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %} {{ reference.volume }}{% endif %}{% if reference.issue %}({{ reference.issue }}){% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}
+                            </div>
+                            <div class="col-2">
+                                {% if reference.url %}<a href="{{ reference.url }}">[URL]</a>{% endif %}
+                                {% if reference.code %}<a href="{{ reference.code }}">[CODE]</a>{% endif %}
+                            </div>
+                        </article>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </section>
         {% endif %}
@@ -84,12 +118,14 @@
         {% if related_talks %}
         <section id="related-talks" class="wrapper style2">
             <div class="container special">
-                <h3 class="bio-title">Related Talks</h3>
-                {% for talk in related_talks %}
-                <div class="publication">
-                     <p>{{ talk.title }} ({{ talk.date }}) at {{ talk.venue }}.</p>
+                <div class="card">
+                    <h3 class="bio-title">Related Talks</h3>
+                    {% for talk in related_talks %}
+                    <div class="publication">
+                         <p>{{ talk.title }} ({{ talk.date }}) at {{ talk.venue }}.</p>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </section>
         {% endif %}
