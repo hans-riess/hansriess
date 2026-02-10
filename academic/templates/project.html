@@ -2,8 +2,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>{{ grant.title }} - Hans Riess</title>
-    <meta charset="utf-8" />
+    <title>{{ grant.short_title|default:grant.title }} - Hans Riess</title>
+    <meta charset="utf-t-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover" />
     <link rel="stylesheet" href="{% static 'css/main.css' %}" />
     <noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
@@ -13,13 +13,19 @@
     <div id="page-wrapper">
         <!-- Header -->
         <div id="header">
+            <div class="container">
+                <a href="{% url 'index' %}" class="button bio-button">Home</a>
+            </div>
         </div>
 
         <!-- Title Section -->
         <section id="title" class="wrapper style2">
             <div class="container special">
                 <header>
-                    <h2 class="bio-title">{{ grant.title }}</h2>
+                    <h2 class="bio-title">{{ grant.short_title|default:grant.title }}</h2>
+                    {% if grant.short_title %}
+                        <p class="bio-subtitle">{{ grant.title }}</p>
+                    {% endif %}
                 </header>
             </div>
         </section>
@@ -52,16 +58,16 @@
                     
                     {% if milestone.slides %}
                     <div class="slides-container">
-                        <iframe src="{{ milestone.slides.url }}" width="100%" height="450" allowfullscreen></iframe>
+                        <iframe src="{{ milestone.slides.url }}" allowfullscreen></iframe>
                     </div>
                     {% endif %}
 
                     <ul class="actions">
                         {% if milestone.report %}
-                            <li><a href="{{ milestone.report.url }}" class="button">Report</a></li>
+                            <li><a href="{{ milestone.report.url }}" class="button small">Report</a></li>
                         {% endif %}
                         {% if milestone.slides %}
-                            <li><a href="{{ milestone.slides.url }}" class="button">Slides</a></li>
+                            <li><a href="{{ milestone.slides.url }}" class="button small">Slides</a></li>
                         {% endif %}
                     </ul>
                 </div>
@@ -75,17 +81,28 @@
             <div class="container special">
                 <div class="card">
                     <h3 class="bio-title">Funding</h3>
-                    <p>
-                        <strong>Title:</strong> {{ grant.title }}<br>
-                        <strong>Funding Agency:</strong> {{ grant.funding_agency }}<br>
-                        <strong>Grant Number:</strong> {{ grant.grant_number }}<br>
-                        <strong>Role:</strong> {{ grant.get_role_display_name }}<br>
-                        <strong>Amount:</strong> ${{ grant.get_formatted_amount }}<br>
-                        <strong>Date Range:</strong> {{ grant.get_date_range }}<br>
-                        {% if grant.co_pis %}
-                            <strong>Co-PIs:</strong> {{ grant.co_pis }}
-                        {% endif %}
-                    </p>
+                    <div class="row">
+                        <div class="col-6 col-12-mobile">
+                            <p>
+                                <strong>Agency:</strong> {{ grant.funding_agency }}<br>
+                                {% if grant.program_manager %}
+                                    <strong>Program Manager:</strong> {{ grant.program_manager }}<br>
+                                {% endif %}
+                                <strong>Grant Number:</strong> {{ grant.grant_number }}<br>
+                                <strong>Role:</strong> {{ grant.get_role_display_name }}<br>
+                                <strong>Amount:</strong> ${{ grant.get_formatted_amount }}<br>
+                                <strong>Date Range:</strong> {{ grant.get_date_range }}<br>
+                                {% if grant.co_pis %}
+                                    <strong>Co-PIs:</strong> {{ grant.co_pis }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-6 col-12-mobile">
+                            {% if grant.sponsor_logo %}
+                                <img src="{{ grant.sponsor_logo.url }}" alt="{{ grant.funding_agency }} Logo" class="image fit" />
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

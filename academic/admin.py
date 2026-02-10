@@ -88,10 +88,10 @@ class GrantAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Basic Information', {
             # Replaced start_date and end_date with year
-            'fields': ['title','description','slug', 'image', 'funding_agency', 'role', 'start_date','end_date']
+            'fields': ['title', 'short_title', 'description','slug', 'image', 'funding_agency', 'role', 'start_date','end_date']
         }),
         ('Funding Details', {
-            'fields': ['amount', 'currency', 'co_pis', 'grant_number'],
+            'fields': ['amount', 'currency', 'co_pis', 'grant_number', 'program_manager', 'sponsor_logo'],
             'classes': ['collapse']
         }),
         ('Related Publications', {

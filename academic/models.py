@@ -334,10 +334,13 @@ class Grant(models.Model):
     ]
 
     title = models.CharField(max_length=300, help_text="Title of the grant or award")
+    short_title = models.CharField(max_length=100, blank=True, null=True, help_text="A shorter title for display purposes")
     slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="URL-friendly version of the title")
     description = models.TextField(blank=True, help_text="A description of the grant or project")
     image = models.ImageField(upload_to='grants/', blank=True, null=True, help_text="Image for the grant")
     funding_agency = models.CharField(max_length=200, help_text="Funding agency or organization")
+    program_manager = models.CharField(max_length=200, blank=True, null=True, help_text="Program manager at the funding agency")
+    sponsor_logo = models.ImageField(upload_to='grants/sponsor_logos/', blank=True, null=True, help_text="Logo of the sponsoring organization")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='pi')
     amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, help_text="Total grant amount")
     currency = models.CharField(max_length=3, default='USD', help_text="Currency code (USD, EUR, etc.)")
@@ -387,7 +390,6 @@ class Milestone(models.Model):
     description = models.TextField(blank=True, help_text="A description of the milestone")
     report = models.FileField(upload_to='milestones/reports/', blank=True, null=True, help_text="Upload report file")
     slides = models.FileField(upload_to='milestones/slides/', blank=True, null=True, help_text="Upload slides file")
-    figure = models.ForeignKey('Figure', on_delete=models.SET_NULL, blank=True, null=True, help_text="Optional figure for the milestone")
 
     class Meta:
         ordering = ['-date', 'title']
