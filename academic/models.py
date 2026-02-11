@@ -349,6 +349,8 @@ class Grant(models.Model):
     co_pis = models.CharField(max_length=300, blank=True, help_text="Co-PIs (optional, comma-separated)")
     grant_number = models.CharField(max_length=100, blank=True, null=True, help_text="Grant/award number (optional)")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
+    password_protected = models.BooleanField(default=False, help_text="Enable password protection for this grant's page")
+    password = models.CharField(max_length=128, blank=True, help_text="Password for this grant's page (if password protected)")
 
     class Meta:
         ordering = ['-start_date', 'title']

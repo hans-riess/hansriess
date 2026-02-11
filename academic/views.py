@@ -61,6 +61,18 @@ def generate_cv_pdf(request):
 
 def project_view(request, project_slug):
     grant = get_object_or_404(Grant, slug=project_slug)
+    
+    password_required = grant.password_protected and not request.session.get(f'grant_{grant.slug}_unlocked')
+    error = None
+
+    if password_required and request.method == 'POST':
+        password = request.POST.get('password')
+        if password == grant.password:
+            request.session[f'grant_{grant.slug}_unlocked'] = True
+            password_required = False
+        else:
+            error = 'Incorrect password'
+
     related_publications = grant.related_publications.all()
     # Assuming talks related to the grant will have the grant's title or part of it in their title
     related_talks = Talk.objects.filter(title__icontains=grant.title)
@@ -72,6 +84,8 @@ def project_view(request, project_slug):
         'related_talks': related_talks,
         'milestones': milestones,
         'profile': Profile.objects.first(),
+        'password_required': password_required,
+        'error': error,
     }
     
     return render(request, 'project.html', context)

@@ -90,6 +90,10 @@ class GrantAdmin(admin.ModelAdmin):
             # Replaced start_date and end_date with year
             'fields': ['title', 'short_title', 'description','slug', 'image', 'funding_agency', 'role', 'start_date','end_date']
         }),
+        ('Password Protection', {
+            'fields': ['password_protected', 'password'],
+            'classes': ['collapse']
+        }),
         ('Funding Details', {
             'fields': ['amount', 'currency', 'co_pis', 'grant_number', 'program_manager', 'sponsor_logo'],
             'classes': ['collapse']
