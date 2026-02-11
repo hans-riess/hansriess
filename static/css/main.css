@@ -1749,3 +1749,32 @@ ul.icons li a:hover {
         line-height: 1.5;
     }
 }
+
+/* Fix for the Funding Agency Logo */
+.funding-logo {
+    display: block;
+    height: auto;
+}
+
+/* On Desktop: Constrain the logo size */
+@media screen and (min-width: 737px) {
+    .funding-logo {
+        max-width: 250px; /* Adjust this to your preferred size */
+        margin-left: auto; /* Aligns logo to the right of the text column */
+    }
+}
+
+/* On Mobile: Allow it to be larger/centered */
+@media screen and (max-width: 736px) {
+    .funding-logo {
+        max-width: 80%;
+        margin: 1em auto;
+    }
+}
+
+/* Properly wrap your slide hiding rule */
+@media screen and (max-width: 736px) {
+    .desktop-only-slides {
+        display: none !important;
+    }
+}
