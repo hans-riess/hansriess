@@ -11,12 +11,6 @@
 </head>
 <body class="is-preload">
     <div id="page-wrapper">
-        <!-- Header -->
-        <div id="header">
-            <div class="container">
-                <a href="{% url 'index' %}" class="button bio-button">Home</a>
-            </div>
-        </div>
 
         <!-- Title Section -->
         <section id="title" class="wrapper style2">
@@ -26,6 +20,14 @@
                     {% if grant.short_title %}
                         <p class="bio-subtitle">{{ grant.title }}</p>
                     {% endif %}
+                    <ul class="actions" style="margin-top: 1em;">
+                        <li>
+                        <a href="{% url 'index' %}" class="button bio-button">Home</a>
+                             {% if profile.cv %}
+                                <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
+                            {% endif %}
+                         </li>
+                    </ul>
                 </header>
             </div>
         </section>
