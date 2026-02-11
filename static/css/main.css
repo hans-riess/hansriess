@@ -80,7 +80,7 @@ body {
 /* Mobile background handling */
 @media screen and (max-width: 736px) {
     body {
-        background-image: url("../images/header-mobile.jpeg");
+        background-image: url("../images/header.jpeg");
         background-attachment: scroll;
         background-position: center top;
         background-size: cover;
@@ -92,7 +92,7 @@ body {
 @media screen and (max-width: 736px) and (-webkit-min-device-pixel-ratio: 2),
        screen and (max-width: 736px) and (min-resolution: 192dpi) {
     body {
-        background-image: url("../images/header-mobile.jpeg");
+        background-image: url("../images/header.jpeg");
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
@@ -102,7 +102,7 @@ body {
 /* Very small mobile devices */
 @media screen and (max-width: 480px) {
     body {
-        background-image: url("../images/header-mobile.jpeg");
+        background-image: url("../images/header.jpeg");
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
