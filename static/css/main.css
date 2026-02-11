@@ -1778,3 +1778,11 @@ ul.icons li a:hover {
         display: none !important;
     }
 }
+
+@media screen and (max-width: 736px) {
+    #title.wrapper, .header, .wrapper.style2 {
+        background-attachment: scroll !important;
+        background-size: cover !important;
+        background-position: center !important;
+    }
+}
