@@ -85,8 +85,9 @@
                             <a href="{% url 'project_view' grant.slug %}">
                                 {% if grant.image %}
                                 <img src="{{ grant.image.url }}" alt="{{ grant.title }}" class="image fit" />
+                                {% else %}
+                                <h2>{{ grant.short_title }}</h3>
                                 {% endif %}
-                                <h3>{{ grant.title }}</h3>
                             </a>
                         </article>
                     </div>
