@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from academic.models import Profile, Reference, Talk, Grant, Course, Service, Education, Experience,Quote,Figure
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.core.management import call_command
 from django.conf import settings
 import os
@@ -89,3 +89,26 @@ def project_view(request, project_slug):
     }
     
     return render(request, 'project.html', context)
+
+def paper_redirect(request, paper_slug):
+    reference = get_object_or_404(Reference, slug=paper_slug)
+    
+    if reference.pdf_file:
+        # This redirects the user directly to the S3 URL
+        return redirect(reference.pdf_file.url)
+        
+    raise Http404("PDF not found for this reference.")
+
+def slide_redirect(request, talk_slug):
+    talk = get_object_or_404(Talk, slug=talk_slug)
+    
+    if talk.slides:
+        return redirect(talk.slides.url)
+    raise Http404("Slides not found for this talk.")
+
+def poster_redirect(request, talk_slug):
+    talk = get_object_or_404(Talk, slug=talk_slug)
+    
+    if talk.poster:
+        return redirect(talk.poster.url)
+    raise Http404("Poster not found for this talk.")

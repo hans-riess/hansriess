@@ -2,16 +2,19 @@ from django.contrib import admin
 from .models import (Profile, Reference, Course, Experience, Talk, Grant,
                      Education, Service, Quote, Figure, Student, ReferencePerson, Milestone)
 
-# ... (Keep existing Admin classes: ReferenceAdmin, CourseAdmin, etc.) ...
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['get_short_title', 'year', 'reference_type']
     list_filter = ['reference_type', 'year']
     search_fields = ['title', 'authors']
     ordering = ['-year', 'title']
+    
+    # ADD THIS: Automatically fills the slug based on the title
+    prepopulated_fields = {'slug': ('title',)} 
 
     fieldsets = [
         (None, {
-            'fields': ['reference_type', 'title', 'authors', 'alphabetical_order', 'shared_first_author']
+            # ADD 'slug' HERE:
+            'fields': ['reference_type', 'title', 'slug', 'authors', 'alphabetical_order', 'shared_first_author']
         }),
         ('Publication Details', {
             'fields': ['year','journal', 'volume', 'issue', 'pages','abstract','keywords'],

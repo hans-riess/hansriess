@@ -110,6 +110,7 @@ class Reference(models.Model):
     doi = models.CharField(max_length=100, blank=True)
     url = models.URLField(blank=True)
     pdf_file = models.FileField(upload_to='references/papers/', blank=True)
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="Short URL slug for sharing")
     reference_image = models.ImageField(upload_to='references/images/', blank=True, null=True, help_text="Optional image for the publication (e.g., graph, diagram)")
     abstract = models.TextField(blank=True)
     keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated list of keywords")
@@ -290,6 +291,8 @@ class Talk(models.Model):
     date = models.DateField(help_text="Date of the talk")
     slides = models.FileField(upload_to='talks/slides/', blank=True, null=True, help_text="Upload slides file")
     poster = models.FileField(upload_to='talks/posters/', blank=True, null=True, help_text="Upload poster file")
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="Short URL slug for sharing")
+
     event_url = models.URLField(blank=True, null=True, help_text="URL to the event website")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
     created_at = models.DateTimeField(auto_now_add=True)
