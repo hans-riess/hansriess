@@ -96,6 +96,9 @@ def paper_redirect(request, paper_slug):
     if reference.pdf_file:
         # This redirects the user directly to the S3 URL
         return redirect(reference.pdf_file.url)
+    elif reference.url:
+        # This redirects the user to the provided url link
+        return redirect(reference.url)
         
     raise Http404("PDF not found for this reference.")
 
