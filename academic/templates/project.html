@@ -1,0 +1,225 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>{{ grant.short_title|default:grant.title }} - Hans Riess</title>
+    <meta charset="utf-t-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover" />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+    <noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    {% if password_required %}
+    <style>
+        body {
+            overflow: hidden;
+        }
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+        }
+        .modal-content h3 {
+            font-weight: 300;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+        .modal-content input[type="password"] {
+            height: 2.75em;
+            margin-bottom: 16px;
+        }
+        .modal-content .bio-button {
+            color: #000;
+        }
+    </style>
+    {% endif %}
+</head>
+<body class="is-preload">
+    {% if password_required %}
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="bio-title">Password Required</h3>
+            <p>This content is password protected. Please enter the password to view.</p>
+            <form method="post">
+                {% csrf_token %}
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="button bio-button">Submit</button>
+                {% if error %}
+                    <p class="error" style="color: red;">{{ error }}</p>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="page-wrapper">
+
+        <!-- Title Section -->
+        <section id="title" class="wrapper style2">
+            <div class="container special">
+                <header style="text-align: center;" >
+                    <h2 class="bio-title">{{ grant.short_title|default:grant.title }}</h2>
+                    {% if grant.short_title %}
+                        <p class="bio-subtitle">{{ grant.title }}</p>
+                    {% endif %}
+                    <ul class="actions" style="margin-top: 1em;">
+                        <a href="{% url 'index' %}" class="button bio-button" >Home</a>
+                    </ul>
+                </header>
+            </div>
+        </section>
+
+        <!-- Project Description Section -->
+        <section id="project-description" class="wrapper style2">
+            <div class="container special">
+                <div class="card">
+                    <h3 class="bio-title">Project Overview</h3>
+                    {% if grant.description %}
+                        <p>{{ grant.description|safe }}</p>
+                    {% else %}
+                        <p>A description of this project will be available here soon.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Milestones Section -->
+        {% if milestones %}
+        <section id="milestones" class="wrapper style2">
+            {% for milestone in milestones %}
+            <div class="container special">
+                <div class="card">
+                    <h3 class="bio-title">{{ milestone.title }}</h3>
+                    <p class="date">{{ milestone.date|date:"F j, Y" }}</p>
+                    {% if milestone.description %}
+                        <p>{{ milestone.description|safe }}</p>
+                    {% endif %}
+                    
+                    {% if milestone.slides %}
+                    <div class="slides-container desktop-only-slides">
+                        <iframe src="{{ milestone.slides.url }}" allowfullscreen></iframe>
+                    </div>
+                    {% endif %}
+
+                    <ul class="actions">
+                        {% if milestone.report %}
+                            <a href="{{ milestone.report.url }}" class="button bio-button">Report</a>
+                        {% endif %}
+                        {% if milestone.slides %}
+                            <a href="{{ milestone.slides.url }}" class="button bio-button">Slides</a>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Grant Details Section -->
+        <section id="grant-details" class="wrapper style2">
+            <div class="container special">
+                <div class="card">
+                    <h3 class="bio-title">Funding Info</h3>
+                    <div class="row">
+                        <div class="col-6 col-12-mobile">
+                            <p>
+                                <strong>Agency:</strong> {{ grant.funding_agency }}<br>
+                                {% if grant.program_manager %}
+                                    <strong>Program Manager:</strong> {{ grant.program_manager }}<br>
+                                {% endif %}
+                                <strong>Grant Number:</strong> {{ grant.grant_number }}<br>
+                                <strong>My Role:</strong> {{ grant.get_role_display_name }}<br>
+                                <strong>Amount:</strong> ${{ grant.get_formatted_amount }}<br>
+                                <strong>Project Period:</strong> {{ grant.get_date_range }}<br>
+                                {% if grant.co_pis %}
+                                    <strong>Co-PIs:</strong> {{ grant.co_pis }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-6 col-12-mobile">
+                            {% if grant.sponsor_logo %}
+                                <img src="{{ grant.sponsor_logo.url }}" alt="{{ grant.funding_agency }} Logo" class="funding-logo" />
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Related Publications Section -->
+        {% if related_publications %}
+        <section id="related-publications" class="wrapper style2">
+            <div class="container special">
+                <div class="card">
+                    <h3 class="bio-title">Related Publications</h3>
+                    {% for reference in related_publications %}
+                    <div class="publication">
+                        <article class="row aln-middle">
+                            <div class="col-10">
+                                {{ reference.authors }} ({{ reference.year }}). {{ reference.title }}. <em>{{ reference.journal }}</em>{% if reference.volume %} {{ reference.volume }}{% endif %}{% if reference.issue %}({{ reference.issue }}){% endif %}{% if reference.pages %}, {{ reference.pages }}{% endif %}
+                            </div>
+                            <div class="col-2">
+                                {% if reference.url %}<a href="{{ reference.url }}">[URL]</a>{% endif %}
+                                {% if reference.code %}<a href="{{ reference.code }}">[CODE]</a>{% endif %}
+                            </div>
+                        </article>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Related Talks Section -->
+        {% if related_talks %}
+        <section id="related-talks" class="wrapper style2">
+            <div class="container special">
+                <div class="card">
+                    <h3 class="bio-title">Related Talks</h3>
+                    {% for talk in related_talks %}
+                    <div class="publication">
+                         <p>{{ talk.title }} ({{ talk.date }}) at {{ talk.venue }}.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Footer -->
+        <div id="footer">
+            <div class="container">
+                <div class="copyright">
+                    <ul class="menu">
+                        <li>Hans Riess &copy; Copyright 2025. All rights reserved.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'js/jquery.scrollex.min.js' %}"></script>
+    <script src="{% static 'js/browser.min.js' %}"></script>
+    <script src="{% static 'js/breakpoints.min.js' %}"></script>
+    <script src="{% static 'js/util.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

@@ -60,7 +60,7 @@
                             {{profile.bio}}
                         </p>
                         <p class="bio-mobile">
-                            {% if profile.short_bio %}{{profile.short_bio}}{% else %}{{profile.bio}}{% endif %}
+                            {% if profile.short_bio %}{{profile.short_bio|safe}}{% else %}{{profile.bio|safe}}{% endif %}
                         </p>
                     </div>
 
@@ -72,22 +72,30 @@
             </div>
         </section>
 
-        <!-- Carousel -->
-         {% if figures %}
-        <div class="container special">
-            <div class="carousel">
-                <div class="carousel-container">
-                    {% for figure in figures %}
-                    <div class="carousel-slide">
-                        <img src="{{figure.image.url}}" alt="{{figure.name}}" class="image fit"/>
+        <!-- Projects Section -->
+        <section id="projects" class="wrapper style2">
+            <div class="container special">
+                <header>
+                    <h2 class="bio-title">Projects</h2>
+                </header>
+                <div class="row">
+                    {% for grant in grants %}
+                    <div class="col-4 col-12-mobile">
+                        <article class="project-card">
+                            <a href="{% url 'project_view' grant.slug %}">
+                                {% if grant.image %}
+                                <img src="{{ grant.image.url }}" alt="{{ grant.title }}" class="image fit" />
+                                {% endif %}
+                                {%if grant.role %}
+                                 <h3>{{ grant.get_role_display_name }}</h3>
+                                {% endif %}
+                            </a>
+                        </article>
                     </div>
                     {% endfor %}
                 </div>
-                <button class="carousel-btn prev" onclick="changeSlide(-1)">&#10094;</button>
-                <button class="carousel-btn next" onclick="changeSlide(1)">&#10095;</button>
             </div>
-        </div>
-        {% endif %}
+        </section>
 
         <!-- Publications Section -->
         <section id="papers">
@@ -193,7 +201,7 @@
                     {% endfor %}
                     {% endif %}
 
-                    {% if other %}
+                    <!-- {% if other %}
                     <h3>Other</h3>
                     {% for reference in other %}
                     <div class="publication">
@@ -207,7 +215,7 @@
                         </article>
                     </div>
                     {% endfor %}
-                    {% endif %}
+                    {% endif %} -->
                 </article>
             </div>
         </section>
@@ -301,7 +309,7 @@
             <div class="container">
                 <div class="copyright">
                     <ul class="menu">
-                        <li>Hans Riess &copy; Copyright 2025. All rights reserved.</li>
+                        <li>Hans Riess &copy; Copyright 2025. All rights reserved | <a href="{{ profile.generate_cv_url }}">Update CV</a></li>
                     </ul>
                 </div>
             </div>
@@ -318,47 +326,5 @@
     <script src="{% static 'js/main.js' %}"></script>
     <script src="https://kit.fontawesome.com/ff0bf837c9.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <!-- Carousel JavaScript -->
-    <script>
-        let currentSlide = 0;
-        let slides, dots, totalSlides;
-
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            slides = document.querySelectorAll('.carousel-slide');
-            dots = document.querySelectorAll('.dot');
-            totalSlides = slides.length;
-
-            // Auto-advance carousel every 5 seconds
-            setInterval(() => {
-                changeSlide(1);
-            }, 5000);
-
-            // Initialize first slide
-            showSlide(0);
-        });
-
-        function showSlide(n) {
-            if (!slides || !dots) return;
-            
-            // Hide all slides
-            slides.forEach(slide => slide.classList.remove('active'));
-            dots.forEach(dot => dot.classList.remove('active'));
-            
-            // Show current slide
-            currentSlide = (n + totalSlides) % totalSlides;
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
-        }
-
-        function changeSlide(direction) {
-            showSlide(currentSlide + direction);
-        }
-
-        function goToSlide(n) {
-            showSlide(n - 1);
-        }
-    </script>
 </body>
 </html>

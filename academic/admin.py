@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Profile, Reference, Course, Experience, Talk, Grant, Education, Service, Quote, Figure
+from .models import (Profile, Reference, Course, Experience, Talk, Grant,
+                     Education, Service, Quote, Figure, Student, ReferencePerson, Milestone)
 
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['get_short_title', 'year', 'reference_type']
@@ -7,9 +8,13 @@ class ReferenceAdmin(admin.ModelAdmin):
     search_fields = ['title', 'authors']
     ordering = ['-year', 'title']
     
+    # ADD THIS: Automatically fills the slug based on the title
+    prepopulated_fields = {'slug': ('title',)} 
+
     fieldsets = [
         (None, {
-            'fields': ['reference_type', 'title', 'authors', 'alphabetical_order', 'shared_first_author']
+            # ADD 'slug' HERE:
+            'fields': ['reference_type', 'title', 'slug', 'authors', 'alphabetical_order', 'shared_first_author']
         }),
         ('Publication Details', {
             'fields': ['year','journal', 'volume', 'issue', 'pages','abstract','keywords'],
@@ -26,7 +31,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_filter = ['semester', 'year', 'role', 'is_graduate', 'is_online']
     search_fields = ['course_code', 'title', 'institution']
     ordering = ['-year', '-semester', 'course_code']
-    
+
     fieldsets = [
         ('Basic Information', {
             'fields': ['course_code', 'title', 'institution', 'department', 'semester', 'year', 'role']
@@ -42,7 +47,7 @@ class ExperienceAdmin(admin.ModelAdmin):
     list_filter = ['job_type', 'academic_position_type', 'full_time', 'tenure_track', 'is_current']
     search_fields = ['title', 'institution', 'department']
     ordering = ['-start_date', 'title']
-    
+
     fieldsets = [
         ('Basic Information', {
             'fields': ['title', 'institution', 'department', 'location', 'job_type', 'academic_position_type']
@@ -61,14 +66,14 @@ class TalkAdmin(admin.ModelAdmin):
     list_filter = ['talk_type', 'is_invited', 'date']
     search_fields = ['title', 'venue', 'location']
     ordering = ['-date', 'title']
-    
+
     fieldsets = [
         ('Basic Information', {
             'fields': ['title', 'abstract', 'venue', 'location', 'talk_type', 'is_invited', 'date']
         }),
         ('Materials', {
             # 'talk' has been removed from this list
-            'fields': ['slides', 'event_url'],
+            'fields': ['slides', 'poster', 'event_url'], # Added poster back
             'classes': ['collapse']
         }),
         ('Related Publications', {
@@ -82,14 +87,18 @@ class GrantAdmin(admin.ModelAdmin):
     list_filter = ['role']
     search_fields = ['title', 'funding_agency', 'co_pis']
     ordering = ['title']
-    
+
     fieldsets = [
         ('Basic Information', {
             # Replaced start_date and end_date with year
-            'fields': ['title', 'funding_agency', 'role', 'start_date','end_date']
+            'fields': ['title', 'short_title', 'description','slug', 'image', 'funding_agency', 'role', 'start_date','end_date']
+        }),
+        ('Password Protection', {
+            'fields': ['password_protected', 'password'],
+            'classes': ['collapse']
         }),
         ('Funding Details', {
-            'fields': ['amount', 'currency', 'co_pis', 'grant_number'],
+            'fields': ['amount', 'currency', 'co_pis', 'grant_number', 'program_manager', 'sponsor_logo'],
             'classes': ['collapse']
         }),
         ('Related Publications', {
@@ -102,7 +111,7 @@ class EducationAdmin(admin.ModelAdmin):
     list_display = ['degree_type', 'field_of_study', 'institution', 'graduation_year', 'gpa']
     search_fields = ['field_of_study', 'institution', 'location']
     ordering = ['-graduation_year', 'degree_type']
-    
+
     fieldsets = [
         ('Basic Information', {
             'fields': ['degree_type', 'degree_type_short', 'field_of_study', 'institution', 'location', 'graduation_year']
@@ -122,7 +131,7 @@ class ServiceAdmin(admin.ModelAdmin):
     list_filter = ['role', 'service_type', 'year']
     search_fields = ['organization', 'location']
     ordering = ['-year', 'title']
-    
+
     fieldsets = [
         ('Basic Information', {
             'fields': ['title', 'role', 'organization', 'service_type', 'start_date','end_date','year','end_year', 'location']
@@ -132,7 +141,7 @@ class ServiceAdmin(admin.ModelAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['name', 'title', 'institution', 'email']
     search_fields = ['name', 'title', 'institution']
-    
+
     fieldsets = [
         ('Basic Information', {
             'fields': ['name', 'occupation', 'title','long_title','headshot', 'bio', 'short_bio', 'under_construction']
@@ -167,6 +176,34 @@ class FigureAdmin(admin.ModelAdmin):
         })
     ]
 
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'level', 'degree', 'mentorship_role', 'institution', 'start_date', 'end_date'] # Added degree, mentorship_role
+    list_filter = ['level', 'mentorship_role', 'institution', 'start_date'] # Added mentorship_role
+    search_fields = ['name', 'institution', 'project_title', 'degree'] # Added degree
+    ordering = ['-start_date', 'name']
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['name', 'level', 'degree', 'institution'] # Added degree
+        }),
+        ('Mentorship Details', {
+            'fields': ['mentorship_role', 'project_title', 'start_date', 'end_date', 'current_position'], # Added mentorship_role
+            'classes': ['collapse']
+        })
+    ]
+
+class ReferencePersonAdmin(admin.ModelAdmin):
+    list_display = ['name', 'title', 'institution', 'email']
+    search_fields = ['name', 'title', 'institution', 'relationship']
+    ordering = ['name']
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['name', 'title', 'institution', 'relationship']
+        }),
+        ('Contact Details', {
+            'fields': ['email'],
+            'classes': ['collapse']
+        })
+    ]
 
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Reference, ReferenceAdmin)
@@ -178,3 +215,13 @@ admin.site.register(Education, EducationAdmin)
 admin.site.register(Service, ServiceAdmin)
 admin.site.register(Quote, QuoteAdmin)
 admin.site.register(Figure,FigureAdmin)
+admin.site.register(Student, StudentAdmin) # Updated registration
+admin.site.register(ReferencePerson, ReferencePersonAdmin)
+
+class MilestoneAdmin(admin.ModelAdmin):
+    list_display = ('title', 'grant', 'date')
+    list_filter = ('grant', 'date')
+    search_fields = ('title', 'description')
+    prepopulated_fields = {'slug': ('title',)}
+
+admin.site.register(Milestone, MilestoneAdmin)

@@ -58,7 +58,7 @@
 \newcommand{\cvoccupation}[1]{\def\@cvoccupation{#1}}
 \newcommand{\cvemail}[1]{\def\@cvemail{#1}}
 \newcommand{\cvphone}[1]{\def\@cvphone{#1}}
-\newcommand{\cvwebsite}[1]{\def\@cvwebsite{#1}}
+\newcommand{\cvwebsite}[2]{\def\@cvwebsite{#1}\def\@cvwebsiteurl{#2}}
 \newcommand{\cvlinkedin}[1]{\def\@cvlinkedin{#1}}
 \newcommand{\cvgithub}[1]{\def\@cvgithub{#1}}
 \newcommand{\cvorcid}[1]{\def\@cvorcid{#1}}
@@ -74,7 +74,7 @@
             \small
             \ifdefined\@cvemail \faEnvelope\ \href{mailto:\@cvemail}{\@cvemail} \fi
             \ifdefined\@cvphone \quad \faPhone\ \@cvphone \fi
-            \ifdefined\@cvwebsite \quad \faGlobe\ \href{\@cvwebsite}{\@cvwebsite} \fi
+            \ifdefined\@cvwebsite \quad \faGlobe\ \href{\@cvwebsiteurl}{\@cvwebsite} \fi
             \\
             \ifdefined\@cvlinkedin \faLinkedin\ \href{\@cvlinkedin}{\@cvlinkedin} \fi
             \ifdefined\@cvgithub \quad \faGithub\ \href{\@cvgithub}{\@cvgithub} \fi

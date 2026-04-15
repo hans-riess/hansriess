@@ -2,6 +2,9 @@ from pathlib import Path
 import os
 import dj_database_url
 from dotenv import load_dotenv
+import mimetypes
+
+mimetypes.add_type("text/html", ".html", True)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -60,6 +63,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'hansriess.wsgi.application'
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 
 # --- Database ---

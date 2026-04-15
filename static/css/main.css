@@ -80,7 +80,7 @@ body {
 /* Mobile background handling */
 @media screen and (max-width: 736px) {
     body {
-        background-image: url("../images/header-mobile.jpeg");
+        background-image: url("../images/header.jpeg");
         background-attachment: scroll;
         background-position: center top;
         background-size: cover;
@@ -92,7 +92,7 @@ body {
 @media screen and (max-width: 736px) and (-webkit-min-device-pixel-ratio: 2),
        screen and (max-width: 736px) and (min-resolution: 192dpi) {
     body {
-        background-image: url("../images/header-mobile.jpeg");
+        background-image: url("../images/header.jpeg");
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
@@ -102,7 +102,7 @@ body {
 /* Very small mobile devices */
 @media screen and (max-width: 480px) {
     body {
-        background-image: url("../images/header-mobile.jpeg");
+        background-image: url("../images/header.jpeg");
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
@@ -422,6 +422,14 @@ p {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.button.small {
+    font-size: 0.8em;
+    padding: 0.5em 1.5em;
+    background-color: #B3A369;
+    color: #fff;
+}
+
+
 /* Title Card Styling */
 #title .container {
     background: transparent;
@@ -690,6 +698,103 @@ ul.icons li a:hover {
     display: none;
 }
 
+/* Projects Section */
+#projects .container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 1em;
+    padding: 3em 2em;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(179, 163, 105, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.project-card {
+    background: #fff;
+    border-radius: 0.5em;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.project-card a {
+    text-decoration: none;
+    color: inherit;
+    border-bottom: none;
+}
+
+.project-card .image.fit {
+    margin-bottom: 1em;
+}
+
+.project-card h3 {
+    font-size: 1.25em;
+    padding: 0 1em 1em 1em;
+    text-align: center;
+}
+
+/* Project Page */
+#project-description .card,
+#milestones .card,
+#grant-details .card,
+#related-publications .card,
+#related-talks .card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 1em;
+    padding: 3em 2em;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(179, 163, 105, 0.3);
+    backdrop-filter: blur(10px);
+    margin-bottom: 2em;
+}
+
+#milestones .card {
+    margin-bottom: 1em;
+}
+
+.slides-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    margin: 2em 0;
+}
+
+.slides-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#title .bio-subtitle {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+#title.wrapper {
+    padding-bottom: 2em;
+}
+
+#project-description.wrapper {
+    padding-top: 2em;
+}
+
+.date {
+    font-size: 0.9em;
+    color: #666;
+    text-align: center;
+    margin-bottom: 1em;
+}
+
 /* Responsive */
 @media screen and (max-width: 1680px) {
     body, input, textarea, select {
@@ -865,21 +970,6 @@ ul.icons li a:hover {
         padding: 3em 0 1em 0;
     }
     
-    .carousel {
-        margin: 0 0 2em 0;
-    }
-    
-    .carousel .reel {
-        margin: 0 0 2em 0;
-    }
-    
-    .carousel article {
-        margin: 0 0 2em 0;
-    }
-    
-    .carousel article .image {
-        margin: 0 0 1em 0;
-    }
 }
 
 @media screen and (max-width: 736px) {
@@ -1633,111 +1723,6 @@ ul.icons li a:hover {
     line-height: 1.3;
 }
 
-/* Carousel Styles */
-.carousel {
-    position: relative;
-    max-width: 100%;
-    margin: 0 auto;
-    overflow: hidden;
-    min-height: 420px;
-}
-
-.carousel-container {
-    position: relative;
-    width: 100%;
-    height: 420px;
-}
-
-.carousel-slide {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-    visibility: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.carousel-slide.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.carousel-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center center;
-}
-
-/* Remove inherited margins/radius from `image fit` inside carousel to prevent clipping */
-.carousel-slide img.image.fit {
-    margin: 0;
-    border-radius: 0;
-}
-
-/* Remove arbitrary per-slide downsizing to avoid tiny images */
-
-.carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(179, 163, 105, 0.8);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    font-size: 18px;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease;
-    z-index: 10;
-}
-
-.carousel-btn:hover {
-    background: rgba(179, 163, 105, 1);
-}
-
-.carousel-btn.prev {
-    left: 10px;
-}
-
-.carousel-btn.next {
-    right: 10px;
-}
-
-.carousel-dots {
-    text-align: center;
-    margin-top: 15px;
-}
-
-.dot {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    margin: 0 5px;
-    background-color: rgba(179, 163, 105, 0.5);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.dot.active {
-    background-color: rgba(179, 163, 105, 1);
-}
-
-.dot:hover {
-    background-color: rgba(179, 163, 105, 0.8);
-}
-
 /* Mobile responsive construction notice */
 @media screen and (max-width: 736px) {
     #construction-notice {
@@ -1765,36 +1750,39 @@ ul.icons li a:hover {
     }
 }
 
-/* Mobile responsive carousel */
+/* Fix for the Funding Agency Logo */
+.funding-logo {
+    display: block;
+    height: auto;
+}
+
+/* On Desktop: Constrain the logo size */
+@media screen and (min-width: 737px) {
+    .funding-logo {
+        max-width: 250px; /* Adjust this to your preferred size */
+        margin-left: auto; /* Aligns logo to the right of the text column */
+    }
+}
+
+/* On Mobile: Allow it to be larger/centered */
 @media screen and (max-width: 736px) {
-    .carousel {
-        min-height: 300px;
+    .funding-logo {
+        max-width: 80%;
+        margin: 1em auto;
     }
-    
-    .carousel-container {
-        height: 300px;
+}
+
+/* Properly wrap your slide hiding rule */
+@media screen and (max-width: 736px) {
+    .desktop-only-slides {
+        display: none !important;
     }
-    
-    .carousel-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-        padding: 8px 12px;
+}
+
+@media screen and (max-width: 736px) {
+    #title.wrapper, .header, .wrapper.style2 {
+        background-attachment: scroll !important;
+        background-size: cover !important;
+        background-position: center !important;
     }
-    
-    .carousel-btn.prev {
-        left: 5px;
-    }
-    
-    .carousel-btn.next {
-        right: 5px;
-    }
-    
-    .dot {
-        width: 10px;
-        height: 10px;
-        margin: 0 3px;
-    }
-    
-    /* Ensure all slides use the same scaling behavior on mobile */
 }
