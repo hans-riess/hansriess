@@ -86,6 +86,9 @@
                                 {% if grant.image %}
                                 <img src="{{ grant.image.url }}" alt="{{ grant.title }}" class="image fit" />
                                 {% endif %}
+                                {%if grant.role %}
+                                 <h3>{{ grant.get_role_display_name }}</h3>
+                                {% endif %}
                             </a>
                         </article>
                     </div>
