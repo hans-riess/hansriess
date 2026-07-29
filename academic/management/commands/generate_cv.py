@@ -65,7 +65,7 @@ class Command(BaseCommand):
             talks = Talk.objects.filter(is_invited=True).order_by('-date')
             services = Service.objects.order_by('-year')
             courses = Course.objects.order_by('-year', '-semester')
-            pub_types = ['journal_article', 'conference_proceedings', 'preprint', 'book', 'book_chapter', 'thesis', 'other']
+            pub_types = ['journal_article', 'conference_proceedings', 'preprint', 'book', 'book_chapter', 'thesis']
             publications = {pt: Reference.objects.filter(reference_type=pt).order_by('-year') for pt in pub_types}
             students = Student.objects.order_by('-start_date')
             professional_references = ReferencePerson.objects.order_by('name')
@@ -108,9 +108,22 @@ class Command(BaseCommand):
         # Grants
         if grants.exists():
             tex_content.append("\\section{Grants \& Contracts}")
+
+            # Total awards earned as PI or Co-PI (excludes key/senior personnel roles,
+            # since that funding wasn't earned by this person).
+            totals_by_currency = {}
+            for grant in grants:
+                if grant.role in ('pi', 'co_pi') and grant.amount:
+                    totals_by_currency[grant.currency] = totals_by_currency.get(grant.currency, 0) + grant.amount
+            if totals_by_currency:
+                totals_str = ", ".join(
+                    f"{amount:,.0f} {currency}" for currency, amount in totals_by_currency.items()
+                )
+                tex_content.append(f"\\cvsectionnote{{Total Awards (PI/Co-PI): {escape_latex(totals_str)}}}")
+
             tex_content.append("\\begin{cventries}")
             for grant in grants:
-                role_display = grant.get_role_display_name().replace("_", " ").title()
+                role_display = grant.get_role_abbreviation()
                 title = f"{escape_latex(role_display)}: {escape_latex(grant.title)}"
                 description_parts = []
                 if grant.amount: description_parts.append(f"{escape_latex(grant.get_formatted_amount())}")
@@ -185,7 +198,8 @@ class Command(BaseCommand):
             for talk in talks:
                 poster_link = f" \\href{{{talk.poster.url}}}{{[Poster]}}" if talk.poster else ""
                 location_with_poster = f"{escape_latex(talk.location)}{poster_link}"
-                tex_content.append(f"\\cvtalk{{{escape_latex(talk.title)}}}{{{escape_latex(talk.venue)}}}{{{location_with_poster}}}{{{talk.date.strftime('%B %Y')}}}")
+                talk_type = escape_latex(talk.get_talk_type_display_name())
+                tex_content.append(f"\\cvtalk{{{escape_latex(talk.title)}}}{{{escape_latex(talk.venue)}}}{{{location_with_poster}}}{{{talk.date.strftime('%B %Y')}}}{{{talk_type}}}")
             tex_content.append("\\end{publications}")
 
         # --- UPDATED Mentorship SECTION ---
@@ -231,10 +245,13 @@ class Command(BaseCommand):
                     dates = "" # No date info
                 # Use role display name directly if title is missing, otherwise put role in description
                 role_display_text = escape_latex(service.get_role_display()) # Corrected method name
+                type_display_text = escape_latex(service.get_service_type_display())
                 title = escape_latex(service.title) if service.title else role_display_text
                 org = escape_latex(service.organization)
-                # If title was used, put role in description, otherwise leave description empty
-                desc = role_display_text if service.title else "" # Use the fetched display text
+                # If title was used, put role in description, otherwise leave description empty; always note the service type
+                desc_parts = [role_display_text] if service.title else []
+                desc_parts.append(type_display_text)
+                desc = " \\textbullet\\ ".join(desc_parts)
                 tex_content.append(f"\\cventry{{{title}}}{{{org}}}{{{dates}}}{{{desc}}}")
             tex_content.append("\\end{cventries}")
 

@@ -36,6 +36,7 @@ class Profile(models.Model):
     google_scholar = models.URLField(blank=True, null=True)
     orcid = models.URLField(blank=True, null=True)
     under_construction = models.BooleanField(default=False, help_text="Show under construction notice on website")
+    show_publications = models.BooleanField(default=True, help_text="Show the Publications section on the homepage")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     @property
@@ -397,6 +398,14 @@ class Grant(models.Model):
 
     def get_role_display_name(self):
         return self.get_role_display()
+
+    def get_role_abbreviation(self):
+        """Returns a compact role label (e.g. 'PI', 'Co-PI') for space-constrained display like the CV."""
+        abbreviations = {
+            'pi': 'PI',
+            'co_pi': 'Co-PI',
+        }
+        return abbreviations.get(self.role, self.get_role_display())
 
 
 class Milestone(models.Model):

@@ -14,6 +14,7 @@
 \RequirePackage{hyperref}
 \RequirePackage{fontawesome5}
 \RequirePackage{etoolbox}
+\RequirePackage{tabularx}
 
 % Page geometry
 \geometry{
@@ -52,6 +53,9 @@
     {}
     [\titlerule]
 \titlespacing*{\section}{0pt}{1.5\baselineskip}{0.5\baselineskip}
+
+% A short muted note placed under a section heading (e.g. a running total)
+\newcommand{\cvsectionnote}[1]{{\small\color{muted}#1\par\vspace{0.3em}}}
 
 % --- HEADER COMMANDS ---------------------------------------------------------
 \newcommand{\cvname}[1]{\def\@cvname{#1}}
@@ -109,7 +113,9 @@
 \newcommand{\cventry}[4]{
     \item
     \begin{minipage}[t]{\linewidth}
-    \textbf{\color{primary}#1} \hfill {\color{muted}#3} \\
+    \begin{tabularx}{\linewidth}{@{}X r@{}}
+    \textbf{\color{primary}#1} & {\color{muted}#3} \\
+    \end{tabularx}
     \textit{\color{secondary}#2}
     \ifstrempty{#4}{}{\\{\small#4}}
     \end{minipage}
@@ -142,11 +148,12 @@
 % #2: Event
 % #3: Location
 % #4: Date
-\newcommand{\cvtalk}[4]{
+% #5: Talk type (e.g. Keynote, Colloquium) -- optional, may be empty
+\newcommand{\cvtalk}[5]{
     \item
     \begin{minipage}[t]{\linewidth}
     \textbf{#1}. \\
-    \textit{#2} \hfill {\color{muted}#4} \\
+    \textit{#2} \hfill {\color{muted}\ifstrempty{#5}{}{#5 \textbullet\ }#4} \\
     #3
     \end{minipage}
 }
