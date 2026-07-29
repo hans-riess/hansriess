@@ -4,6 +4,7 @@ Pipfile.lock
 *.DS_Store
 staticfiles/
 media/
+scrap/
 .venv/
 __pycache__/
 scrap/

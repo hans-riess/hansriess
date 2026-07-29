@@ -1,17 +1,20 @@
 from django.contrib import admin
-from .models import (Profile, Slide, Reference, Course, Experience, Talk, Grant,
-                     Education, Service, Quote, Figure, Student, ReferencePerson)
+from .models import (Profile, Reference, Course, Experience, Talk, Grant,
+                     Education, Service, Quote, Figure, Student, ReferencePerson, Milestone)
 
-# ... (Keep existing Admin classes: ReferenceAdmin, CourseAdmin, etc.) ...
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['get_short_title', 'year', 'reference_type']
     list_filter = ['reference_type', 'year']
     search_fields = ['title', 'authors']
     ordering = ['-year', 'title']
+    
+    # ADD THIS: Automatically fills the slug based on the title
+    prepopulated_fields = {'slug': ('title',)} 
 
     fieldsets = [
         (None, {
-            'fields': ['reference_type', 'title', 'authors', 'alphabetical_order', 'shared_first_author']
+            # ADD 'slug' HERE:
+            'fields': ['reference_type', 'title', 'slug', 'authors', 'alphabetical_order', 'shared_first_author']
         }),
         ('Publication Details', {
             'fields': ['year','journal', 'volume', 'issue', 'pages','abstract','keywords'],
@@ -88,10 +91,14 @@ class GrantAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Basic Information', {
             # Replaced start_date and end_date with year
-            'fields': ['title', 'funding_agency', 'role', 'start_date','end_date']
+            'fields': ['title', 'short_title', 'description','slug', 'image', 'funding_agency', 'role', 'start_date','end_date']
+        }),
+        ('Password Protection', {
+            'fields': ['password_protected', 'password'],
+            'classes': ['collapse']
         }),
         ('Funding Details', {
-            'fields': ['amount', 'currency', 'co_pis', 'grant_number'],
+            'fields': ['amount', 'currency', 'co_pis', 'grant_number', 'program_manager', 'sponsor_logo'],
             'classes': ['collapse']
         }),
         ('Related Publications', {
@@ -169,7 +176,6 @@ class FigureAdmin(admin.ModelAdmin):
         })
     ]
 
-# --- UPDATED STUDENT ADMIN ---
 class StudentAdmin(admin.ModelAdmin):
     list_display = ['name', 'level', 'degree', 'mentorship_role', 'institution', 'start_date', 'end_date'] # Added degree, mentorship_role
     list_filter = ['level', 'mentorship_role', 'institution', 'start_date'] # Added mentorship_role
@@ -211,3 +217,11 @@ admin.site.register(Quote, QuoteAdmin)
 admin.site.register(Figure,FigureAdmin)
 admin.site.register(Student, StudentAdmin) # Updated registration
 admin.site.register(ReferencePerson, ReferencePersonAdmin)
+
+class MilestoneAdmin(admin.ModelAdmin):
+    list_display = ('title', 'grant', 'date')
+    list_filter = ('grant', 'date')
+    search_fields = ('title', 'description')
+    prepopulated_fields = {'slug': ('title',)}
+
+admin.site.register(Milestone, MilestoneAdmin)

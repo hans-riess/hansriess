@@ -123,6 +123,7 @@ class Reference(models.Model):
     doi = models.CharField(max_length=100, blank=True)
     url = models.URLField(blank=True)
     pdf_file = models.FileField(upload_to='references/papers/', blank=True)
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="Short URL slug for sharing")
     reference_image = models.ImageField(upload_to='references/images/', blank=True, null=True, help_text="Optional image for the publication (e.g., graph, diagram)")
     abstract = models.TextField(blank=True)
     keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated list of keywords")
@@ -303,6 +304,8 @@ class Talk(models.Model):
     date = models.DateField(help_text="Date of the talk")
     slides = models.FileField(upload_to='talks/slides/', blank=True, null=True, help_text="Upload slides file")
     poster = models.FileField(upload_to='talks/posters/', blank=True, null=True, help_text="Upload poster file")
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="Short URL slug for sharing")
+
     event_url = models.URLField(blank=True, null=True, help_text="URL to the event website")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -347,7 +350,13 @@ class Grant(models.Model):
     ]
 
     title = models.CharField(max_length=300, help_text="Title of the grant or award")
+    short_title = models.CharField(max_length=100, blank=True, null=True, help_text="A shorter title for display purposes")
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="URL-friendly version of the title")
+    description = models.TextField(blank=True, help_text="A description of the grant or project")
+    image = models.ImageField(upload_to='grants/', blank=True, null=True, help_text="Image for the grant")
     funding_agency = models.CharField(max_length=200, help_text="Funding agency or organization")
+    program_manager = models.CharField(max_length=200, blank=True, null=True, help_text="Program manager at the funding agency")
+    sponsor_logo = models.ImageField(upload_to='grants/sponsor_logos/', blank=True, null=True, help_text="Logo of the sponsoring organization")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='pi')
     amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, help_text="Total grant amount")
     currency = models.CharField(max_length=3, default='USD', help_text="Currency code (USD, EUR, etc.)")
@@ -356,6 +365,8 @@ class Grant(models.Model):
     co_pis = models.CharField(max_length=300, blank=True, help_text="Co-PIs (optional, comma-separated)")
     grant_number = models.CharField(max_length=100, blank=True, null=True, help_text="Grant/award number (optional)")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
+    password_protected = models.BooleanField(default=False, help_text="Enable password protection for this grant's page")
+    password = models.CharField(max_length=128, blank=True, help_text="Password for this grant's page (if password protected)")
 
     class Meta:
         ordering = ['-start_date', 'title']
@@ -386,6 +397,25 @@ class Grant(models.Model):
 
     def get_role_display_name(self):
         return self.get_role_display()
+
+
+class Milestone(models.Model):
+    """Model for grant milestones"""
+    grant = models.ForeignKey(Grant, on_delete=models.CASCADE, related_name='milestones')
+    title = models.CharField(max_length=300, help_text="Title of the milestone")
+    slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="URL-friendly version of the title")
+    date = models.DateField(help_text="Date of the milestone")
+    description = models.TextField(blank=True, help_text="A description of the milestone")
+    report = models.FileField(upload_to='milestones/reports/', blank=True, null=True, help_text="Upload report file")
+    slides = models.FileField(upload_to='milestones/slides/', blank=True, null=True, help_text="Upload slides file")
+
+    class Meta:
+        ordering = ['-date', 'title']
+        verbose_name = "Milestone"
+        verbose_name_plural = "Milestones"
+
+    def __str__(self):
+        return f"{self.title} ({self.grant.title})"
 
 
 class Education(models.Model):
