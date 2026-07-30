@@ -153,7 +153,9 @@
     \item
     \begin{minipage}[t]{\linewidth}
     \textbf{#1}. \\
-    \textit{#2} \hfill {\color{muted}\ifstrempty{#5}{}{#5 \textbullet\ }#4} \\
+    \begin{tabularx}{\linewidth}{@{}X r@{}}
+    \textit{#2} & {\color{muted}\ifstrempty{#5}{}{#5 \textbullet\ }#4} \\
+    \end{tabularx}
     #3
     \end{minipage}
 }

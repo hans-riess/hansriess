@@ -323,6 +323,15 @@ class Talk(models.Model):
     def get_talk_type_display_name(self):
         """Returns a more readable talk type name"""
         return self.get_talk_type_display()
+
+    def get_talk_type_abbreviation(self):
+        """Returns a compact talk type label for space-constrained display like the CV."""
+        abbreviations = {
+            'conference': 'Conference',
+            'poster': 'Poster',
+            'panel': 'Panel',
+        }
+        return abbreviations.get(self.talk_type, self.get_talk_type_display())
     
     def get_formatted_date(self):
         """Returns a formatted date string"""

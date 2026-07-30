@@ -198,7 +198,7 @@ class Command(BaseCommand):
             for talk in talks:
                 poster_link = f" \\href{{{talk.poster.url}}}{{[Poster]}}" if talk.poster else ""
                 location_with_poster = f"{escape_latex(talk.location)}{poster_link}"
-                talk_type = escape_latex(talk.get_talk_type_display_name())
+                talk_type = escape_latex(talk.get_talk_type_abbreviation())
                 tex_content.append(f"\\cvtalk{{{escape_latex(talk.title)}}}{{{escape_latex(talk.venue)}}}{{{location_with_poster}}}{{{talk.date.strftime('%B %Y')}}}{{{talk_type}}}")
             tex_content.append("\\end{publications}")
 
