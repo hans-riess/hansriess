@@ -40,7 +40,7 @@
                             <li>
                                 <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
                                 {% if profile.cv %}
-                                    <a href="{{ profile.cv.url }}" class="button bio-button">Download CV</a>
+                                    <a href="{% url 'cv_redirect' %}" class="button bio-button">Download CV</a>
                                 {% endif %}
                             </li>
                         </ul>
