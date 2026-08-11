@@ -59,6 +59,18 @@ def generate_cv_pdf(request):
     # stale cached files on S3.
     return HttpResponse(status=204)
 
+def cv_redirect(request):
+    """
+    Redirects /cv/ to the profile's current CV file, giving the CV a stable,
+    shareable URL (hansriess.com/cv) independent of the underlying storage URL.
+    """
+    profile = Profile.objects.first()
+
+    if profile and profile.cv:
+        return redirect(profile.cv.url)
+
+    raise Http404("CV not found.")
+
 def project_view(request, project_slug):
     grant = get_object_or_404(Grant, slug=project_slug)
     
