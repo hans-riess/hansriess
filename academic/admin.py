@@ -1,34 +1,29 @@
 from django.contrib import admin
-from .models import (Award, Profile, Reference, Course, DeliveredProduct, Experience,
-                     Innovation, Talk, Grant, Education, Service, Quote, Figure,
-                     Student, ReferencePerson, Milestone)
+from .models import (Award, Profile, Proposal, Reference, Course, DeliveredProduct,
+                     Experience, Innovation, Talk, Grant, Education, Service, Quote,
+                     Figure, Student, ReferencePerson, Milestone, TechReport)
 
 class ReferenceAdmin(admin.ModelAdmin):
-    list_display = ['get_short_title', 'year', 'reference_type']
-    list_filter = ['reference_type', 'year']
+    list_display = ['get_short_title', 'year', 'medium', 'status', 'refereed']
+    list_filter = ['medium', 'status', 'refereed', 'year']
     search_fields = ['title', 'authors']
     ordering = ['-year', 'title']
-    
-    # ADD THIS: Automatically fills the slug based on the title
-    prepopulated_fields = {'slug': ('title',)} 
+
+    prepopulated_fields = {'slug': ('title',), 'cv_ref_slug': ('title',)}
 
     fieldsets = [
         (None, {
-            # ADD 'slug' HERE:
-            'fields': ['reference_type', 'title', 'slug', 'authors', 'alphabetical_order', 'shared_first_author']
+            'fields': ['title', 'slug', 'authors', 'alphabetical_order',
+                       'shared_first_author', 'credit_roles']
         }),
         ('Publication Details', {
-            'fields': ['year','journal', 'volume', 'issue', 'pages','abstract','keywords'],
-            'classes': ['collapse']
+            'fields': ['medium', 'status', 'refereed', 'year', 'publication_date',
+                       'journal', 'volume', 'issue', 'pages', 'pre_gt_hire',
+                       'abstract', 'keywords']
         }),
         ('Materials', {
-            'fields': ['url','code','pdf_file', 'reference_image'],
-            'classes': ['collapse']
-        }),
-        ('Georgia Tech CV', {
-            'fields': ['gt_category', 'credit_roles', 'status_note', 'arxiv_id',
-                       'pre_gt_hire', 'cv_ref_slug'],
-            'classes': ['collapse']
+            'fields': ['url', 'code', 'doi', 'arxiv_id', 'pdf_file', 'reference_image',
+                       'cv_ref_slug']
         })
     ]
 
@@ -43,13 +38,9 @@ class CourseAdmin(admin.ModelAdmin):
             'fields': ['course_code', 'title', 'institution', 'department', 'semester', 'year', 'role']
         }),
         ('Course Details', {
-            'fields': ['description', 'is_graduate', 'is_online', 'syllabus'],
-            'classes': ['collapse']
-        }),
-        ('Georgia Tech CV (Knowledge Sharing table)', {
-            'fields': ['organization', 'when_taught', 'curriculum_role',
-                       'attendee_count', 'pre_gt_hire'],
-            'classes': ['collapse']
+            'fields': ['description', 'is_graduate', 'is_online', 'syllabus',
+                       'organization', 'when_taught', 'curriculum_role',
+                       'attendee_count', 'pre_gt_hire']
         })
     ]
 
@@ -73,70 +64,65 @@ class ExperienceAdmin(admin.ModelAdmin):
     ]
 
 class TalkAdmin(admin.ModelAdmin):
-    list_display = ['get_short_title', 'talk_type', 'date']
-    list_filter = ['talk_type', 'is_invited', 'date']
+    list_display = ['get_short_title', 'talk_type', 'invited', 'proceedings', 'date']
+    list_filter = ['talk_type', 'invited', 'proceedings', 'date']
     search_fields = ['title', 'venue', 'location']
     ordering = ['-date', 'title']
 
+    prepopulated_fields = {'slug': ('title',), 'cv_ref_slug': ('title',)}
+
     fieldsets = [
         ('Basic Information', {
-            'fields': ['title', 'abstract', 'venue', 'location', 'talk_type', 'is_invited', 'date']
+            'fields': ['title', 'slug', 'abstract', 'venue', 'location', 'date',
+                       'talk_type', 'invited', 'proceedings', 'reference',
+                       'note', 'credit_roles', 'pre_gt_hire', 'cv_ref_slug']
+        }),
+        ('Knowledge Sharing', {
+            'description': 'Used when the talk is a tutorial or workshop, which the CV '
+                           'lists in Section I.E rather than with the publications.',
+            'fields': ['curriculum_role', 'attendee_count']
         }),
         ('Materials', {
-            # 'talk' has been removed from this list
-            'fields': ['slides', 'poster', 'event_url'], # Added poster back
-            'classes': ['collapse']
-        }),
-        ('Related Publications', {
-            'fields': ['related_publications'],
-            'classes': ['collapse']
-        }),
-        ('Georgia Tech CV', {
-            'fields': ['gt_category', 'credit_roles', 'note', 'pre_gt_hire', 'cv_ref_slug'],
-            'classes': ['collapse']
+            'fields': ['slides', 'poster', 'event_url', 'related_publications']
         })
     ]
 
 class MilestoneInline(admin.StackedInline):
     model = Milestone
     extra = 0
-    fields = ['title', 'slug', 'date', 'report_type', 'page_count', 'slide_count',
-              'authorship_percent', 'description', 'report', 'slides', 'cv_ref_slug']
+    fields = ['title', 'slug', 'date', 'description', 'report', 'slides']
     prepopulated_fields = {'slug': ('title',)}
 
+class TechReportInline(admin.StackedInline):
+    model = TechReport
+    extra = 0
+    fields = ['title', 'slug', 'report_type', 'date', 'page_count', 'slide_count',
+              'authorship_percent', 'description', 'report', 'slides', 'cv_ref_slug', 'order']
+    prepopulated_fields = {'slug': ('title',), 'cv_ref_slug': ('title',)}
+
 class GrantAdmin(admin.ModelAdmin):
-    list_display = ['title', 'funding_agency', 'role', 'gt_status', 'get_formatted_amount']
-    list_filter = ['role', 'gt_status']
-    inlines = [MilestoneInline]
+    list_display = ['title', 'funding_agency', 'role', 'get_formatted_amount']
+    list_filter = ['role']
+    inlines = [TechReportInline, MilestoneInline]
     search_fields = ['title', 'funding_agency', 'co_pis']
     ordering = ['title']
 
     fieldsets = [
         ('Basic Information', {
-            # Replaced start_date and end_date with year
-            'fields': ['title', 'short_title', 'description','slug', 'image', 'funding_agency', 'role', 'start_date','end_date']
+            'fields': ['title', 'short_title', 'description', 'slug', 'image',
+                       'funding_agency', 'role', 'candidate_role_text', 'task_title',
+                       'pi_name', 'start_date', 'end_date']
+        }),
+        ('Funding Details', {
+            'fields': ['amount', 'currency', 'co_pis', 'grant_number', 'program_manager',
+                       'sponsor_logo', 'contributions', 'report_series_note', 'cv_ref_slug']
         }),
         ('Password Protection', {
             'fields': ['password_protected', 'password'],
             'classes': ['collapse']
         }),
-        ('Funding Details', {
-            'fields': ['amount', 'currency', 'co_pis', 'grant_number', 'program_manager', 'sponsor_logo'],
-            'classes': ['collapse']
-        }),
         ('Related Publications', {
             'fields': ['related_publications'],
-            'classes': ['collapse']
-        }),
-        ('Georgia Tech CV — Section III.A (funded programs)', {
-            'fields': ['gt_status', 'pi_name', 'candidate_role_text', 'task_title',
-                       'contributions', 'report_series_note', 'cv_ref_slug'],
-            'classes': ['collapse']
-        }),
-        ('Georgia Tech CV — Section IV.B (proposals)', {
-            'fields': ['solicitation', 'date_abstract_submitted', 'date_full_submitted',
-                       'full_proposal_note', 'amount_requested', 'result_note',
-                       'contribution_to_proposal'],
             'classes': ['collapse']
         })
     ]
@@ -151,16 +137,11 @@ class EducationAdmin(admin.ModelAdmin):
             'fields': ['degree_type', 'degree_type_short', 'field_of_study', 'institution', 'location', 'graduation_year']
         }),
         ('Academic Details', {
-            'fields': ['gpa', 'thesis_title', 'advisor', 'honors'],
-            'classes': ['collapse']
+            'fields': ['gpa', 'honors', 'pre_gt_hire']
         }),
-        ('Related Publications', {
-            'fields': ['related_publications'],
-            'classes': ['collapse']
-        }),
-        ('Georgia Tech CV', {
-            'fields': ['is_dissertation', 'thesis_url', 'pre_gt_hire'],
-            'classes': ['collapse']
+        ('Thesis', {
+            'fields': ['thesis_title', 'thesis_url', 'advisor', 'is_dissertation',
+                       'related_publications']
         })
     ]
 
@@ -174,9 +155,8 @@ class ServiceAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': ['title', 'role', 'organization', 'service_type', 'start_date','end_date','year','end_year', 'location']
         }),
-        ('Georgia Tech CV', {
-            'fields': ['gt_category', 'manuscript_count', 'detail', 'pre_gt_hire'],
-            'classes': ['collapse']
+        ('Details', {
+            'fields': ['gt_category', 'manuscript_count', 'detail', 'pre_gt_hire']
         })
     ]
 
@@ -200,10 +180,9 @@ class ProfileAdmin(admin.ModelAdmin):
             'fields': ['twitter','blue_sky','youtube','linkedin', 'github', 'google_scholar', 'orcid'],
             'classes': ['collapse']
         }),
-        ('Georgia Tech CV', {
+        ('Curriculum Vitae', {
             'fields': ['fields_of_interest', 'gt_hire_date', 'research_program',
-                       'cv_show_preamble_sections'],
-            'classes': ['collapse']
+                       'cv_show_all_references', 'cv_show_preamble_sections']
         })
     ]
 
@@ -236,10 +215,9 @@ class StudentAdmin(admin.ModelAdmin):
             'fields': ['mentorship_role', 'project_title', 'start_date', 'end_date', 'current_position'], # Added mentorship_role
             'classes': ['collapse']
         }),
-        ('Georgia Tech CV', {
+        ('Research', {
             'fields': ['research_topic', 'appointment_note', 'advisor_of_record',
-                       'host_lab', 'resulting_publications', 'pre_gt_hire'],
-            'classes': ['collapse']
+                       'host_lab', 'resulting_publications', 'pre_gt_hire']
         })
     ]
 
@@ -267,7 +245,7 @@ class AwardAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': ['title', 'organization', 'year', 'date_range', 'detail']
         }),
-        ('CV Placement', {
+        ('Placement', {
             'fields': ['pre_gt_hire', 'cv_ref_slug', 'order']
         })
     ]
@@ -285,7 +263,7 @@ class DeliveredProductAdmin(admin.ModelAdmin):
         ('Product Details', {
             'fields': ['description', 'maturity', 'technical_contribution']
         }),
-        ('CV Placement', {
+        ('Placement', {
             'fields': ['cv_ref_slug', 'order']
         })
     ]
@@ -298,16 +276,59 @@ class InnovationAdmin(admin.ModelAdmin):
     prepopulated_fields = {'cv_ref_slug': ('title',)}
     fieldsets = [
         ('Basic Information', {
-            'fields': ['title', 'sponsors_projects_dates']
+            'fields': ['title', 'grants', 'sponsors_projects_dates']
         }),
         ('Details', {
             'fields': ['description', 'technical_contributions']
         }),
-        ('CV Placement', {
+        ('Placement', {
             'fields': ['cv_ref_slug', 'order']
         })
     ]
 
+class ProposalAdmin(admin.ModelAdmin):
+    """Section IV.B of the Georgia Tech CV."""
+    list_display = ['title', 'sponsor', 'result', 'amount_requested', 'date_abstract_submitted']
+    list_filter = ['result', 'sponsor']
+    search_fields = ['title', 'sponsor', 'solicitation']
+    ordering = ['order', '-date_abstract_submitted', 'title']
+    prepopulated_fields = {'slug': ('title',), 'cv_ref_slug': ('short_title',)}
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['title', 'short_title', 'slug', 'sponsor', 'solicitation',
+                       'pi_name', 'candidate_role', 'grant']
+        }),
+        ('Submission', {
+            'fields': ['date_abstract_submitted', 'date_full_submitted',
+                       'full_proposal_note', 'amount_requested', 'currency',
+                       'result', 'result_note', 'start_date', 'end_date']
+        }),
+        ('Contribution', {
+            'fields': ['contribution', 'cv_ref_slug', 'order']
+        })
+    ]
+
+class TechReportAdmin(admin.ModelAdmin):
+    """Section II.A of the Georgia Tech CV."""
+    list_display = ['title', 'grant', 'report_type', 'date', 'authorship_percent']
+    list_filter = ['report_type', 'grant']
+    search_fields = ['title', 'description']
+    ordering = ['order', '-date', 'title']
+    prepopulated_fields = {'slug': ('title',), 'cv_ref_slug': ('title',)}
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['grant', 'title', 'slug', 'report_type', 'date']
+        }),
+        ('Details', {
+            'fields': ['page_count', 'slide_count', 'authorship_percent', 'description']
+        }),
+        ('Materials', {
+            'fields': ['report', 'slides', 'cv_ref_slug', 'order']
+        })
+    ]
+
+admin.site.register(Proposal, ProposalAdmin)
+admin.site.register(TechReport, TechReportAdmin)
 admin.site.register(Award, AwardAdmin)
 admin.site.register(DeliveredProduct, DeliveredProductAdmin)
 admin.site.register(Innovation, InnovationAdmin)

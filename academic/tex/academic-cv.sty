@@ -22,8 +22,7 @@
 \RequirePackage{mathptmx}          % Times metrics, matching the official CV
 \RequirePackage{geometry}
 \RequirePackage{xcolor}
-\RequirePackage{array}
-\RequirePackage{longtable}         % program tables must break across pages
+\RequirePackage{array}             % L{} ragged-right fixed-width columns
 \RequirePackage[normalem]{ulem}    % \uline breaks across lines; \underline does not
 \RequirePackage{fancyhdr}
 \RequirePackage{etoolbox}
@@ -104,6 +103,21 @@
 % A line of body text at the left margin (used under \cvminihead).
 \newcommand{\cvline}[1]{\par #1\par}
 
+% An EDUCATION / PROFESSIONAL APPOINTMENTS entry.
+% #1 role or degree (bold), #2 institution line, #3 date (flush right).
+\newlength{\cvdatewidth} \setlength{\cvdatewidth}{1.6in}
+\newcommand{\cvpreentry}[3]{%
+    \par\vspace{0.4\baselineskip}%
+    \noindent
+    \parbox[t]{\dimexpr\textwidth-\cvdatewidth-1em\relax}{\raggedright\bfseries #1}%
+    \hfill
+    \parbox[t]{\cvdatewidth}{\raggedleft #3}%
+    \par
+    \ifstrempty{#2}{}{%
+        \begingroup\setlength{\hangindent}{1em}\noindent #2\par\endgroup
+    }%
+}
+
 % --- SECTION HEADINGS --------------------------------------------------------
 \newcommand{\cvsection}[1]{%
     \par\vspace{1.4\baselineskip}%
@@ -181,7 +195,7 @@
     \makebox[\cvnumwidth][l]{\arabic{cvssub}.\arabic{cvitm}}%
     #1\par
     \endgroup
-    \vspace{0.2\baselineskip}%
+    \nopagebreak\vspace{0.2\baselineskip}%
 }
 
 % An unnumbered paragraph indented to the subsection level (I.A, I.D, V.A--F).
@@ -224,12 +238,13 @@
 % longtable so it breaks across pages, as the official document's tables do.
 \newenvironment{cvkeytable}{%
     \par\vspace{0.3\baselineskip}%
+    \noindent\begin{minipage}{\textwidth}%
     \footnotesize
-    \setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}%
-    \begin{longtable}{|L{2.75in}|L{3.35in}|}
+    \begin{tabular}{|L{2.75in}|L{3.35in}|}
     \hline
 }{%
-    \end{longtable}
+    \end{tabular}%
+    \end{minipage}%
     \normalsize
     \par\vspace{0.4\baselineskip}%
 }
@@ -240,9 +255,9 @@
 % Five-column Knowledge Sharing table (I.E), with a repeating header row.
 \newenvironment{cvteachtable}{%
     \par\vspace{0.5\baselineskip}%
+    \noindent\begin{minipage}{\textwidth}%
     \footnotesize
-    \setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}%
-    \begin{longtable}{|L{1.15in}|L{0.72in}|L{1.15in}|L{1.35in}|L{1.08in}|}
+    \begin{tabular}{|L{1.15in}|L{0.72in}|L{1.15in}|L{1.35in}|L{1.08in}|}
     \hline
     \textbf{Institution/ Organization} &
     \textbf{When Taught} &
@@ -250,9 +265,9 @@
     \textbf{Role in Curriculum Development} &
     \textbf{Approx. Number of Students/Attendees}
     \tabularnewline \hline
-    \endhead
 }{%
-    \end{longtable}
+    \end{tabular}%
+    \end{minipage}%
     \normalsize
     \par\vspace{0.4\baselineskip}%
 }

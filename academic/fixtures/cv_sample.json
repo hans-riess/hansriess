@@ -40,7 +40,8 @@
       "research_program": "The program Riess has built at Georgia Tech since February 2025 rests on one mathematical premise: coordination in a networked system is a local-to-global problem, and sheaf theory is the branch of mathematics invented for exactly that problem. See [[ref:quantale-model]] and [[ref:convergence-theory]].\n\nA second line asks what happens when system properties are graded rather than binary; the same enrichment turns co-design feasibility into a quantitative trade-off.",
       "cv_show_preamble_sections": true,
       "created_at": "2026-08-12T15:45:13.978Z",
-      "updated_at": "2026-08-12T15:48:39.900Z"
+      "updated_at": "2026-08-12T15:48:39.900Z",
+      "cv_show_all_references": false
     }
   },
   {
@@ -52,7 +53,6 @@
       "alphabetical_order": false,
       "shared_first_author": false,
       "year": 2024,
-      "reference_type": "journal_article",
       "journal": "IEEE Transactions on Signal Processing",
       "volume": "72",
       "issue": "",
@@ -65,12 +65,14 @@
       "abstract": "",
       "keywords": "",
       "code": "",
-      "gt_category": "journal",
       "credit_roles": "conceptualization, methodology, visualization, review, and editing",
       "pre_gt_hire": null,
-      "status_note": "",
       "arxiv_id": "",
-      "cv_ref_slug": "tangent-bundle-tsp"
+      "cv_ref_slug": "tangent-bundle-tsp",
+      "medium": "journal_article",
+      "refereed": true,
+      "status": "published",
+      "publication_date": "2024-04-01"
     }
   },
   {
@@ -82,7 +84,6 @@
       "alphabetical_order": true,
       "shared_first_author": false,
       "year": 2022,
-      "reference_type": "journal_article",
       "journal": "Homology, Homotopy and Applications",
       "volume": "24",
       "issue": "1",
@@ -95,12 +96,14 @@
       "abstract": "",
       "keywords": "",
       "code": "",
-      "gt_category": "journal",
       "credit_roles": "conceptualization, methodology, formal analysis, investigation, validation, writing, review, and editing",
       "pre_gt_hire": null,
-      "status_note": "",
       "arxiv_id": "",
-      "cv_ref_slug": "tarski-laplacian"
+      "cv_ref_slug": "tarski-laplacian",
+      "medium": "journal_article",
+      "refereed": true,
+      "status": "published",
+      "publication_date": "2022-03-01"
     }
   },
   {
@@ -112,7 +115,6 @@
       "alphabetical_order": false,
       "shared_first_author": false,
       "year": 2026,
-      "reference_type": "conference_proceedings",
       "journal": "Proc. IEEE 65th Conference on Decision and Control (CDC)",
       "volume": "",
       "issue": "",
@@ -125,12 +127,14 @@
       "abstract": "",
       "keywords": "",
       "code": "",
-      "gt_category": "proc_refereed",
       "credit_roles": "conceptualization, methodology, software, formal analysis, investigation, writing, review, editing, supervision, project administration, and funding acquisition",
       "pre_gt_hire": null,
-      "status_note": "",
       "arxiv_id": "",
-      "cv_ref_slug": "quantale-codesign"
+      "cv_ref_slug": "quantale-codesign",
+      "medium": "conference_proceedings",
+      "refereed": true,
+      "status": "published",
+      "publication_date": "2026-12-01"
     }
   },
   {
@@ -142,7 +146,6 @@
       "alphabetical_order": false,
       "shared_first_author": true,
       "year": 2026,
-      "reference_type": "conference_proceedings",
       "journal": "Proc. American Control Conference (ACC)",
       "volume": "",
       "issue": "",
@@ -155,12 +158,14 @@
       "abstract": "",
       "keywords": "",
       "code": "",
-      "gt_category": "proc_refereed",
       "credit_roles": "conceptualization, methodology, validation, formal analysis, investigation, resources, writing, review, editing, visualization, supervision, and funding acquisition",
       "pre_gt_hire": null,
-      "status_note": "",
       "arxiv_id": "",
-      "cv_ref_slug": "async-sheaf-diffusion"
+      "cv_ref_slug": "async-sheaf-diffusion",
+      "medium": "conference_proceedings",
+      "refereed": true,
+      "status": "published",
+      "publication_date": "2026-07-01"
     }
   },
   {
@@ -172,7 +177,6 @@
       "alphabetical_order": false,
       "shared_first_author": false,
       "year": 2026,
-      "reference_type": "conference_proceedings",
       "journal": "Proc. Asian Symposium on Programming Languages and Systems (APLAS)",
       "volume": "",
       "issue": "",
@@ -185,12 +189,14 @@
       "abstract": "",
       "keywords": "",
       "code": "",
-      "gt_category": "proc_refereed",
       "credit_roles": "conceptualization, resources, and supervision",
       "pre_gt_hire": null,
-      "status_note": "to appear",
       "arxiv_id": "",
-      "cv_ref_slug": "fuzzy-type-theory"
+      "cv_ref_slug": "fuzzy-type-theory",
+      "medium": "conference_proceedings",
+      "refereed": true,
+      "status": "accepted",
+      "publication_date": "2026-10-01"
     }
   },
   {
@@ -202,7 +208,6 @@
       "alphabetical_order": true,
       "shared_first_author": false,
       "year": 2026,
-      "reference_type": "preprint",
       "journal": "Compositionality",
       "volume": "",
       "issue": "",
@@ -215,12 +220,14 @@
       "abstract": "",
       "keywords": "",
       "code": "",
-      "gt_category": "submitted",
       "credit_roles": "conceptualization, methodology, investigation, writing, review, editing, visualization, and project administration",
       "pre_gt_hire": null,
-      "status_note": "Submitted to Compositionality",
       "arxiv_id": "2501.03890",
-      "cv_ref_slug": "categorical-diffusion"
+      "cv_ref_slug": "categorical-diffusion",
+      "medium": "preprint",
+      "refereed": false,
+      "status": "in_review",
+      "publication_date": "2026-01-01"
     }
   },
   {
@@ -346,20 +353,23 @@
       "venue": "INFORMS Optimization Society Conference",
       "location": "Atlanta, GA",
       "talk_type": "conference",
-      "is_invited": true,
       "date": "2026-03-01",
       "slides": "",
       "poster": "",
       "slug": "informs-2026",
       "event_url": null,
-      "gt_category": "invited_conf",
       "credit_roles": "",
       "pre_gt_hire": null,
       "note": "",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.002Z",
       "updated_at": "2026-08-12T15:45:14.002Z",
-      "related_publications": []
+      "related_publications": [],
+      "invited": true,
+      "proceedings": false,
+      "reference": null,
+      "curriculum_role": "",
+      "attendee_count": ""
     }
   },
   {
@@ -371,20 +381,23 @@
       "venue": "Toposes in Mondovi, Grothendieck Institute",
       "location": "Mondovi, Italy",
       "talk_type": "conference",
-      "is_invited": true,
       "date": "2024-09-01",
       "slides": "",
       "poster": "",
       "slug": "toposes-mondovi",
       "event_url": null,
-      "gt_category": "invited_conf",
       "credit_roles": "",
       "pre_gt_hire": null,
       "note": "Invited speaker among 10 others, 3 of which are Fields Medal recipients.",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.004Z",
       "updated_at": "2026-08-12T15:45:14.004Z",
-      "related_publications": []
+      "related_publications": [],
+      "invited": true,
+      "proceedings": false,
+      "reference": null,
+      "curriculum_role": "",
+      "attendee_count": ""
     }
   },
   {
@@ -396,20 +409,23 @@
       "venue": "AFRL Information Institute Poster Session",
       "location": "Rome, NY",
       "talk_type": "poster",
-      "is_invited": false,
       "date": "2026-07-01",
       "slides": "",
       "poster": "",
       "slug": "afrl-poster-2026",
       "event_url": null,
-      "gt_category": "no_proc",
       "credit_roles": "",
       "pre_gt_hire": null,
       "note": "",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.006Z",
       "updated_at": "2026-08-12T15:45:14.006Z",
-      "related_publications": []
+      "related_publications": [],
+      "invited": false,
+      "proceedings": false,
+      "reference": null,
+      "curriculum_role": "",
+      "attendee_count": ""
     }
   },
   {
@@ -421,20 +437,23 @@
       "venue": "NCR & GATAS Lab Seminar, University of Florida",
       "location": "Gainesville, FL",
       "talk_type": "seminar",
-      "is_invited": false,
       "date": "2025-11-01",
       "slides": "",
       "poster": "",
       "slug": "ncr-gatas-2025",
       "event_url": null,
-      "gt_category": "no_proc",
       "credit_roles": "",
       "pre_gt_hire": null,
       "note": "",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.008Z",
       "updated_at": "2026-08-12T15:45:14.008Z",
-      "related_publications": []
+      "related_publications": [],
+      "invited": false,
+      "proceedings": false,
+      "reference": null,
+      "curriculum_role": "",
+      "attendee_count": ""
     }
   },
   {
@@ -458,19 +477,11 @@
       "grant_number": "HR0011-25-3-0235",
       "password_protected": false,
       "password": "",
-      "gt_status": "funded",
       "pi_name": "",
       "candidate_role_text": "Principal Investigator",
       "task_title": "",
       "contributions": "Riess conceived SEAMAN, wrote the abstract, and delivered the oral proposal that won the award; it is his first award as Principal Investigator and the anchor of the research program described at IV.A. As sole PI he holds full budgetary authority and owns scope, schedule, sponsor reporting, and the relationship with the DARPA program manager. SEAMAN results are the basis of the follow-on proposal at [[ref:argus]].",
       "report_series_note": "Sheaf-Enriched Autonomous Multi-Agent Networks (SEAMAN), Defense Advanced Research Projects Agency, Contract No. HR0011-25-3-0235. Riess, H., Principal Investigator, sole author of every document below and presenter of every briefing (100% authorship throughout). Documents listed most recent first.",
-      "solicitation": "",
-      "date_abstract_submitted": null,
-      "date_full_submitted": null,
-      "full_proposal_note": "",
-      "amount_requested": null,
-      "result_note": "",
-      "contribution_to_proposal": "",
       "cv_ref_slug": "seaman",
       "related_publications": []
     }
@@ -496,95 +507,13 @@
       "grant_number": "FA9550-26-1-B039",
       "password_protected": false,
       "password": "",
-      "gt_status": "funded",
       "pi_name": "Dr. James Fairbanks (University of Florida)\nDr. Matthew Hale (Georgia Tech)",
       "candidate_role_text": "Task Leader (Key Personnel)",
       "task_title": "Sheaf theoretic model of asynchronous optimization",
       "contributions": "Riess is Task Leader for the task within this multi-institution Center of Excellence, having contributed the sheaf-theoretic component of the winning proposal as Key Personnel. Its first published result is at [[ref:async-sheaf-diffusion]].",
       "report_series_note": "",
-      "solicitation": "",
-      "date_abstract_submitted": null,
-      "date_full_submitted": null,
-      "full_proposal_note": "",
-      "amount_requested": null,
-      "result_note": "",
-      "contribution_to_proposal": "",
       "cv_ref_slug": "digicams",
       "related_publications": []
-    }
-  },
-  {
-    "model": "academic.grant",
-    "pk": 3,
-    "fields": {
-      "title": "Adaptive Resilient Governance of Uncontrolled Swarms (ARGUS)",
-      "short_title": "ARGUS",
-      "slug": "argus",
-      "description": "",
-      "image": "",
-      "funding_agency": "DARPA",
-      "program_manager": null,
-      "sponsor_logo": "",
-      "role": "pi",
-      "amount": null,
-      "currency": "USD",
-      "start_date": "2026-10-01",
-      "end_date": "2029-09-01",
-      "co_pis": "",
-      "grant_number": null,
-      "password_protected": false,
-      "password": "",
-      "gt_status": "pending",
-      "pi_name": "",
-      "candidate_role_text": "Principal Investigator",
-      "task_title": "",
-      "contributions": "",
-      "report_series_note": "",
-      "solicitation": "HR001126S0010",
-      "date_abstract_submitted": "2026-06-30",
-      "date_full_submitted": null,
-      "full_proposal_note": "TBD (due August 25, 2026)",
-      "amount_requested": "2100000.00",
-      "result_note": "Full proposal recommended; in preparation",
-      "contribution_to_proposal": "Sole author of the abstract; recruited Dr. Branden Stone (GTRI) as co-PI. Riess conceived the technical approach — that agentic AI workflows are already cellular sheaves, and that a vector-database functor from schema-valued to linear sheaves makes sheaf-Laplacian spectral theory available to language-model swarms.",
-      "cv_ref_slug": "argus",
-      "related_publications": []
-    }
-  },
-  {
-    "model": "academic.milestone",
-    "pk": 1,
-    "fields": {
-      "grant": 1,
-      "title": "Milestone 3: Laplacian Reveal",
-      "slug": "seaman-m3",
-      "date": "2026-05-01",
-      "description": "Develops the sheaf Laplacian for coordination, proves convergence to global sections, and delivers the corresponding code implementation.",
-      "report": "",
-      "slides": "",
-      "report_type": "interim_report",
-      "page_count": 19,
-      "slide_count": null,
-      "authorship_percent": 100,
-      "cv_ref_slug": "seaman-m3"
-    }
-  },
-  {
-    "model": "academic.milestone",
-    "pk": 2,
-    "fields": {
-      "grant": 1,
-      "title": "Milestone 2: Sheaf Reveal",
-      "slug": "seaman-m2-briefing",
-      "date": "2026-01-01",
-      "description": "",
-      "report": "",
-      "slides": "",
-      "report_type": "briefing",
-      "page_count": null,
-      "slide_count": 31,
-      "authorship_percent": 100,
-      "cv_ref_slug": "seaman-m2-briefing"
     }
   },
   {
@@ -909,7 +838,8 @@
       "cv_ref_slug": "quantale-model",
       "order": 1,
       "created_at": "2026-08-12T15:45:14.032Z",
-      "updated_at": "2026-08-12T15:45:14.032Z"
+      "updated_at": "2026-08-12T15:45:14.032Z",
+      "grants": []
     }
   },
   {
@@ -923,7 +853,168 @@
       "cv_ref_slug": "convergence-theory",
       "order": 2,
       "created_at": "2026-08-12T15:45:14.034Z",
-      "updated_at": "2026-08-12T15:45:14.034Z"
+      "updated_at": "2026-08-12T15:45:14.034Z",
+      "grants": []
+    }
+  },
+  {
+    "model": "academic.proposal",
+    "pk": 1,
+    "fields": {
+      "title": "Adaptive Resilient Governance of Uncontrolled Swarms (ARGUS)",
+      "short_title": "ARGUS",
+      "slug": "argus",
+      "sponsor": "DARPA",
+      "solicitation": "HR001126S0010",
+      "pi_name": "",
+      "candidate_role": "Principal Investigator",
+      "date_abstract_submitted": "2026-06-30",
+      "date_full_submitted": null,
+      "full_proposal_note": "TBD (due August 25, 2026)",
+      "amount_requested": "2100000.00",
+      "currency": "USD",
+      "result": "recommended",
+      "result_note": "Full proposal recommended; in preparation",
+      "start_date": "2026-10-01",
+      "end_date": "2029-09-01",
+      "contribution": "Sole author of the abstract; recruited Dr. Branden Stone (GTRI) as co-PI. Riess conceived the technical approach — that agentic AI workflows are already cellular sheaves, and that a vector-database functor from schema-valued to linear sheaves makes sheaf-Laplacian spectral theory available to language-model swarms.",
+      "grant": null,
+      "cv_ref_slug": "argus",
+      "order": 1,
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.techreport",
+    "pk": 1,
+    "fields": {
+      "grant": 1,
+      "title": "Milestone 3: Laplacian Reveal",
+      "slug": "seaman-m3",
+      "report_type": "interim_report",
+      "date": "2026-05-01",
+      "page_count": 19,
+      "slide_count": null,
+      "authorship_percent": 100,
+      "description": "Develops the sheaf Laplacian for coordination, proves convergence to global sections, and delivers the corresponding code implementation.",
+      "report": "",
+      "slides": "",
+      "cv_ref_slug": "seaman-m3",
+      "order": 1,
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.techreport",
+    "pk": 2,
+    "fields": {
+      "grant": 1,
+      "title": "Milestone 2: Sheaf Reveal",
+      "slug": "seaman-m2-briefing",
+      "report_type": "briefing",
+      "date": "2026-01-01",
+      "page_count": null,
+      "slide_count": 31,
+      "authorship_percent": 100,
+      "description": "",
+      "report": "",
+      "slides": "",
+      "cv_ref_slug": "seaman-m2-briefing",
+      "order": 2,
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.reference",
+    "pk": 7,
+    "fields": {
+      "authors": "H. Riess and A. Coauthor",
+      "alphabetical_order": false,
+      "shared_first_author": false,
+      "volume": "",
+      "issue": "",
+      "pages": "",
+      "doi": "",
+      "url": "",
+      "pdf_file": "",
+      "reference_image": "",
+      "abstract": "",
+      "keywords": "",
+      "code": "",
+      "credit_roles": "",
+      "pre_gt_hire": null,
+      "arxiv_id": "",
+      "publication_date": "2027-03-01",
+      "title": "Sheaf coordination under intermittent communication",
+      "year": 2027,
+      "medium": "conference_proceedings",
+      "refereed": true,
+      "status": "in_review",
+      "journal": "Proc. IEEE Conference on Decision and Control (CDC)",
+      "slug": "cdc-in-review",
+      "cv_ref_slug": "cdc-in-review"
+    }
+  },
+  {
+    "model": "academic.reference",
+    "pk": 8,
+    "fields": {
+      "authors": "H. Riess and A. Coauthor",
+      "alphabetical_order": false,
+      "shared_first_author": false,
+      "volume": "",
+      "issue": "",
+      "pages": "",
+      "doi": "",
+      "url": "",
+      "pdf_file": "",
+      "reference_image": "",
+      "abstract": "",
+      "keywords": "",
+      "code": "",
+      "credit_roles": "",
+      "pre_gt_hire": null,
+      "arxiv_id": "",
+      "publication_date": null,
+      "title": "An abandoned approach to lattice diffusion",
+      "year": 2025,
+      "medium": "journal_article",
+      "refereed": true,
+      "status": "rejected",
+      "journal": "Journal of Nowhere",
+      "slug": "rejected-paper",
+      "cv_ref_slug": "rejected-paper"
+    }
+  },
+  {
+    "model": "academic.talk",
+    "pk": 5,
+    "fields": {
+      "title": "Applied sheaf theory for compositional decision making",
+      "abstract": "",
+      "venue": "American Control Conference",
+      "location": "Denver, CO",
+      "talk_type": "tutorial",
+      "invited": true,
+      "proceedings": false,
+      "date": "2026-05-01",
+      "slides": "",
+      "poster": "",
+      "slug": "acc-tutorial-2026",
+      "event_url": null,
+      "related_publications": [],
+      "reference": null,
+      "credit_roles": "",
+      "pre_gt_hire": null,
+      "note": "",
+      "curriculum_role": "Delivered the tutorial talk on applied sheaf theory",
+      "attendee_count": "~30",
+      "cv_ref_slug": "acc-tutorial-2026",
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
     }
   }
 ]

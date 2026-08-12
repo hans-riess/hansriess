@@ -21,7 +21,8 @@ import re
 
 from .models import (Award, Course, DeliveredProduct, Education, Experience,
                      Grant, GT_PUB_CATEGORIES, GT_PUB_CATEGORY_ORDER,
-                     Innovation, Reference, Service, Student, Talk)
+                     Innovation, Proposal, Reference, Service, Student, Talk,
+                     TechReport)
 
 GT_PUB_CATEGORY_LABELS = dict(GT_PUB_CATEGORIES)
 
@@ -205,15 +206,15 @@ def quoted(title):
 
 def format_reference(ref, profile):
     """An IEEE-style citation for a Reference, in the official CV's dialect."""
-    when = datetime.date(ref.year, 12, 31) if ref.year else None
-    parts = [marker_prefix(ref, profile, when)]
+    parts = [marker_prefix(ref, profile, ref.cv_date())]
 
     authors = format_authors(ref.authors, profile.surname())
     parts.append("%s, %s" % (authors, quoted(ref.title)) if authors else quoted(ref.title))
 
-    category = ref.get_gt_category()
+    # Work still in review is cited by its preprint rather than by a venue.
+    as_preprint = ref.medium == 'preprint' or ref.status == 'in_review'
     venue_bits = []
-    if category == 'submitted':
+    if as_preprint:
         if ref.arxiv_id:
             venue_bits.append("arXiv:%s" % clean(ref.arxiv_id))
         if ref.year:
@@ -221,7 +222,7 @@ def format_reference(ref, profile):
     else:
         if ref.journal:
             venue = r'\textit{%s}' % clean(ref.journal)
-            if category in ('proc_refereed', 'proc_nonrefereed'):
+            if ref.medium == 'conference_proceedings':
                 venue = "in " + venue
             venue_bits.append(venue)
         if ref.volume:
@@ -237,9 +238,9 @@ def format_reference(ref, profile):
         parts.append(" " + ", ".join(venue_bits))
 
     tail = ""
-    if ref.status_note:
+    note = ref.get_status_note()
+    if note:
         # "to appear" continues the citation; "Submitted to X" is its own sentence.
-        note = ref.status_note.strip()
         if note.lower().startswith('submitted'):
             tail = ". %s" % _italicise_submitted(note)
         else:
@@ -334,13 +335,16 @@ def build_preamble_sections(profile):
     if educations.exists():
         lines.append(r'\cvminihead{Education}')
         for item in educations:
-            bits = [clean(item.degree_type)]
+            degree = clean(item.degree_type)
             if item.field_of_study:
-                bits.append("in %s" % clean(item.field_of_study))
-            entry = "%s, %s, %s" % (" ".join(bits), clean(item.institution), item.graduation_year)
+                degree = "%s, %s" % (degree, clean(item.field_of_study))
+            where = [clean(item.institution)]
+            if item.location:
+                where.append(clean(item.location))
             if item.honors:
-                entry += ". %s" % clean(item.honors)
-            lines.append(r'\cvline{%s}' % entry)
+                where.append(clean(item.honors))
+            lines.append(r'\cvpreentry{%s}{%s}{%s}' % (
+                degree, ", ".join(where), item.graduation_year))
 
     experiences = Experience.objects.order_by('-start_date')
     if experiences.exists():
@@ -351,8 +355,10 @@ def build_preamble_sections(profile):
             where = [clean(item.institution)]
             if item.department:
                 where.insert(0, clean(item.department))
-            lines.append(r'\cvline{%s, %s, %s -- %s}' % (
-                clean(item.title), ", ".join(where), start, end))
+            if item.location:
+                where.append(clean(item.location))
+            lines.append(r'\cvpreentry{%s}{%s}{%s}' % (
+                clean(item.title), ", ".join(where), "%s – %s" % (start, end)))
 
     return lines
 
@@ -413,13 +419,27 @@ def _surname_first(profile):
 
 
 def _publications_block(profile):
-    """Section I.B, merging Reference and Talk rows into six subsections."""
+    """Section I.B, merging Reference and Talk rows into six subsections.
+
+    References are filtered by status unless the profile says to show all. A talk
+    that links a reference which is itself listed here is dropped, so a paper and
+    the talk announcing it are not both cited.
+    """
+    show_all = profile.cv_show_all_references
     grouped = {key: [] for key in GT_PUB_CATEGORY_ORDER}
+
+    listed_reference_ids = set()
     for ref in Reference.objects.all():
+        if not ref.show_on_cv(show_all):
+            continue
         category = ref.get_gt_category()
         if category in grouped:
             grouped[category].append((ref.cv_sort_key(), ref))
+            listed_reference_ids.add(ref.pk)
+
     for talk in Talk.objects.all():
+        if talk.reference_id and talk.reference_id in listed_reference_ids:
+            continue
         category = talk.get_gt_category()
         if category in grouped:
             grouped[category].append((talk.cv_sort_key(), talk))
@@ -491,22 +511,39 @@ def _awards_block(profile):
 
 
 def _knowledge_sharing_block(profile):
-    courses = Course.objects.order_by('-year', '-semester')
-    if not courses.exists():
-        return []
-
-    lines = [r'\cvsubsection{Knowledge Sharing}', r'\begin{cvteachtable}']
-    for course in courses:
+    """Section I.E, from courses taught plus tutorial and workshop presentations."""
+    rows = []
+    for course in Course.objects.all():
         when = datetime.date(course.year, 12, 31) if course.year else None
-        marker = "*" if is_pre_gt(course, profile, when) else ""
-        lines.append(r'\cvteachrow{%s%s}{%s}{%s}{%s}{%s}' % (
-            marker,
+        rows.append((when, [
             clean(course.get_cv_organization()),
             clean(course.get_cv_when_taught()),
             clean(course.get_cv_title()),
             clean(course.get_cv_role()),
             clean(course.attendee_count),
-        ))
+        ], is_pre_gt(course, profile, when)))
+
+    for talk in Talk.objects.all():
+        if not talk.is_knowledge_sharing():
+            continue
+        rows.append((talk.date, [
+            clean(talk.venue),
+            talk.date.strftime('%B %Y') if talk.date else "",
+            "%s (%s)" % (clean(talk.title), clean(talk.get_talk_type_display())),
+            clean(talk.curriculum_role) or clean(talk.get_talk_type_display()),
+            clean(talk.attendee_count),
+        ], is_pre_gt(talk, profile, talk.date)))
+
+    if not rows:
+        return []
+
+    rows.sort(key=lambda row: row[0] or datetime.date.min, reverse=True)
+    lines = [r'\cvsubsection{Knowledge Sharing}', r'\begin{cvteachtable}']
+    for _, cells, pre_gt in rows:
+        cells = list(cells)
+        if pre_gt:
+            cells[0] = "*" + cells[0]
+        lines.append(r'\cvteachrow{%s}{%s}{%s}{%s}{%s}' % tuple(cells))
     lines.append(r'\end{cvteachtable}')
     return lines
 
@@ -522,8 +559,8 @@ def build_section_ii():
 
 
 def _reports_block():
-    """Section II.A: one numbered report series per grant that has milestones."""
-    grants = [g for g in Grant.objects.all() if g.milestones.exists()]
+    """Section II.A: one numbered report series per award that has reports."""
+    grants = [g for g in Grant.objects.all() if g.tech_reports.exists()]
     if not grants:
         return []
 
@@ -532,24 +569,21 @@ def _reports_block():
         heading = "%s — Technical Report Series." % (grant.short_title or grant.title)
         preamble = " ".join(paragraphs(grant.report_series_note))
         lines.append(r'\cvsubsubrun{%s}{%s}' % (clean(heading), preamble))
-        for milestone in grant.milestones.all():
-            bits = [r'\textbf{%s}.' % clean(milestone.title)]
-            detail = []
-            if milestone.report_type:
-                detail.append(clean(milestone.get_report_type_display()))
-            if milestone.date:
-                detail.append(milestone.date.strftime('%B %Y'))
-            if milestone.page_count:
-                detail.append("%d pages" % milestone.page_count)
-            if milestone.slide_count:
-                detail.append("%d slides" % milestone.slide_count)
-            if milestone.authorship_percent is not None:
-                detail.append(r"%d\%% authorship" % milestone.authorship_percent)
-            if detail:
-                bits.append(" %s." % "; ".join(detail))
-            if milestone.description:
-                bits.append(" %s" % " ".join(paragraphs(milestone.description)))
-            lines.append(r'\cventryitem{%s%s}' % (label_for(milestone), "".join(bits)))
+        for report in grant.tech_reports.all():
+            bits = [r'\textbf{%s}.' % clean(report.title)]
+            detail = [clean(report.get_report_type_display())]
+            if report.date:
+                detail.append(report.date.strftime('%B %Y'))
+            if report.page_count:
+                detail.append("%d pages" % report.page_count)
+            if report.slide_count:
+                detail.append("%d slides" % report.slide_count)
+            if report.authorship_percent is not None:
+                detail.append(r"%d\%% authorship" % report.authorship_percent)
+            bits.append(" %s." % "; ".join(bit for bit in detail if bit))
+            if report.description:
+                bits.append(" %s" % " ".join(paragraphs(report.description)))
+            lines.append(r'\cventryitem{%s%s}' % (label_for(report), "".join(bits)))
     return lines
 
 
@@ -563,9 +597,10 @@ def _innovations_block():
         lines.append(r'\cvsubsubrun{%s}{}' % clean(innovation.title))
         if innovation.cv_ref_slug:
             lines.append(label_for(innovation))
-        if innovation.sponsors_projects_dates:
+        sponsors = innovation.get_sponsors_line()
+        if sponsors:
             lines.append(r'\cvbody{\cvlabelled{Sponsors/Projects/Dates}{%s}}'
-                         % clean(innovation.sponsors_projects_dates))
+                         % clean(sponsors))
         for caption, value in (("Description", innovation.description),
                                ("Candidate's specific technical contributions",
                                 innovation.technical_contributions)):
@@ -588,7 +623,7 @@ def build_section_iii(profile):
 
 
 def _funded_research_block(profile):
-    grants = Grant.objects.filter(gt_status='funded')
+    grants = Grant.objects.all()
     if not grants.exists():
         return []
 
@@ -616,7 +651,7 @@ def _funded_research_block(profile):
 
 
 def _proposals_block(profile):
-    proposals = Grant.objects.exclude(gt_status='funded')
+    proposals = Proposal.objects.all()
     if not proposals.exists():
         return []
 
@@ -629,15 +664,15 @@ def _proposals_block(profile):
         lines.append(r'\begin{cvkeytable}')
         rows = [
             ("Title", clean(proposal.title)),
-            ("Sponsor", clean(proposal.funding_agency)),
+            ("Sponsor", clean(proposal.sponsor)),
             ("Solicitation", clean(proposal.solicitation)),
             ("PI", _pi_cell(proposal, profile)),
-            ("Candidate's Role", clean(proposal.get_cv_role())),
+            ("Candidate's Role", clean(proposal.candidate_role)),
             ("Date Submitted", _submission_cell(proposal)),
-            ("Amount Requested", clean(proposal.get_cv_amount_requested())),
-            ("Result", clean(proposal.result_note) or clean(proposal.get_gt_status_display())),
+            ("Amount Requested", clean(proposal.get_cv_amount())),
+            ("Result", clean(proposal.get_result())),
             ("Period of Performance", clean(proposal.get_period_of_performance())),
-            ("Contribution to Proposal", r' \par '.join(paragraphs(proposal.contribution_to_proposal))),
+            ("Contribution to Proposal", r' \par '.join(paragraphs(proposal.contribution))),
         ]
         lines.extend(_key_rows(rows))
         lines.append(r'\end{cvkeytable}')
