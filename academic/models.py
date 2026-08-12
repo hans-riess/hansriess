@@ -1,6 +1,36 @@
 from django.db import models
 
 
+# Subsections of Section I.B ("Publications, Presentations, Posters") of the
+# official Georgia Tech research-faculty CV. Both Reference and Talk feed these,
+# so the choices live at module level and are shared by the two models.
+GT_PUB_CATEGORIES = [
+    ('journal', 'Published Journal Papers'),
+    ('invited_conf', 'Invited Conference Presentations'),
+    ('proc_refereed', 'Conference Presentations with Proceedings (refereed)'),
+    ('proc_nonrefereed', 'Conference Presentations with Proceedings (non-refereed)'),
+    ('no_proc', 'Conference Presentations without Proceedings'),
+    ('submitted', 'Submitted Journal Papers in Review'),
+]
+
+GT_PUB_CATEGORY_ORDER = [key for key, _ in GT_PUB_CATEGORIES]
+
+PRE_GT_HELP = (
+    "Marks the entry with * (completed before the Georgia Tech hire date). "
+    "Leave unset to derive it from the date and the profile's GT hire date."
+)
+
+CREDIT_HELP = (
+    "CRediT roles, comma separated, e.g. 'conceptualization, methodology, review, "
+    "and editing'. Rendered as 'Contributed ....'"
+)
+
+CV_REF_HELP = (
+    "Cross-reference handle. Write [[ref:this-slug]] in any CV prose field to "
+    "produce a live reference such as I.B.3.4."
+)
+
+
 class Profile(models.Model):
     name = models.CharField(max_length=100)
     occupation = models.CharField(max_length=200, blank=True, null=True)
@@ -34,8 +64,54 @@ class Profile(models.Model):
     google_scholar = models.URLField(blank=True, null=True)
     orcid = models.URLField(blank=True, null=True)
     under_construction = models.BooleanField(default=False, help_text="Show under construction notice on website")
+    # --- Georgia Tech CV ---
+    fields_of_interest = models.TextField(
+        blank=True,
+        help_text="Semicolon-separated research interests, printed under CURRENT FIELDS OF INTEREST.",
+    )
+    gt_hire_date = models.DateField(
+        blank=True, null=True,
+        help_text="Georgia Tech hire date. Work completed before this date is marked with *.",
+    )
+    research_program = models.TextField(
+        blank=True,
+        help_text="Section IV.A narrative. Blank lines separate paragraphs. Supports [[ref:slug]].",
+    )
+    cv_show_preamble_sections = models.BooleanField(
+        default=True,
+        help_text="Print EDUCATION and PROFESSIONAL APPOINTMENTS before Section I. "
+                  "The strict GT format omits both.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def gt_key_note(self):
+        """The '*' line of the CV's KEY block, with the hire date filled in."""
+        if self.gt_hire_date:
+            when = self.gt_hire_date.strftime('%B %-d, %Y')
+            return f"Completed prior to the candidate's Georgia Tech hire date ({when})."
+        return "Completed prior to the candidate's Georgia Tech hire date."
+
+    # Post-nominals that are part of the display name but never part of the
+    # name as it appears in an author list.
+    NAME_SUFFIXES = {'ph.d.', 'ph.d', 'phd', 'm.d.', 'md', 'd.sc.', 'sc.d.',
+                     'jr.', 'jr', 'sr.', 'sr', 'ii', 'iii', 'iv', 'esq.'}
+
+    def name_parts(self):
+        """The name split into words, with post-nominal suffixes removed."""
+        parts = [p for p in self.name.replace(',', ' ').split() if p]
+        trimmed = [p for p in parts if p.lower() not in self.NAME_SUFFIXES]
+        return trimmed or parts
+
+    def plain_name(self):
+        """The name without post-nominals, e.g. 'Hans Riess'."""
+        return " ".join(self.name_parts())
+
+    def surname(self):
+        """Last word of the name, used to bold the candidate in author lists."""
+        parts = self.name_parts()
+        return parts[-1] if parts else ""
+
     @property
     def display_website(self):
         """
@@ -115,6 +191,19 @@ class Reference(models.Model):
     abstract = models.TextField(blank=True)
     keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated list of keywords")
     code = models.URLField(blank=True, help_text="Link to the code repository")
+    # --- Georgia Tech CV ---
+    gt_category = models.CharField(
+        max_length=30, choices=GT_PUB_CATEGORIES, blank=True,
+        help_text="Section I.B subsection. Leave blank to derive it from the reference type.",
+    )
+    credit_roles = models.CharField(max_length=500, blank=True, help_text=CREDIT_HELP)
+    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
+    status_note = models.CharField(
+        max_length=200, blank=True,
+        help_text="Publication status, e.g. 'to appear' or 'Submitted to Compositionality'.",
+    )
+    arxiv_id = models.CharField(max_length=50, blank=True, help_text="arXiv identifier, e.g. 2501.03890")
+    cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
 
     class Meta:
         ordering = ['-year', 'title']
@@ -134,6 +223,26 @@ class Reference(models.Model):
         if short_title_words:
             short_title_words[0] = short_title_words[0].capitalize()
         return " ".join(short_title_words)
+
+    DEFAULT_GT_CATEGORIES = {
+        'journal_article': 'journal',
+        'paper': 'journal',
+        'conference_proceedings': 'proc_refereed',
+        'preprint': 'submitted',
+        'book': 'journal',
+        'book_chapter': 'journal',
+    }
+
+    def get_gt_category(self):
+        """Section I.B subsection, falling back to a guess from the reference type.
+
+        'thesis' and 'other' return "" so they are left out of I.B; theses are
+        printed in Section I.A instead.
+        """
+        return self.gt_category or self.DEFAULT_GT_CATEGORIES.get(self.reference_type, "")
+
+    def cv_sort_key(self):
+        return (self.year or 0, self.title)
 
     def __str__(self):
         return f"{self.title} ({self.year})"
@@ -165,6 +274,23 @@ class Course(models.Model):
     syllabus = models.FileField(upload_to='courses/syllabi/', blank=True, null=True, help_text="Course syllabus")
     is_graduate = models.BooleanField(default=False, help_text="Check if this is a graduate-level course")
     is_online = models.BooleanField(default=False, help_text="Check if this was an online course")
+    # --- Georgia Tech CV (Section I.E, Knowledge Sharing) ---
+    organization = models.CharField(
+        max_length=200, blank=True,
+        help_text="Institution/Organization column. Defaults to the institution above.",
+    )
+    when_taught = models.CharField(
+        max_length=100, blank=True,
+        help_text="'When Taught' column, e.g. 'May 2026'. Defaults to the semester and year.",
+    )
+    curriculum_role = models.TextField(
+        blank=True, help_text="'Role in Curriculum Development' column.",
+    )
+    attendee_count = models.CharField(
+        max_length=50, blank=True,
+        help_text="'Approx. Number of Students/Attendees' column, e.g. '~30'.",
+    )
+    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -183,6 +309,21 @@ class Course(models.Model):
     def get_role_display_name(self):
         """Returns a more readable role name"""
         return self.get_role_display().replace('_', ' ').title()
+
+    def get_cv_organization(self):
+        return self.organization or self.institution
+
+    def get_cv_when_taught(self):
+        return self.when_taught or self.get_full_semester()
+
+    def get_cv_title(self):
+        """Course title with the code in parentheses, as the GT table prints it."""
+        if self.course_code:
+            return f"{self.title} ({self.course_code})"
+        return self.title
+
+    def get_cv_role(self):
+        return self.curriculum_role or self.get_role_display()
 
 
 class Experience(models.Model):
@@ -295,9 +436,21 @@ class Talk(models.Model):
 
     event_url = models.URLField(blank=True, null=True, help_text="URL to the event website")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
+    # --- Georgia Tech CV ---
+    gt_category = models.CharField(
+        max_length=30, choices=GT_PUB_CATEGORIES, blank=True,
+        help_text="Section I.B subsection. Leave blank to derive it from the talk type.",
+    )
+    credit_roles = models.CharField(max_length=500, blank=True, help_text=CREDIT_HELP)
+    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
+    note = models.TextField(
+        blank=True,
+        help_text="Bracketed note after the entry, e.g. 'Invited speaker among 10 others.'",
+    )
+    cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-date', 'title']
         verbose_name = "Talk"
@@ -309,6 +462,17 @@ class Talk(models.Model):
     def get_talk_type_display_name(self):
         """Returns a more readable talk type name"""
         return self.get_talk_type_display()
+
+    def get_gt_category(self):
+        """Section I.B subsection, falling back to a guess from the talk type."""
+        if self.gt_category:
+            return self.gt_category
+        if self.is_invited and self.talk_type in ('conference', 'keynote', 'tutorial', 'workshop'):
+            return 'invited_conf'
+        return 'no_proc'
+
+    def cv_sort_key(self):
+        return (self.date.year if self.date else 0, self.title)
     
     def get_formatted_date(self):
         """Returns a formatted date string"""
@@ -354,6 +518,53 @@ class Grant(models.Model):
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
     password_protected = models.BooleanField(default=False, help_text="Enable password protection for this grant's page")
     password = models.CharField(max_length=128, blank=True, help_text="Password for this grant's page (if password protected)")
+    # --- Georgia Tech CV ---
+    # 'funded' entries are printed in Section III.A (Leadership in Funded Research);
+    # every other status is printed in Section IV.B (Research Proposals).
+    GT_STATUS_CHOICES = [
+        ('funded', 'Funded'),
+        ('pending', 'Pending'),
+        ('submitted', 'Submitted'),
+        ('in_preparation', 'In preparation'),
+        ('not_selected', 'Not selected'),
+    ]
+
+    gt_status = models.CharField(
+        max_length=20, choices=GT_STATUS_CHOICES, default='funded',
+        help_text="Funded awards appear in Section III.A; everything else in Section IV.B.",
+    )
+    pi_name = models.CharField(
+        max_length=300, blank=True,
+        help_text="P.I. of record. Defaults to the profile name. One per line for multiple PIs.",
+    )
+    candidate_role_text = models.CharField(
+        max_length=200, blank=True,
+        help_text="Candidate's Role, e.g. 'Task Leader (Key Personnel)'. Overrides the role above.",
+    )
+    task_title = models.CharField(max_length=300, blank=True, help_text="Task Title, for Center-style awards.")
+    contributions = models.TextField(
+        blank=True, help_text="'Contributions' row of the Section III.A table. Supports [[ref:slug]].",
+    )
+    report_series_note = models.TextField(
+        blank=True,
+        help_text="Preamble for this award's report series in Section II.A (authorship, sponsor notes).",
+    )
+    solicitation = models.CharField(max_length=100, blank=True, help_text="Solicitation number, for proposals.")
+    date_abstract_submitted = models.DateField(blank=True, null=True)
+    date_full_submitted = models.DateField(blank=True, null=True)
+    full_proposal_note = models.CharField(
+        max_length=200, blank=True,
+        help_text="Used instead of the full-proposal date, e.g. 'TBD (due August 25, 2026)' or 'N/A'.",
+    )
+    amount_requested = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    result_note = models.CharField(
+        max_length=300, blank=True,
+        help_text="'Result' row, e.g. 'Full proposal recommended; in preparation'.",
+    )
+    contribution_to_proposal = models.TextField(
+        blank=True, help_text="'Contribution to Proposal' row of the Section IV.B table. Supports [[ref:slug]].",
+    )
+    cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
 
     class Meta:
         ordering = ['-start_date', 'title']
@@ -367,6 +578,20 @@ class Grant(models.Model):
         if self.amount:
             return f"{self.amount:,.0f} {self.currency}"
         return ""
+
+    def get_cv_amount(self):
+        """Amount as the CV tables print it: '$180,687'."""
+        return self._cv_currency(self.amount)
+
+    def get_cv_amount_requested(self):
+        return self._cv_currency(self.amount_requested)
+
+    def _cv_currency(self, value):
+        if value is None:
+            return ""
+        if self.currency == 'USD':
+            return f"${value:,.0f}"
+        return f"{value:,.0f} {self.currency}"
     
     def get_date_range(self):
         """
@@ -385,9 +610,27 @@ class Grant(models.Model):
     def get_role_display_name(self):
         return self.get_role_display()
 
+    def get_cv_role(self):
+        return self.candidate_role_text or self.get_role_display()
+
+    def get_period_of_performance(self):
+        """Date range with an en dash, as the GT tables print it."""
+        if not self.start_date and not self.end_date:
+            return ""
+        start = self.start_date.strftime('%b %Y') if self.start_date else ""
+        end = self.end_date.strftime('%b %Y') if self.end_date else "Present"
+        return f"{start} – {end}"
+
 
 class Milestone(models.Model):
     """Model for grant milestones"""
+    REPORT_TYPE_CHOICES = [
+        ('interim_report', 'Interim technical report'),
+        ('briefing', 'Sponsor briefing'),
+        ('status_report', 'Recurring status report'),
+        ('other', 'Other'),
+    ]
+
     grant = models.ForeignKey(Grant, on_delete=models.CASCADE, related_name='milestones')
     title = models.CharField(max_length=300, help_text="Title of the milestone")
     slug = models.SlugField(max_length=300, unique=True, blank=True, null=True, help_text="URL-friendly version of the title")
@@ -395,6 +638,12 @@ class Milestone(models.Model):
     description = models.TextField(blank=True, help_text="A description of the milestone")
     report = models.FileField(upload_to='milestones/reports/', blank=True, null=True, help_text="Upload report file")
     slides = models.FileField(upload_to='milestones/slides/', blank=True, null=True, help_text="Upload slides file")
+    # --- Georgia Tech CV (Section II.A, Research/Technical Reports) ---
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPE_CHOICES, blank=True)
+    page_count = models.PositiveIntegerField(blank=True, null=True, help_text="Length in pages, for written reports.")
+    slide_count = models.PositiveIntegerField(blank=True, null=True, help_text="Length in slides, for briefings.")
+    authorship_percent = models.PositiveIntegerField(blank=True, null=True, help_text="Candidate's share of authorship.")
+    cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
 
     class Meta:
         ordering = ['-date', 'title']
@@ -418,6 +667,13 @@ class Education(models.Model):
     advisor = models.CharField(max_length=200, blank=True, help_text="Thesis advisor (for graduate degrees)")
     honors = models.CharField(max_length=200, blank=True, help_text="Honors or distinctions")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
+    # --- Georgia Tech CV ---
+    thesis_url = models.URLField(blank=True, help_text="Link to the thesis or dissertation record.")
+    is_dissertation = models.BooleanField(
+        default=False,
+        help_text="Print this degree's thesis in Section I.A (Thesis/Dissertation).",
+    )
+    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -474,9 +730,28 @@ class Service(models.Model):
     year = models.PositiveIntegerField(help_text="Year of service")
     end_year = models.PositiveBigIntegerField(blank=True,null=True,help_text="End year (if applicable)")
     location = models.CharField(max_length=200, blank=True, help_text="Location if relevant")
+    # --- Georgia Tech CV (Section V, Outreach and Service) ---
+    GT_SERVICE_CATEGORIES = [
+        ('journal_review', 'A. Reviewer Work for Technical Journals'),
+        ('conference_review', 'B. Reviewer Work for Conferences'),
+        ('session_chair', 'C. Conference Session Chairs'),
+        ('special_activity', 'D. Special Activities'),
+        ('outside_professional', 'E. Outside Professional Activities/Consulting'),
+        ('civic', 'F. Civic Activities'),
+    ]
+
+    gt_category = models.CharField(
+        max_length=30, choices=GT_SERVICE_CATEGORIES, blank=True,
+        help_text="Section V subsection. Leave blank to derive it from the service type and role.",
+    )
+    manuscript_count = models.PositiveIntegerField(
+        blank=True, null=True, help_text="Number of manuscripts reviewed, e.g. '(1 manuscript)'.",
+    )
+    detail = models.TextField(blank=True, help_text="Additional prose printed after the entry. Supports [[ref:slug]].")
+    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-year', 'title']
         verbose_name = "Service"
@@ -490,6 +765,18 @@ class Service(models.Model):
         role_display = self.get_role_display()
         location_str = f", {self.location}" if self.location else ""
         return f"{role_display}, {self.title}, {self.organization}{location_str} ({self.year})"
+
+    def get_gt_category(self):
+        """Section V subsection, falling back to a guess from the service type and role."""
+        if self.gt_category:
+            return self.gt_category
+        if self.role == 'reviewer':
+            return 'conference_review' if self.service_type == 'conference' else 'journal_review'
+        if self.role in ('chair', 'co_chair'):
+            return 'session_chair'
+        if self.service_type == 'volunteer' or self.role == 'volunteer':
+            return 'civic'
+        return 'special_activity'
 
 class Student(models.Model):
     """Model for tracking student mentorship"""
@@ -518,6 +805,23 @@ class Student(models.Model):
     start_date = models.DateField(help_text="Start date of mentorship")
     end_date = models.DateField(blank=True, null=True, help_text="End date (leave blank if ongoing)")
     current_position = models.CharField(max_length=300, blank=True, help_text="Current position or status (optional)")
+    # --- Georgia Tech CV (Section III.B) ---
+    research_topic = models.CharField(
+        max_length=300, blank=True,
+        help_text="'Research topic: ...'. Defaults to the project title above.",
+    )
+    advisor_of_record = models.CharField(
+        max_length=300, blank=True, help_text="Advisor of record for the student's degree program.",
+    )
+    host_lab = models.CharField(max_length=300, blank=True, help_text="Host lab, with its director if relevant.")
+    appointment_note = models.CharField(
+        max_length=200, blank=True, help_text="Nature of the appointment, e.g. 'Summer intern'.",
+    )
+    resulting_publications = models.ManyToManyField(
+        'Reference', blank=True, related_name='mentored_students',
+        help_text="Publications resulting from this mentorship, cited as 'see I.B.3.2'.",
+    )
+    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -547,6 +851,93 @@ class Student(models.Model):
             return f"{start_str} -- Present" # Assume present if no end date
         else:
             return "" # Should not happen if start_date is required
+
+class Award(models.Model):
+    """Section I.D of the Georgia Tech CV: professional research recognition awards."""
+    title = models.CharField(max_length=300, help_text="Name of the award, fellowship, or nomination")
+    organization = models.CharField(max_length=300, blank=True, help_text="Awarding body, conference, or institution")
+    year = models.PositiveIntegerField(blank=True, null=True)
+    date_range = models.CharField(
+        max_length=100, blank=True,
+        help_text="Period the award covers, e.g. 'August 2017 – September 2022'. Used instead of the year.",
+    )
+    detail = models.TextField(blank=True, help_text="Parenthetical or explanatory prose. Supports [[ref:slug]].")
+    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
+    cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
+    order = models.PositiveIntegerField(default=0, help_text="Manual ordering; lower numbers print first.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-year', 'title']
+        verbose_name = "Award"
+        verbose_name_plural = "Awards"
+
+    def __str__(self):
+        return f"{self.title} ({self.year})" if self.year else self.title
+
+    def get_cv_date(self):
+        return self.date_range or (str(self.year) if self.year else "")
+
+
+class DeliveredProduct(models.Model):
+    """Section I.C of the Georgia Tech CV: key delivered products."""
+    name = models.CharField(max_length=200, help_text="Short name of the product, e.g. 'Lawvere'")
+    summary = models.CharField(
+        max_length=500, blank=True,
+        help_text="One-line description printed after the name in the heading.",
+    )
+    sponsor = models.CharField(max_length=300, blank=True, help_text="Sponsor or party the product was delivered to")
+    date_range = models.CharField(
+        max_length=200, blank=True,
+        help_text="Date range for work performed by the candidate, e.g. 'May 2026 – present'.",
+    )
+    description = models.TextField(blank=True, help_text="Product description. Supports [[ref:slug]].")
+    maturity = models.TextField(blank=True, help_text="Current maturity of the product.")
+    technical_contribution = models.TextField(
+        blank=True, help_text="Candidate's technical contribution. Supports [[ref:slug]].",
+    )
+    cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
+    order = models.PositiveIntegerField(default=0, help_text="Manual ordering; lower numbers print first.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = "Delivered Product"
+        verbose_name_plural = "Delivered Products"
+
+    def __str__(self):
+        return self.name
+
+    def get_cv_heading(self):
+        return f"{self.name} — {self.summary}" if self.summary else self.name
+
+
+class Innovation(models.Model):
+    """Section II.B: significant technical innovation on sponsored programs."""
+    title = models.CharField(max_length=500, help_text="Title of the innovation or contribution")
+    sponsors_projects_dates = models.CharField(
+        max_length=300, blank=True,
+        help_text="'Sponsors/Projects/Dates' line, e.g. 'DARPA SEAMAN (Aug 2025 – present)'.",
+    )
+    description = models.TextField(blank=True, help_text="Description. Supports [[ref:slug]].")
+    technical_contributions = models.TextField(
+        blank=True, help_text="Candidate's specific technical contributions. Supports [[ref:slug]].",
+    )
+    cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
+    order = models.PositiveIntegerField(default=0, help_text="Manual ordering; lower numbers print first.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'title']
+        verbose_name = "Technical Innovation"
+        verbose_name_plural = "Technical Innovations"
+
+    def __str__(self):
+        return self.title
+
 
 class ReferencePerson(models.Model):
     """Model for professional references (distinct from Publication References)"""
