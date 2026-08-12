@@ -36,12 +36,13 @@
       "orcid": null,
       "under_construction": false,
       "fields_of_interest": "Multi-agent systems; co-design of systems; distributed optimization and control; applied topology and sheaf theory; applied category theory.",
-      "gt_hire_date": "2025-02-01",
       "research_program": "The program Riess has built at Georgia Tech since February 2025 rests on one mathematical premise: coordination in a networked system is a local-to-global problem, and sheaf theory is the branch of mathematics invented for exactly that problem. See [[ref:quantale-model]] and [[ref:convergence-theory]].\n\nA second line asks what happens when system properties are graded rather than binary; the same enrichment turns co-design feasibility into a quantitative trade-off.",
       "cv_show_preamble_sections": true,
       "created_at": "2026-08-12T15:45:13.978Z",
       "updated_at": "2026-08-12T15:48:39.900Z",
-      "cv_show_all_references": false
+      "cv_show_all_references": false,
+      "custom_cv": "",
+      "use_custom_cv": false
     }
   },
   {
@@ -66,7 +67,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "conceptualization, methodology, visualization, review, and editing",
-      "pre_gt_hire": null,
       "arxiv_id": "",
       "cv_ref_slug": "tangent-bundle-tsp",
       "medium": "journal_article",
@@ -97,7 +97,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "conceptualization, methodology, formal analysis, investigation, validation, writing, review, and editing",
-      "pre_gt_hire": null,
       "arxiv_id": "",
       "cv_ref_slug": "tarski-laplacian",
       "medium": "journal_article",
@@ -128,7 +127,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "conceptualization, methodology, software, formal analysis, investigation, writing, review, editing, supervision, project administration, and funding acquisition",
-      "pre_gt_hire": null,
       "arxiv_id": "",
       "cv_ref_slug": "quantale-codesign",
       "medium": "conference_proceedings",
@@ -159,7 +157,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "conceptualization, methodology, validation, formal analysis, investigation, resources, writing, review, editing, visualization, supervision, and funding acquisition",
-      "pre_gt_hire": null,
       "arxiv_id": "",
       "cv_ref_slug": "async-sheaf-diffusion",
       "medium": "conference_proceedings",
@@ -190,7 +187,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "conceptualization, resources, and supervision",
-      "pre_gt_hire": null,
       "arxiv_id": "",
       "cv_ref_slug": "fuzzy-type-theory",
       "medium": "conference_proceedings",
@@ -221,7 +217,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "conceptualization, methodology, investigation, writing, review, editing, visualization, and project administration",
-      "pre_gt_hire": null,
       "arxiv_id": "2501.03890",
       "cv_ref_slug": "categorical-diffusion",
       "medium": "preprint",
@@ -235,7 +230,7 @@
     "pk": 1,
     "fields": {
       "course_code": "",
-      "title": "Applied Category Theory for Compositional Decision Making (workshop)",
+      "title": "Applied Category Theory for Compositional Decision Making",
       "institution": "American Control Conference",
       "department": null,
       "semester": "spring",
@@ -249,9 +244,9 @@
       "when_taught": "May 2026",
       "curriculum_role": "Developed and organized the workshop; delivered a tutorial talk on applied sheaf theory; moderated the panel discussion",
       "attendee_count": "~30",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.015Z",
-      "updated_at": "2026-08-12T15:45:14.015Z"
+      "updated_at": "2026-08-12T15:45:14.015Z",
+      "course_format": "workshop"
     }
   },
   {
@@ -273,9 +268,9 @@
       "when_taught": "",
       "curriculum_role": "Instructor of Record; taught existing course",
       "attendee_count": "~30",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.017Z",
-      "updated_at": "2026-08-12T15:45:14.017Z"
+      "updated_at": "2026-08-12T15:45:14.017Z",
+      "course_format": "course"
     }
   },
   {
@@ -297,9 +292,9 @@
       "when_taught": "",
       "curriculum_role": "Teaching Assistant; instructor of record: Prof. Robert Ghrist",
       "attendee_count": "~15",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.019Z",
-      "updated_at": "2026-08-12T15:45:14.019Z"
+      "updated_at": "2026-08-12T15:45:14.019Z",
+      "course_format": "course"
     }
   },
   {
@@ -359,7 +354,6 @@
       "slug": "informs-2026",
       "event_url": null,
       "credit_roles": "",
-      "pre_gt_hire": null,
       "note": "",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.002Z",
@@ -387,7 +381,6 @@
       "slug": "toposes-mondovi",
       "event_url": null,
       "credit_roles": "",
-      "pre_gt_hire": null,
       "note": "Invited speaker among 10 others, 3 of which are Fields Medal recipients.",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.004Z",
@@ -415,7 +408,6 @@
       "slug": "afrl-poster-2026",
       "event_url": null,
       "credit_roles": "",
-      "pre_gt_hire": null,
       "note": "",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.006Z",
@@ -443,7 +435,6 @@
       "slug": "ncr-gatas-2025",
       "event_url": null,
       "credit_roles": "",
-      "pre_gt_hire": null,
       "note": "",
       "cv_ref_slug": null,
       "created_at": "2026-08-12T15:45:14.008Z",
@@ -532,7 +523,6 @@
       "honors": "",
       "thesis_url": "https://www.proquest.com/dissertations-theses/lattice-theory-multi-agent-systems/docview/2780465057/se-2",
       "is_dissertation": true,
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:13.980Z",
       "updated_at": "2026-08-12T15:45:13.980Z",
       "related_publications": []
@@ -554,94 +544,9 @@
       "honors": "Graduation with Distinction",
       "thesis_url": "",
       "is_dissertation": false,
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:13.983Z",
       "updated_at": "2026-08-12T15:45:13.983Z",
       "related_publications": []
-    }
-  },
-  {
-    "model": "academic.service",
-    "pk": 1,
-    "fields": {
-      "title": "",
-      "role": "reviewer",
-      "organization": "Automatica",
-      "service_type": "journal",
-      "start_date": null,
-      "end_date": null,
-      "year": 2026,
-      "end_year": null,
-      "location": "",
-      "gt_category": "journal_review",
-      "manuscript_count": 1,
-      "detail": "",
-      "pre_gt_hire": null,
-      "created_at": "2026-08-12T15:45:14.044Z",
-      "updated_at": "2026-08-12T15:45:14.044Z"
-    }
-  },
-  {
-    "model": "academic.service",
-    "pk": 2,
-    "fields": {
-      "title": "",
-      "role": "reviewer",
-      "organization": "IEEE Control Systems Letters (L-CSS)",
-      "service_type": "journal",
-      "start_date": null,
-      "end_date": null,
-      "year": 2026,
-      "end_year": null,
-      "location": "",
-      "gt_category": "journal_review",
-      "manuscript_count": 1,
-      "detail": "",
-      "pre_gt_hire": null,
-      "created_at": "2026-08-12T15:45:14.046Z",
-      "updated_at": "2026-08-12T15:45:14.046Z"
-    }
-  },
-  {
-    "model": "academic.service",
-    "pk": 3,
-    "fields": {
-      "title": "",
-      "role": "reviewer",
-      "organization": "IEEE Transactions on Automatic Control",
-      "service_type": "journal",
-      "start_date": null,
-      "end_date": null,
-      "year": 2020,
-      "end_year": null,
-      "location": "",
-      "gt_category": "journal_review",
-      "manuscript_count": 1,
-      "detail": "",
-      "pre_gt_hire": null,
-      "created_at": "2026-08-12T15:45:14.047Z",
-      "updated_at": "2026-08-12T15:45:14.047Z"
-    }
-  },
-  {
-    "model": "academic.service",
-    "pk": 4,
-    "fields": {
-      "title": "",
-      "role": "reviewer",
-      "organization": "Learning on Graphs Conference (LoG)",
-      "service_type": "conference",
-      "start_date": null,
-      "end_date": null,
-      "year": 2024,
-      "end_year": null,
-      "location": "",
-      "gt_category": "conference_review",
-      "manuscript_count": 1,
-      "detail": "",
-      "pre_gt_hire": null,
-      "created_at": "2026-08-12T15:45:14.049Z",
-      "updated_at": "2026-08-12T15:45:14.049Z"
     }
   },
   {
@@ -657,12 +562,10 @@
       "year": 2026,
       "end_year": null,
       "location": "",
-      "gt_category": "session_chair",
-      "manuscript_count": null,
       "detail": "Organized the workshop, delivered a tutorial talk on applied sheaf theory, and moderated the closing panel discussion; approximately 30 participants.",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.050Z",
-      "updated_at": "2026-08-12T15:45:14.050Z"
+      "updated_at": "2026-08-12T15:45:14.050Z",
+      "category": "session_chair"
     }
   },
   {
@@ -678,12 +581,10 @@
       "year": 2020,
       "end_year": null,
       "location": "",
-      "gt_category": "special_activity",
-      "manuscript_count": null,
       "detail": "",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.052Z",
-      "updated_at": "2026-08-12T15:45:14.052Z"
+      "updated_at": "2026-08-12T15:45:14.052Z",
+      "category": "special_activity"
     }
   },
   {
@@ -699,12 +600,10 @@
       "year": 2018,
       "end_year": null,
       "location": "",
-      "gt_category": "civic",
-      "manuscript_count": null,
       "detail": "",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.053Z",
-      "updated_at": "2026-08-12T15:45:14.053Z"
+      "updated_at": "2026-08-12T15:45:14.053Z",
+      "category": "civic"
     }
   },
   {
@@ -724,7 +623,6 @@
       "advisor_of_record": "",
       "host_lab": "",
       "appointment_note": "",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.036Z",
       "updated_at": "2026-08-12T15:45:14.036Z",
       "resulting_publications": []
@@ -747,7 +645,6 @@
       "advisor_of_record": "Dr. Matthew Hale, Dr. Patricio Vela",
       "host_lab": "",
       "appointment_note": "",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.038Z",
       "updated_at": "2026-08-12T15:45:14.038Z",
       "resulting_publications": [
@@ -772,7 +669,6 @@
       "advisor_of_record": "",
       "host_lab": "Control Optimization and Robotics Engineering Lab (Georgia Tech; dir. Dr. Matthew Hale)",
       "appointment_note": "Summer intern",
-      "pre_gt_hire": null,
       "created_at": "2026-08-12T15:45:14.043Z",
       "updated_at": "2026-08-12T15:45:14.043Z",
       "resulting_publications": []
@@ -787,7 +683,6 @@
       "year": 2022,
       "date_range": "",
       "detail": "Nominated through the conference's independent review process",
-      "pre_gt_hire": null,
       "cv_ref_slug": "tempo-award",
       "order": 1,
       "created_at": "2026-08-12T15:45:14.012Z",
@@ -803,7 +698,6 @@
       "year": 2017,
       "date_range": "August 2017 – September 2022",
       "detail": "Doctoral fellowship supporting the entirety of Ph.D. study",
-      "pre_gt_hire": null,
       "cv_ref_slug": "leggett-fellowship",
       "order": 2,
       "created_at": "2026-08-12T15:45:14.013Z",
@@ -945,7 +839,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "",
-      "pre_gt_hire": null,
       "arxiv_id": "",
       "publication_date": "2027-03-01",
       "title": "Sheaf coordination under intermittent communication",
@@ -976,7 +869,6 @@
       "keywords": "",
       "code": "",
       "credit_roles": "",
-      "pre_gt_hire": null,
       "arxiv_id": "",
       "publication_date": null,
       "title": "An abandoned approach to lattice diffusion",
@@ -1008,11 +900,112 @@
       "related_publications": [],
       "reference": null,
       "credit_roles": "",
-      "pre_gt_hire": null,
       "note": "",
       "curriculum_role": "Delivered the tutorial talk on applied sheaf theory",
       "attendee_count": "~30",
       "cv_ref_slug": "acc-tutorial-2026",
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.review",
+    "pk": 1,
+    "fields": {
+      "venue": "Automatica",
+      "kind": "journal_review",
+      "role": "",
+      "year": 2026,
+      "end_year": null,
+      "manuscript_count": 1,
+      "detail": "",
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.review",
+    "pk": 2,
+    "fields": {
+      "venue": "IEEE Control Systems Letters (L-CSS)",
+      "kind": "journal_review",
+      "role": "",
+      "year": 2026,
+      "end_year": null,
+      "manuscript_count": 1,
+      "detail": "",
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.review",
+    "pk": 3,
+    "fields": {
+      "venue": "IEEE Transactions on Automatic Control",
+      "kind": "journal_review",
+      "role": "",
+      "year": 2020,
+      "end_year": null,
+      "manuscript_count": 1,
+      "detail": "",
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.review",
+    "pk": 4,
+    "fields": {
+      "venue": "Learning on Graphs Conference (LoG)",
+      "kind": "conference_review",
+      "role": "",
+      "year": 2024,
+      "end_year": null,
+      "manuscript_count": 1,
+      "detail": "",
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.review",
+    "pk": 5,
+    "fields": {
+      "venue": "Compositionality",
+      "kind": "editorial_board",
+      "role": "Associate Editor",
+      "year": 2026,
+      "end_year": null,
+      "manuscript_count": null,
+      "detail": "",
+      "created_at": "2026-08-12T00:00:00Z",
+      "updated_at": "2026-08-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "academic.talk",
+    "pk": 6,
+    "fields": {
+      "title": "Lattice theory in social choice and multi-agent systems",
+      "abstract": "",
+      "venue": "Applications of Hodge Theory on Networks, Banff International Research Station (BIRS)",
+      "location": "Banff, Canada",
+      "talk_type": "workshop",
+      "invited": true,
+      "proceedings": false,
+      "date": "2023-02-01",
+      "slides": "",
+      "poster": "",
+      "slug": "birs-2023",
+      "event_url": null,
+      "related_publications": [],
+      "reference": null,
+      "credit_roles": "",
+      "note": "",
+      "curriculum_role": "",
+      "attendee_count": "",
+      "cv_ref_slug": "birs-2023",
       "created_at": "2026-08-12T00:00:00Z",
       "updated_at": "2026-08-12T00:00:00Z"
     }

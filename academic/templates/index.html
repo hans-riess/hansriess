@@ -39,7 +39,7 @@
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
                                 <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
-                                {% if profile.cv %}
+                                {% if profile.show_cv_button %}
                                     <a href="{% url 'cv_redirect' %}" class="button bio-button">Download CV</a>
                                 {% endif %}
                             </li>

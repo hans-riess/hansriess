@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Award, Profile, Proposal, Reference, Course, DeliveredProduct,
                      Experience, Innovation, Talk, Grant, Education, Service, Quote,
-                     Figure, Student, ReferencePerson, Milestone, TechReport)
+                     Figure, Student, ReferencePerson, Milestone, Review, TechReport)
 
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['get_short_title', 'year', 'medium', 'status', 'refereed']
@@ -18,7 +18,7 @@ class ReferenceAdmin(admin.ModelAdmin):
         }),
         ('Publication Details', {
             'fields': ['medium', 'status', 'refereed', 'year', 'publication_date',
-                       'journal', 'volume', 'issue', 'pages', 'pre_gt_hire',
+                       'journal', 'volume', 'issue', 'pages', 'completed_before_hire',
                        'abstract', 'keywords']
         }),
         ('Materials', {
@@ -28,19 +28,20 @@ class ReferenceAdmin(admin.ModelAdmin):
     ]
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ['course_code', 'title', 'institution', 'semester', 'year', 'role']
-    list_filter = ['semester', 'year', 'role', 'is_graduate', 'is_online']
+    list_display = ['title', 'course_format', 'course_code', 'institution', 'semester', 'year', 'role']
+    list_filter = ['course_format', 'semester', 'year', 'role', 'is_graduate', 'is_online']
     search_fields = ['course_code', 'title', 'institution']
     ordering = ['-year', '-semester', 'course_code']
 
     fieldsets = [
         ('Basic Information', {
-            'fields': ['course_code', 'title', 'institution', 'department', 'semester', 'year', 'role']
+            'fields': ['course_format', 'course_code', 'title', 'institution',
+                       'department', 'semester', 'year', 'role']
         }),
         ('Course Details', {
             'fields': ['description', 'is_graduate', 'is_online', 'syllabus',
                        'organization', 'when_taught', 'curriculum_role',
-                       'attendee_count', 'pre_gt_hire']
+                       'attendee_count', 'completed_before_hire']
         })
     ]
 
@@ -75,11 +76,11 @@ class TalkAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': ['title', 'slug', 'abstract', 'venue', 'location', 'date',
                        'talk_type', 'invited', 'proceedings', 'reference',
-                       'note', 'credit_roles', 'pre_gt_hire', 'cv_ref_slug']
+                       'note', 'credit_roles', 'completed_before_hire', 'cv_ref_slug']
         }),
         ('Knowledge Sharing', {
-            'description': 'Used when the talk is a tutorial or workshop, which the CV '
-                           'lists in Section I.E rather than with the publications.',
+            'description': 'Used when the talk is a tutorial, which the CV lists in '
+                           'Section I.E rather than with the publications.',
             'fields': ['curriculum_role', 'attendee_count']
         }),
         ('Materials', {
@@ -137,7 +138,7 @@ class EducationAdmin(admin.ModelAdmin):
             'fields': ['degree_type', 'degree_type_short', 'field_of_study', 'institution', 'location', 'graduation_year']
         }),
         ('Academic Details', {
-            'fields': ['gpa', 'honors', 'pre_gt_hire']
+            'fields': ['gpa', 'honors', 'completed_before_hire']
         }),
         ('Thesis', {
             'fields': ['thesis_title', 'thesis_url', 'advisor', 'is_dissertation',
@@ -146,8 +147,8 @@ class EducationAdmin(admin.ModelAdmin):
     ]
 
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ['role', 'organization', 'service_type', 'gt_category', 'year']
-    list_filter = ['role', 'service_type', 'gt_category', 'year']
+    list_display = ['role', 'organization', 'service_type', 'category', 'year']
+    list_filter = ['role', 'service_type', 'category', 'year']
     search_fields = ['organization', 'location']
     ordering = ['-year', 'title']
 
@@ -156,7 +157,7 @@ class ServiceAdmin(admin.ModelAdmin):
             'fields': ['title', 'role', 'organization', 'service_type', 'start_date','end_date','year','end_year', 'location']
         }),
         ('Details', {
-            'fields': ['gt_category', 'manuscript_count', 'detail', 'pre_gt_hire']
+            'fields': ['category', 'detail', 'completed_before_hire']
         })
     ]
 
@@ -173,7 +174,8 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
         ('Academic Information', {
-            'fields': ['department', 'sub_department', 'school', 'institution', 'long_institution', 'cv','cv_button'],
+            'fields': ['department', 'sub_department', 'school', 'institution',
+                       'long_institution', 'cv', 'custom_cv', 'use_custom_cv', 'cv_button'],
             'classes': ['collapse']
         }),
         ('Social Media', {
@@ -181,7 +183,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
         ('Curriculum Vitae', {
-            'fields': ['fields_of_interest', 'gt_hire_date', 'research_program',
+            'fields': ['fields_of_interest', 'hire_date', 'research_program',
                        'cv_show_all_references', 'cv_show_preamble_sections']
         })
     ]
@@ -217,7 +219,7 @@ class StudentAdmin(admin.ModelAdmin):
         }),
         ('Research', {
             'fields': ['research_topic', 'appointment_note', 'advisor_of_record',
-                       'host_lab', 'resulting_publications', 'pre_gt_hire']
+                       'host_lab', 'resulting_publications', 'completed_before_hire']
         })
     ]
 
@@ -236,7 +238,7 @@ class ReferencePersonAdmin(admin.ModelAdmin):
     ]
 
 class AwardAdmin(admin.ModelAdmin):
-    """Section I.D of the Georgia Tech CV."""
+    """Section I.D of the CV."""
     list_display = ['title', 'organization', 'year', 'order']
     search_fields = ['title', 'organization']
     ordering = ['order', '-year', 'title']
@@ -246,12 +248,12 @@ class AwardAdmin(admin.ModelAdmin):
             'fields': ['title', 'organization', 'year', 'date_range', 'detail']
         }),
         ('Placement', {
-            'fields': ['pre_gt_hire', 'cv_ref_slug', 'order']
+            'fields': ['completed_before_hire', 'cv_ref_slug', 'order']
         })
     ]
 
 class DeliveredProductAdmin(admin.ModelAdmin):
-    """Section I.C of the Georgia Tech CV."""
+    """Section I.C of the CV."""
     list_display = ['name', 'sponsor', 'order']
     search_fields = ['name', 'summary', 'sponsor']
     ordering = ['order', 'name']
@@ -269,7 +271,7 @@ class DeliveredProductAdmin(admin.ModelAdmin):
     ]
 
 class InnovationAdmin(admin.ModelAdmin):
-    """Section II.B of the Georgia Tech CV."""
+    """Section II.B of the CV."""
     list_display = ['title', 'sponsors_projects_dates', 'order']
     search_fields = ['title', 'sponsors_projects_dates']
     ordering = ['order', 'title']
@@ -287,7 +289,7 @@ class InnovationAdmin(admin.ModelAdmin):
     ]
 
 class ProposalAdmin(admin.ModelAdmin):
-    """Section IV.B of the Georgia Tech CV."""
+    """Section IV.B of the CV."""
     list_display = ['title', 'sponsor', 'result', 'amount_requested', 'date_abstract_submitted']
     list_filter = ['result', 'sponsor']
     search_fields = ['title', 'sponsor', 'solicitation']
@@ -309,7 +311,7 @@ class ProposalAdmin(admin.ModelAdmin):
     ]
 
 class TechReportAdmin(admin.ModelAdmin):
-    """Section II.A of the Georgia Tech CV."""
+    """Section II.A of the CV."""
     list_display = ['title', 'grant', 'report_type', 'date', 'authorship_percent']
     list_filter = ['report_type', 'grant']
     search_fields = ['title', 'description']
@@ -327,6 +329,22 @@ class TechReportAdmin(admin.ModelAdmin):
         })
     ]
 
+class ReviewAdmin(admin.ModelAdmin):
+    """Sections V.A and V.B: peer review and editorial work."""
+    list_display = ['venue', 'kind', 'year', 'manuscript_count']
+    list_filter = ['kind', 'year']
+    search_fields = ['venue', 'role']
+    ordering = ['-year', 'venue']
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['venue', 'kind', 'role', 'year', 'end_year', 'manuscript_count']
+        }),
+        ('Details', {
+            'fields': ['detail', 'completed_before_hire']
+        })
+    ]
+
+admin.site.register(Review, ReviewAdmin)
 admin.site.register(Proposal, ProposalAdmin)
 admin.site.register(TechReport, TechReportAdmin)
 admin.site.register(Award, AwardAdmin)

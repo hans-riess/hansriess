@@ -1,10 +1,10 @@
 from django.db import models
 
 
-# Subsections of Section I.B ("Publications, Presentations, Posters") of the
-# official Georgia Tech research-faculty CV. Both Reference and Talk feed these,
-# so the choices live at module level and are shared by the two models.
-GT_PUB_CATEGORIES = [
+# Subsections of Section I.B ("Publications, Presentations, Posters") of the CV.
+# Both Reference and Talk feed these, so the choices live at module level and are
+# shared by the two models.
+PUBLICATION_CATEGORIES = [
     ('journal', 'Published Journal Papers'),
     ('invited_conf', 'Invited Conference Presentations'),
     ('proc_refereed', 'Conference Presentations with Proceedings (refereed)'),
@@ -13,12 +13,7 @@ GT_PUB_CATEGORIES = [
     ('submitted', 'Submitted Journal Papers in Review'),
 ]
 
-GT_PUB_CATEGORY_ORDER = [key for key, _ in GT_PUB_CATEGORIES]
-
-PRE_GT_HELP = (
-    "Marks the entry with * (completed before the Georgia Tech hire date). "
-    "Leave unset to derive it from the date and the profile's GT hire date."
-)
+PUBLICATION_CATEGORY_ORDER = [key for key, _ in PUBLICATION_CATEGORIES]
 
 CREDIT_HELP = (
     "CRediT roles, comma separated, e.g. 'conceptualization, methodology, review, "
@@ -52,8 +47,23 @@ class Profile(models.Model):
     zip_code = models.CharField(max_length=20, blank=True, null=True)
     country = models.CharField(max_length=200, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    cv = models.FileField(upload_to='profile/', blank=True, null=True)
-    cv_button = models.BooleanField(blank=True, null=True)
+    cv = models.FileField(
+        upload_to='profile/', blank=True, null=True,
+        help_text="The generated CV. Overwritten every time the CV is rebuilt.",
+    )
+    custom_cv = models.FileField(
+        upload_to='profile/custom/', blank=True, null=True,
+        help_text="A hand-made CV to serve instead of the generated one. "
+                  "Only used when 'use custom cv' is ticked.",
+    )
+    use_custom_cv = models.BooleanField(
+        default=False,
+        help_text="Serve the uploaded custom CV instead of generating one from the database.",
+    )
+    cv_button = models.BooleanField(
+        blank=True, null=True,
+        help_text="Show the Download CV button. Leave unset to show it.",
+    )
     show_publications = models.BooleanField(
         default=True,
         help_text="Show the publications list on the home page.",
@@ -68,14 +78,10 @@ class Profile(models.Model):
     google_scholar = models.URLField(blank=True, null=True)
     orcid = models.URLField(blank=True, null=True)
     under_construction = models.BooleanField(default=False, help_text="Show under construction notice on website")
-    # --- Georgia Tech CV ---
+    # --- Curriculum vitae ---
     fields_of_interest = models.TextField(
         blank=True,
         help_text="Semicolon-separated research interests, printed under CURRENT FIELDS OF INTEREST.",
-    )
-    gt_hire_date = models.DateField(
-        blank=True, null=True,
-        help_text="Georgia Tech hire date. Work completed before this date is marked with *.",
     )
     research_program = models.TextField(
         blank=True,
@@ -89,17 +95,10 @@ class Profile(models.Model):
     cv_show_preamble_sections = models.BooleanField(
         default=True,
         help_text="Print EDUCATION and PROFESSIONAL APPOINTMENTS before Section I. "
-                  "The strict GT format omits both.",
+                  "The strict promotion-packet format omits both.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    def gt_key_note(self):
-        """The '*' line of the CV's KEY block, with the hire date filled in."""
-        if self.gt_hire_date:
-            when = self.gt_hire_date.strftime('%B %-d, %Y')
-            return f"Completed prior to the candidate's Georgia Tech hire date ({when})."
-        return "Completed prior to the candidate's Georgia Tech hire date."
 
     # Post-nominals that are part of the display name but never part of the
     # name as it appears in an author list.
@@ -135,6 +134,22 @@ class Profile(models.Model):
         Returns the URL to generate the CV.
         """
         return f"{self.website}/generate_cv/"
+
+    def show_cv_button(self):
+        """Whether the home page offers a CV download.
+
+        The generated CV is built on demand, so no stored file is needed for the
+        button to work; only an explicit "no" hides it.
+        """
+        if self.cv_button is False:
+            return False
+        return bool(self.custom_cv) if self.use_custom_cv else True
+
+    def cv_file(self):
+        """The file the /cv/ URL should serve, or None if there is not one yet."""
+        if self.use_custom_cv and self.custom_cv:
+            return self.custom_cv
+        return self.cv or None
 
     def __str__(self):
         return self.name
@@ -215,7 +230,6 @@ class Reference(models.Model):
     keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated list of keywords")
     code = models.URLField(blank=True, help_text="Link to the code repository")
     credit_roles = models.CharField(max_length=500, blank=True, help_text=CREDIT_HELP)
-    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     arxiv_id = models.CharField(max_length=50, blank=True, help_text="arXiv identifier, e.g. 2501.03890")
     cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
 
@@ -238,12 +252,12 @@ class Reference(models.Model):
             short_title_words[0] = short_title_words[0].capitalize()
         return " ".join(short_title_words)
 
-    def get_gt_category(self):
+    def get_category(self):
         """Which Section I.B subsection this belongs in, from medium/refereed/status.
 
-        Returns "" for anything the Georgia Tech format has no subsection for —
-        theses (printed in Section I.A), technical reports (Section II.A), books,
-        book chapters, and rejected work.
+        Returns "" for anything with no subsection of its own — theses (printed
+        in Section I.A), technical reports (Section II.A), books, book chapters,
+        and rejected work.
         """
         if self.status == 'rejected':
             return ""
@@ -313,7 +327,25 @@ class Course(models.Model):
         ('guest_lecturer', 'Guest Lecturer'),
         ('other', 'Other'),
     ]
+
+    # What was taught. Everything here is knowledge sharing; the distinction is
+    # only how the entry reads in the table.
+    FORMAT_CHOICES = [
+        ('course', 'Course'),
+        ('workshop', 'Workshop'),
+        ('tutorial', 'Tutorial'),
+        ('short_course', 'Short course'),
+        ('summer_school', 'Summer school'),
+        ('seminar_series', 'Seminar series'),
+        ('guest_lecture', 'Guest lecture'),
+        ('other', 'Other'),
+    ]
     
+    course_format = models.CharField(
+        max_length=20, choices=FORMAT_CHOICES, default='course',
+        help_text="What was taught. Anything other than a course is named in the "
+                  "Knowledge Sharing table, e.g. 'Applied Category Theory (workshop)'.",
+    )
     course_code = models.CharField(max_length=20,blank=True, null=True, help_text="Course code (e.g., CS101, MATH 201)")
     title = models.CharField(max_length=200, help_text="Full course title")
     institution = models.CharField(max_length=200, help_text="Institution where the course was taught")
@@ -325,7 +357,7 @@ class Course(models.Model):
     syllabus = models.FileField(upload_to='courses/syllabi/', blank=True, null=True, help_text="Course syllabus")
     is_graduate = models.BooleanField(default=False, help_text="Check if this is a graduate-level course")
     is_online = models.BooleanField(default=False, help_text="Check if this was an online course")
-    # --- Georgia Tech CV (Section I.E, Knowledge Sharing) ---
+    # --- Curriculum vitae (Section I.E, Knowledge Sharing) ---
     organization = models.CharField(
         max_length=200, blank=True,
         help_text="Institution/Organization column. Defaults to the institution above.",
@@ -341,7 +373,6 @@ class Course(models.Model):
         max_length=50, blank=True,
         help_text="'Approx. Number of Students/Attendees' column, e.g. '~30'.",
     )
-    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -368,9 +399,15 @@ class Course(models.Model):
         return self.when_taught or self.get_full_semester()
 
     def get_cv_title(self):
-        """Course title with the code in parentheses, as the GT table prints it."""
+        """Title with the code, or the format, in parentheses.
+
+        A course is identified by its code; anything else is identified by what
+        it was, e.g. "Applied Category Theory (workshop)".
+        """
         if self.course_code:
             return f"{self.title} ({self.course_code})"
+        if self.course_format != 'course':
+            return f"{self.title} ({self.get_course_format_display().lower()})"
         return self.title
 
     def get_cv_role(self):
@@ -497,7 +534,6 @@ class Talk(models.Model):
                   "under the paper's own entry.",
     )
     credit_roles = models.CharField(max_length=500, blank=True, help_text=CREDIT_HELP)
-    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     note = models.TextField(
         blank=True,
         help_text="Bracketed note after the entry, e.g. 'Invited speaker among 10 others.'",
@@ -527,15 +563,17 @@ class Talk(models.Model):
         """Returns a more readable talk type name"""
         return self.get_talk_type_display()
 
-    # Presentations that teach rather than report go to Section I.E rather than I.B.
-    KNOWLEDGE_SHARING_TYPES = ('tutorial', 'workshop')
-    CONFERENCE_TYPES = ('conference', 'keynote', 'panel', 'poster')
+    # A tutorial lecture teaches, so it belongs in Knowledge Sharing. A workshop
+    # is a venue you are invited to speak at, not something you taught, so it is
+    # a conference presentation like any other.
+    KNOWLEDGE_SHARING_TYPES = ('tutorial',)
+    CONFERENCE_TYPES = ('conference', 'workshop', 'keynote', 'panel', 'poster')
 
     def is_knowledge_sharing(self):
         """Whether this belongs in Section I.E rather than Section I.B."""
         return self.talk_type in self.KNOWLEDGE_SHARING_TYPES
 
-    def get_gt_category(self):
+    def get_category(self):
         """Which Section I.B subsection this belongs in.
 
         Tutorials and workshops are knowledge sharing and are excluded here.
@@ -664,7 +702,7 @@ class Grant(models.Model):
         return self.candidate_role_text or self.get_role_display()
 
     def get_period_of_performance(self):
-        """Date range with an en dash, as the GT tables print it."""
+        """Date range with an en dash, as the programme tables print it."""
         if not self.start_date and not self.end_date:
             return ""
         start = self.start_date.strftime('%b %Y') if self.start_date else ""
@@ -704,13 +742,12 @@ class Education(models.Model):
     advisor = models.CharField(max_length=200, blank=True, help_text="Thesis advisor (for graduate degrees)")
     honors = models.CharField(max_length=200, blank=True, help_text="Honors or distinctions")
     related_publications = models.ManyToManyField('Reference', blank=True, help_text="Related publications or papers")
-    # --- Georgia Tech CV ---
+    # --- Curriculum vitae ---
     thesis_url = models.URLField(blank=True, help_text="Link to the thesis or dissertation record.")
     is_dissertation = models.BooleanField(
         default=False,
         help_text="Print this degree's thesis in Section I.A (Thesis/Dissertation).",
     )
-    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -767,25 +804,20 @@ class Service(models.Model):
     year = models.PositiveIntegerField(help_text="Year of service")
     end_year = models.PositiveBigIntegerField(blank=True,null=True,help_text="End year (if applicable)")
     location = models.CharField(max_length=200, blank=True, help_text="Location if relevant")
-    # --- Georgia Tech CV (Section V, Outreach and Service) ---
-    GT_SERVICE_CATEGORIES = [
-        ('journal_review', 'A. Reviewer Work for Technical Journals'),
-        ('conference_review', 'B. Reviewer Work for Conferences'),
-        ('session_chair', 'C. Conference Session Chairs'),
-        ('special_activity', 'D. Special Activities'),
-        ('outside_professional', 'E. Outside Professional Activities/Consulting'),
-        ('civic', 'F. Civic Activities'),
+    # --- Curriculum vitae (Section V, Outreach and Service) ---
+    # Reviewing and editorial work lives on the Review model, not here.
+    SERVICE_CATEGORIES = [
+        ('session_chair', 'Conference Session Chairs'),
+        ('special_activity', 'Special Activities'),
+        ('outside_professional', 'Outside Professional Activities/Consulting'),
+        ('civic', 'Civic Activities'),
     ]
 
-    gt_category = models.CharField(
-        max_length=30, choices=GT_SERVICE_CATEGORIES, blank=True,
+    category = models.CharField(
+        max_length=30, choices=SERVICE_CATEGORIES, blank=True,
         help_text="Section V subsection. Leave blank to derive it from the service type and role.",
     )
-    manuscript_count = models.PositiveIntegerField(
-        blank=True, null=True, help_text="Number of manuscripts reviewed, e.g. '(1 manuscript)'.",
-    )
     detail = models.TextField(blank=True, help_text="Additional prose printed after the entry. Supports [[ref:slug]].")
-    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -803,17 +835,86 @@ class Service(models.Model):
         location_str = f", {self.location}" if self.location else ""
         return f"{role_display}, {self.title}, {self.organization}{location_str} ({self.year})"
 
-    def get_gt_category(self):
+    def get_category(self):
         """Section V subsection, falling back to a guess from the service type and role."""
-        if self.gt_category:
-            return self.gt_category
-        if self.role == 'reviewer':
-            return 'conference_review' if self.service_type == 'conference' else 'journal_review'
+        if self.category:
+            return self.category
         if self.role in ('chair', 'co_chair'):
             return 'session_chair'
         if self.service_type == 'volunteer' or self.role == 'volunteer':
             return 'civic'
         return 'special_activity'
+
+class Review(models.Model):
+    """Peer review and editorial work.
+
+    Sections V.A and V.B of the CV. Kept apart from Service because a review is
+    counted (how many manuscripts, for which venue, in which year) rather than
+    described, and because editorial appointments are a different kind of thing
+    from chairing a session or volunteering.
+    """
+    KIND_CHOICES = [
+        ('journal_review', 'Journal peer review'),
+        ('conference_review', 'Conference peer review'),
+        ('editorial_board', 'Editorial board member'),
+        ('guest_editor', 'Guest editor'),
+        ('area_chair', 'Area chair / associate editor'),
+        ('program_committee', 'Program committee member'),
+        ('grant_panel', 'Grant review panel'),
+        ('other', 'Other'),
+    ]
+
+    # Which Section V subsection each kind is printed under.
+    EDITORIAL_KINDS = ('editorial_board', 'guest_editor', 'area_chair')
+
+    venue = models.CharField(
+        max_length=300, help_text="Journal, conference, or funding agency, e.g. 'Automatica'",
+    )
+    kind = models.CharField(max_length=30, choices=KIND_CHOICES, default='journal_review')
+    role = models.CharField(
+        max_length=100, blank=True,
+        help_text="Printed instead of the kind when set, e.g. 'Associate Editor'.",
+    )
+    year = models.PositiveIntegerField()
+    end_year = models.PositiveIntegerField(blank=True, null=True, help_text="For ongoing appointments.")
+    manuscript_count = models.PositiveIntegerField(
+        blank=True, null=True, help_text="Number of manuscripts handled, e.g. '(1 manuscript)'.",
+    )
+    detail = models.TextField(blank=True, help_text="Additional prose. Supports [[ref:slug]].")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-year', 'venue']
+        verbose_name = "Review / Editorial Work"
+        verbose_name_plural = "Reviews / Editorial Work"
+
+    def __str__(self):
+        return f"{self.get_kind_display()}, {self.venue} ({self.year})"
+
+    def is_editorial(self):
+        return self.kind in self.EDITORIAL_KINDS
+
+    def get_category(self):
+        """Which Section V subsection this belongs in.
+
+        Editorial appointments and journal reviewing are journal work; the rest
+        is conference work.
+        """
+        if self.is_editorial() or self.kind == 'journal_review':
+            return 'journal_review'
+        return 'conference_review'
+
+    def get_role(self):
+        if self.role:
+            return self.role
+        return "Reviewer" if self.kind.endswith('_review') else self.get_kind_display()
+
+    def get_years(self):
+        if self.end_year and self.end_year != self.year:
+            return f"{self.year} – {self.end_year}"
+        return str(self.year)
+
 
 class Student(models.Model):
     """Model for tracking student mentorship"""
@@ -842,7 +943,7 @@ class Student(models.Model):
     start_date = models.DateField(help_text="Start date of mentorship")
     end_date = models.DateField(blank=True, null=True, help_text="End date (leave blank if ongoing)")
     current_position = models.CharField(max_length=300, blank=True, help_text="Current position or status (optional)")
-    # --- Georgia Tech CV (Section III.B) ---
+    # --- Curriculum vitae (Section III.B) ---
     research_topic = models.CharField(
         max_length=300, blank=True,
         help_text="'Research topic: ...'. Defaults to the project title above.",
@@ -858,7 +959,6 @@ class Student(models.Model):
         'Reference', blank=True, related_name='mentored_students',
         help_text="Publications resulting from this mentorship, cited as 'see I.B.3.2'.",
     )
-    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -890,7 +990,7 @@ class Student(models.Model):
             return "" # Should not happen if start_date is required
 
 class Award(models.Model):
-    """Section I.D of the Georgia Tech CV: professional research recognition awards."""
+    """Section I.D of the CV: professional research recognition awards."""
     title = models.CharField(max_length=300, help_text="Name of the award, fellowship, or nomination")
     organization = models.CharField(max_length=300, blank=True, help_text="Awarding body, conference, or institution")
     year = models.PositiveIntegerField(blank=True, null=True)
@@ -899,7 +999,6 @@ class Award(models.Model):
         help_text="Period the award covers, e.g. 'August 2017 – September 2022'. Used instead of the year.",
     )
     detail = models.TextField(blank=True, help_text="Parenthetical or explanatory prose. Supports [[ref:slug]].")
-    pre_gt_hire = models.BooleanField(null=True, blank=True, help_text=PRE_GT_HELP)
     cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
     order = models.PositiveIntegerField(default=0, help_text="Manual ordering; lower numbers print first.")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -918,7 +1017,7 @@ class Award(models.Model):
 
 
 class DeliveredProduct(models.Model):
-    """Section I.C of the Georgia Tech CV: key delivered products."""
+    """Section I.C of the CV: key delivered products."""
     name = models.CharField(max_length=200, help_text="Short name of the product, e.g. 'Lawvere'")
     summary = models.CharField(
         max_length=500, blank=True,
@@ -952,7 +1051,7 @@ class DeliveredProduct(models.Model):
 
 
 class Proposal(models.Model):
-    """Section IV.B of the Georgia Tech CV: research proposals to sponsors."""
+    """Section IV.B of the CV: research proposals to sponsors."""
     RESULT_CHOICES = [
         ('pending', 'Pending'),
         ('funded', 'Funded'),
@@ -1028,7 +1127,7 @@ class Proposal(models.Model):
 
 
 class TechReport(models.Model):
-    """Section II.A of the Georgia Tech CV: research and technical reports."""
+    """Section II.A of the CV: research and technical reports."""
     REPORT_TYPE_CHOICES = [
         ('interim_report', 'Interim technical report'),
         ('briefing', 'Sponsor briefing'),

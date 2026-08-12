@@ -1,6 +1,6 @@
-"""Builds the LaTeX source for the CV in the official Georgia Tech format.
+"""Builds the LaTeX source for the CV.
 
-The document follows the five-part structure of the Georgia Tech research-faculty
+The document follows the five-part structure of a research-faculty promotion
 CV:
 
     I.   Mastery of a Complex Field
@@ -20,15 +20,16 @@ import datetime
 import re
 
 from .models import (Award, Course, DeliveredProduct, Education, Experience,
-                     Grant, GT_PUB_CATEGORIES, GT_PUB_CATEGORY_ORDER,
-                     Innovation, Proposal, Reference, Service, Student, Talk,
-                     TechReport)
+                     Grant, PUBLICATION_CATEGORIES, PUBLICATION_CATEGORY_ORDER,
+                     Innovation, Proposal, Reference, Review, Service, Student,
+                     Talk, TechReport)
 
-GT_PUB_CATEGORY_LABELS = dict(GT_PUB_CATEGORIES)
+PUBLICATION_CATEGORY_LABELS = dict(PUBLICATION_CATEGORIES)
 
 # Section V subsections, in the order the official CV prints them.
-GT_SERVICE_ORDER = [
-    ('journal_review', 'Reviewer Work for Technical Journals'),
+SERVICE_ORDER = [
+    # A and B come from Review; the rest come from Service.
+    ('journal_review', 'Reviewer and Editorial Work for Technical Journals'),
     ('conference_review', 'Reviewer Work for Conferences'),
     ('session_chair', 'Conference Session Chairs'),
     ('special_activity', 'Special Activities'),
@@ -143,21 +144,9 @@ def label_for(obj):
     return ""
 
 
-def is_pre_gt(obj, profile, when):
-    """Whether an entry predates the Georgia Tech hire date (the ``*`` marker)."""
-    explicit = getattr(obj, 'pre_gt_hire', None)
-    if explicit is not None:
-        return explicit
-    if not profile.gt_hire_date or when is None:
-        return False
-    return when < profile.gt_hire_date
-
-
-def marker_prefix(obj, profile, when):
-    """The stacked ``*`` / dagger / double-dagger prefix for a publication."""
+def marker_prefix(obj):
+    """The stacked dagger / double-dagger prefix for a publication."""
     marks = ""
-    if is_pre_gt(obj, profile, when):
-        marks += "*"
     if getattr(obj, 'alphabetical_order', False):
         marks += r'\dag{}'
     if getattr(obj, 'shared_first_author', False):
@@ -206,7 +195,7 @@ def quoted(title):
 
 def format_reference(ref, profile):
     """An IEEE-style citation for a Reference, in the official CV's dialect."""
-    parts = [marker_prefix(ref, profile, ref.cv_date())]
+    parts = [marker_prefix(ref)]
 
     authors = format_authors(ref.authors, profile.surname())
     parts.append("%s, %s" % (authors, quoted(ref.title)) if authors else quoted(ref.title))
@@ -267,7 +256,7 @@ def _italicise_submitted(note):
 
 def format_talk(talk, profile):
     """A presentation entry, in the style of Section I.B.2 and I.B.5."""
-    parts = [marker_prefix(talk, profile, talk.date)]
+    parts = [marker_prefix(talk)]
 
     name = r'\textbf{%s}' % clean(_initialled_name(profile))
     parts.append("%s, %s" % (name, quoted(talk.title)))
@@ -323,7 +312,7 @@ def build_header(profile):
 def build_preamble_sections(profile):
     """EDUCATION and PROFESSIONAL APPOINTMENTS.
 
-    The strict Georgia Tech format has neither, but dropping them would lose the
+    The strict promotion-packet format has neither, but dropping them would lose the
     only record of Hans's degrees and positions on the public CV, so they are
     printed above Section I unless the profile turns them off.
     """
@@ -364,12 +353,12 @@ def build_preamble_sections(profile):
 
 
 def build_key(profile):
-    """The KEY block explaining the *, dagger and double-dagger markers."""
-    lines = [r'\cvminihead{Key}']
-    lines.append(r'\cvline{* %s}' % clean(profile.gt_key_note()))
-    lines.append(r'\cvline{\dag{} Authors listed alphabetically.}')
-    lines.append(r'\cvline{\ddag{} Shared first authorship.}')
-    return lines
+    """The KEY block explaining the dagger and double-dagger markers."""
+    return [
+        r'\cvminihead{Key}',
+        r'\cvline{\dag{} Authors listed alphabetically.}',
+        r'\cvline{\ddag{} Shared first authorship.}',
+    ]
 
 
 # --- Section I ---------------------------------------------------------------
@@ -396,8 +385,7 @@ def _thesis_block(profile):
 
     lines = [r'\cvsubsection{Thesis/Dissertation}']
     for item in theses:
-        when = datetime.date(item.graduation_year, 12, 31) if item.graduation_year else None
-        entry = [marker_prefix(item, profile, when)]
+        entry = []
         entry.append("%s. ``%s.''" % (clean(_surname_first(profile)), clean(item.thesis_title.rstrip('.'))))
         degree = item.degree_type or ""
         if 'dissertation' not in degree.lower() and 'thesis' not in degree.lower():
@@ -426,13 +414,13 @@ def _publications_block(profile):
     the talk announcing it are not both cited.
     """
     show_all = profile.cv_show_all_references
-    grouped = {key: [] for key in GT_PUB_CATEGORY_ORDER}
+    grouped = {key: [] for key in PUBLICATION_CATEGORY_ORDER}
 
     listed_reference_ids = set()
     for ref in Reference.objects.all():
         if not ref.show_on_cv(show_all):
             continue
-        category = ref.get_gt_category()
+        category = ref.get_category()
         if category in grouped:
             grouped[category].append((ref.cv_sort_key(), ref))
             listed_reference_ids.add(ref.pk)
@@ -440,7 +428,7 @@ def _publications_block(profile):
     for talk in Talk.objects.all():
         if talk.reference_id and talk.reference_id in listed_reference_ids:
             continue
-        category = talk.get_gt_category()
+        category = talk.get_category()
         if category in grouped:
             grouped[category].append((talk.cv_sort_key(), talk))
 
@@ -448,11 +436,11 @@ def _publications_block(profile):
         return []
 
     lines = [r'\cvsubsection{Publications, Presentations, Posters}']
-    for key in GT_PUB_CATEGORY_ORDER:
+    for key in PUBLICATION_CATEGORY_ORDER:
         entries = grouped[key]
         if not entries:
             continue
-        lines.append(r'\cvsubsubsection{%s}' % clean(GT_PUB_CATEGORY_LABELS[key]))
+        lines.append(r'\cvsubsubsection{%s}' % clean(PUBLICATION_CATEGORY_LABELS[key]))
         for _, obj in sorted(entries, key=lambda pair: pair[0], reverse=True):
             if isinstance(obj, Reference):
                 body = format_reference(obj, profile)
@@ -497,8 +485,7 @@ def _awards_block(profile):
 
     lines = [r'\cvsubsection{Professional Research Recognition Awards}']
     for award in awards:
-        when = datetime.date(award.year, 12, 31) if award.year else None
-        entry = [marker_prefix(award, profile, when)]
+        entry = []
         entry.append(r'\textbf{%s}' % clean(award.title))
         tail = [bit for bit in (clean(award.organization), clean(award.get_cv_date())) if bit]
         if tail:
@@ -511,7 +498,7 @@ def _awards_block(profile):
 
 
 def _knowledge_sharing_block(profile):
-    """Section I.E, from courses taught plus tutorial and workshop presentations."""
+    """Section I.E, from courses and workshops taught plus tutorial lectures."""
     rows = []
     for course in Course.objects.all():
         when = datetime.date(course.year, 12, 31) if course.year else None
@@ -521,7 +508,7 @@ def _knowledge_sharing_block(profile):
             clean(course.get_cv_title()),
             clean(course.get_cv_role()),
             clean(course.attendee_count),
-        ], is_pre_gt(course, profile, when)))
+        ]))
 
     for talk in Talk.objects.all():
         if not talk.is_knowledge_sharing():
@@ -529,20 +516,17 @@ def _knowledge_sharing_block(profile):
         rows.append((talk.date, [
             clean(talk.venue),
             talk.date.strftime('%B %Y') if talk.date else "",
-            "%s (%s)" % (clean(talk.title), clean(talk.get_talk_type_display())),
+            "%s (tutorial)" % clean(talk.title),
             clean(talk.curriculum_role) or clean(talk.get_talk_type_display()),
             clean(talk.attendee_count),
-        ], is_pre_gt(talk, profile, talk.date)))
+        ]))
 
     if not rows:
         return []
 
     rows.sort(key=lambda row: row[0] or datetime.date.min, reverse=True)
     lines = [r'\cvsubsection{Knowledge Sharing}', r'\begin{cvteachtable}']
-    for _, cells, pre_gt in rows:
-        cells = list(cells)
-        if pre_gt:
-            cells[0] = "*" + cells[0]
+    for _, cells in rows:
         lines.append(r'\cvteachrow{%s}{%s}{%s}{%s}{%s}' % tuple(cells))
     lines.append(r'\end{cvteachtable}')
     return lines
@@ -759,33 +743,47 @@ def _research_program_block(profile):
 # --- Section V ---------------------------------------------------------------
 
 def build_section_v(profile):
-    services = list(Service.objects.order_by('-year', 'title'))
-    if not services:
-        return []
+    """Section V, from Review (subsections A and B) and Service (C onwards)."""
+    grouped = {key: [] for key, _ in SERVICE_ORDER}
 
-    grouped = {key: [] for key, _ in GT_SERVICE_ORDER}
-    for service in services:
-        category = service.get_gt_category()
+    for review in Review.objects.all():
+        category = review.get_category()
         if category in grouped:
-            grouped[category].append(service)
+            grouped[category].append((review, _review_entry(review, profile)))
+    for service in Service.objects.order_by('-year', 'title'):
+        category = service.get_category()
+        if category in grouped:
+            grouped[category].append((service, _service_entry(service, profile)))
 
     if not any(grouped.values()):
         return []
 
     lines = [r'\cvsection{Outreach and Service}']
-    for key, heading in GT_SERVICE_ORDER:
+    for key, heading in SERVICE_ORDER:
         entries = grouped[key]
         if not entries:
             continue
         lines.append(r'\cvsubsection{%s}' % clean(heading))
-        for service in entries:
-            lines.append(r'\cvplainentry{%s}' % _service_entry(service, profile))
+        for _, body in entries:
+            lines.append(r'\cvplainentry{%s}' % body)
     return lines
 
 
+def _review_entry(review, profile):
+    """A reviewing or editorial entry, e.g. "Reviewer, Automatica, 2026 (1 manuscript)."."""
+    bits = [", ".join(part for part in (
+        clean(review.get_role()), clean(review.venue), clean(review.get_years())) if part)]
+    if review.manuscript_count:
+        bits.append(" (%d manuscript%s)" % (review.manuscript_count,
+                                            "" if review.manuscript_count == 1 else "s"))
+    bits.append(".")
+    if review.detail:
+        bits.append(" %s" % " ".join(paragraphs(review.detail)))
+    return "".join(bits)
+
+
 def _service_entry(service, profile):
-    when = datetime.date(service.year, 12, 31) if service.year else None
-    bits = ["*" if is_pre_gt(service, profile, when) else ""]
+    bits = []
 
     lead = [clean(service.get_role_display())]
     if service.title:
@@ -796,9 +794,6 @@ def _service_entry(service, profile):
     lead.append(_service_years(service))
     bits.append(", ".join(part for part in lead if part))
 
-    if service.manuscript_count:
-        bits.append(" (%d manuscript%s)" % (service.manuscript_count,
-                                            "" if service.manuscript_count == 1 else "s"))
     bits.append(".")
     if service.detail:
         bits.append(" %s" % " ".join(paragraphs(service.detail)))
