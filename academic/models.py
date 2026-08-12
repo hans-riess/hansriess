@@ -54,6 +54,10 @@ class Profile(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     cv = models.FileField(upload_to='profile/', blank=True, null=True)
     cv_button = models.BooleanField(blank=True, null=True)
+    show_publications = models.BooleanField(
+        default=True,
+        help_text="Show the publications list on the home page.",
+    )
     headshot = models.ImageField(upload_to='profile/', blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     twitter = models.URLField(blank=True, null=True)
