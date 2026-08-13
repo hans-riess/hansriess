@@ -18,7 +18,7 @@ class ReferenceAdmin(admin.ModelAdmin):
         }),
         ('Publication Details', {
             'fields': ['medium', 'status', 'refereed', 'year', 'publication_date',
-                       'journal', 'volume', 'issue', 'pages', 'completed_before_hire',
+                       'journal', 'volume', 'issue', 'pages',
                        'abstract', 'keywords']
         }),
         ('Materials', {
@@ -41,7 +41,7 @@ class CourseAdmin(admin.ModelAdmin):
         ('Course Details', {
             'fields': ['description', 'is_graduate', 'is_online', 'syllabus',
                        'organization', 'when_taught', 'curriculum_role',
-                       'attendee_count', 'completed_before_hire']
+                       'attendee_count']
         })
     ]
 
@@ -76,7 +76,7 @@ class TalkAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': ['title', 'slug', 'abstract', 'venue', 'location', 'date',
                        'talk_type', 'invited', 'proceedings', 'reference',
-                       'note', 'credit_roles', 'completed_before_hire', 'cv_ref_slug']
+                       'note', 'credit_roles', 'cv_ref_slug']
         }),
         ('Knowledge Sharing', {
             'description': 'Used when the talk is a tutorial, which the CV lists in '
@@ -138,7 +138,7 @@ class EducationAdmin(admin.ModelAdmin):
             'fields': ['degree_type', 'degree_type_short', 'field_of_study', 'institution', 'location', 'graduation_year']
         }),
         ('Academic Details', {
-            'fields': ['gpa', 'honors', 'completed_before_hire']
+            'fields': ['gpa', 'honors']
         }),
         ('Thesis', {
             'fields': ['thesis_title', 'thesis_url', 'advisor', 'is_dissertation',
@@ -157,7 +157,7 @@ class ServiceAdmin(admin.ModelAdmin):
             'fields': ['title', 'role', 'organization', 'service_type', 'start_date','end_date','year','end_year', 'location']
         }),
         ('Details', {
-            'fields': ['category', 'detail', 'completed_before_hire']
+            'fields': ['category', 'detail']
         })
     ]
 
@@ -183,7 +183,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
         ('Curriculum Vitae', {
-            'fields': ['fields_of_interest', 'hire_date', 'research_program',
+            'fields': ['fields_of_interest', 'research_program',
                        'cv_show_all_references', 'cv_show_preamble_sections']
         })
     ]
@@ -219,7 +219,7 @@ class StudentAdmin(admin.ModelAdmin):
         }),
         ('Research', {
             'fields': ['research_topic', 'appointment_note', 'advisor_of_record',
-                       'host_lab', 'resulting_publications', 'completed_before_hire']
+                       'host_lab', 'resulting_publications']
         })
     ]
 
@@ -248,7 +248,7 @@ class AwardAdmin(admin.ModelAdmin):
             'fields': ['title', 'organization', 'year', 'date_range', 'detail']
         }),
         ('Placement', {
-            'fields': ['completed_before_hire', 'cv_ref_slug', 'order']
+            'fields': ['cv_ref_slug', 'order']
         })
     ]
 
@@ -340,7 +340,7 @@ class ReviewAdmin(admin.ModelAdmin):
             'fields': ['venue', 'kind', 'role', 'year', 'end_year', 'manuscript_count']
         }),
         ('Details', {
-            'fields': ['detail', 'completed_before_hire']
+            'fields': ['detail']
         })
     ]
 
