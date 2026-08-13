@@ -1,0 +1,154 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SECRET_KEY: ci-not-a-real-secret
+  DEBUG: "False"
+  ALLOWED_HOSTS: localhost,testserver
+  DB_NAME: hansriess
+  DB_USER: postgres
+  DB_PASSWORD: postgres
+  DB_HOST: localhost
+  DB_PORT: "5432"
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    # The app targets PostgreSQL and some early migrations are not SQLite
+    # compatible, so the suite runs against a real database.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hansriess
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: System checks
+        run: python manage.py check
+
+      - name: Migrations apply cleanly from scratch
+        run: python manage.py migrate
+
+      - name: Run tests
+        run: python manage.py test academic -v 2
+
+  cv:
+    name: CV builds
+    runs-on: ubuntu-latest
+
+    # The CV is the deliverable, so build a real PDF from the sample fixture.
+    # A broken style file or an unescaped character would otherwise only show up
+    # the next time someone hit the Download CV button.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hansriess
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install LaTeX
+        # Only what academic-cv.sty actually loads: latex-base and
+        # latex-recommended cover geometry, array, fancyhdr, etoolbox, hyperref,
+        # xcolor and psnfss; fonts-recommended supplies the Times faces that
+        # mathptmx maps onto; plain-generic supplies ulem.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-fonts-recommended \
+            texlive-plain-generic \
+            poppler-utils
+
+      - name: Load the sample CV data
+        run: |
+          python manage.py migrate
+          python manage.py loaddata cv_sample
+
+      - name: Build the CV
+        run: python manage.py generate_cv --keep-tex
+
+      - name: Check the PDF
+        run: |
+          set -euo pipefail
+          test -s temp_cv/cv.pdf || { echo "::error::no PDF produced"; exit 1; }
+
+          pages=$(pdfinfo temp_cv/cv.pdf | awk '/^Pages:/ {print $2}')
+          echo "Generated a ${pages}-page CV."
+          [ "$pages" -ge 1 ] || { echo "::error::PDF has no pages"; exit 1; }
+
+          # A [[ref:slug]] pointing at a slug no entry carries renders as "??".
+          # LaTeX names the offending label in the log, so check there.
+          if grep -q 'There were undefined references' temp_cv/cv.log; then
+            echo "::error::the CV contains an unresolved cross-reference"
+            grep "Reference .* undefined" temp_cv/cv.log
+            exit 1
+          fi
+
+          # Overfull boxes are content spilling past the margin.
+          if grep -q 'Overfull \\vbox' temp_cv/cv.log; then
+            echo "::error::content overflows the page"
+            grep -A2 'Overfull \\vbox' temp_cv/cv.log
+            exit 1
+          fi
+          # grep -c exits non-zero when the count is zero, which pipefail would
+          # turn into a failed step, so swallow that.
+          hboxes=$(grep -c 'Overfull \\hbox' temp_cv/cv.log || true)
+          echo "Overfull hboxes (cosmetic, usually long URLs): ${hboxes:-0}"
+
+      - name: Upload the CV
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cv
+          path: |
+            temp_cv/cv.pdf
+            temp_cv/cv.tex
+            temp_cv/cv.log
+          if-no-files-found: warn

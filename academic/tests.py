@@ -1,9 +1,17 @@
+import datetime
+from io import StringIO
+from unittest import mock
+
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.core.management import CommandError, call_command
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 
 from academic import cv_builder
-from academic.models import Profile, Reference, Talk
+from academic.models import (Course, Grant, Profile, Reference, Review, Service,
+                             Talk)
 
 
 class AdminFormTests(TestCase):
@@ -83,7 +91,6 @@ class ReferenceClassificationTests(TestCase):
                 self.assertIs(ref.show_on_cv(show_all=True), show_all)
 
     def test_publication_date_orders_within_a_year(self):
-        import datetime
         march = self._reference(medium='journal_article', publication_date=datetime.date(2026, 3, 1))
         october = self._reference(medium='journal_article', publication_date=datetime.date(2026, 10, 1))
         self.assertLess(march.cv_sort_key(), october.cv_sort_key())
@@ -93,7 +100,6 @@ class TalkClassificationTests(TestCase):
     """A workshop is a venue, not something taught; only a tutorial teaches."""
 
     def _talk(self, **kwargs):
-        import datetime
         return Talk(title="T", venue="V", date=datetime.date(2026, 1, 1), **kwargs)
 
     def test_workshop_invitation_is_a_conference_presentation(self):
@@ -129,3 +135,169 @@ class CvBuilderTests(TestCase):
         rendered = cv_builder.format_authors("A. Other, B. Third, and H. Riess", "Riess")
         self.assertEqual(rendered.count(r'\textbf{'), 1)
         self.assertIn(r'and \textbf{H. Riess}', rendered)
+
+
+class SectionBuilderTests(TestCase):
+    """Which model feeds which section, and what gets left out."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess", institution="Georgia Tech")
+
+    def test_reviews_and_service_split_section_v(self):
+        Review.objects.create(venue="Automatica", kind='journal_review',
+                              year=2026, manuscript_count=1)
+        Review.objects.create(venue="Compositionality", kind='editorial_board',
+                              role="Associate Editor", year=2026)
+        Review.objects.create(venue="Learning on Graphs", kind='conference_review', year=2024)
+        Service.objects.create(title="Game Theory session", role='co_chair',
+                               organization="CDC", service_type='conference', year=2022)
+
+        lines = cv_builder.build_section_v(self.profile)
+        tex = "\n".join(lines)
+
+        # Editorial work sits with journal reviewing, not with conference work.
+        self.assertIn("Reviewer and Editorial Work for Technical Journals", tex)
+        self.assertIn("Associate Editor, Compositionality", tex)
+        self.assertIn("Reviewer, Automatica, 2026 (1 manuscript)", tex)
+        self.assertIn("Reviewer Work for Conferences", tex)
+        self.assertIn("Conference Session Chairs", tex)
+
+    def test_service_alone_does_not_emit_review_subsections(self):
+        Service.objects.create(title="Seminar", role='organizer',
+                               organization="Penn", service_type='seminar', year=2020)
+        tex = "\n".join(cv_builder.build_section_v(self.profile))
+        self.assertNotIn("Reviewer", tex)
+        self.assertIn("Special Activities", tex)
+
+    def test_knowledge_sharing_merges_courses_and_tutorials(self):
+        Course.objects.create(title="Elementary Statistics", course_code="MATH 103",
+                              institution="College of Charleston", semester='fall',
+                              year=2024, attendee_count="~30")
+        Course.objects.create(title="Applied Category Theory", course_format='workshop',
+                              institution="ACC", semester='spring', year=2026)
+        Talk.objects.create(title="Applied sheaf theory", venue="ACC",
+                            talk_type='tutorial', date=datetime.date(2026, 5, 1),
+                            attendee_count="~30")
+        # A workshop invitation is a presentation, so it must not appear here.
+        Talk.objects.create(title="Lattice theory", venue="BIRS", talk_type='workshop',
+                            invited=True, date=datetime.date(2023, 2, 1))
+
+        tex = "\n".join(cv_builder.build_section_i(self.profile))
+        self.assertIn("Knowledge Sharing", tex)
+        self.assertIn("Elementary Statistics (MATH 103)", tex)
+        self.assertIn("Applied Category Theory (workshop)", tex)
+        self.assertIn("Applied sheaf theory (tutorial)", tex)
+        self.assertIn("Invited Conference Presentations", tex)
+        # The BIRS talk is a citation, never a row in the teaching table.
+        teaching = tex[tex.index("Knowledge Sharing"):]
+        self.assertNotIn("BIRS", teaching)
+
+    def test_a_talk_linked_to_a_listed_paper_is_not_cited_twice(self):
+        paper = Reference.objects.create(
+            title="Quantale-enriched co-design", authors="H. Riess", year=2026,
+            medium='conference_proceedings', refereed=True, status='published',
+            journal="Proc. CDC")
+        Talk.objects.create(title="Quantale-enriched co-design", venue="CDC",
+                            talk_type='conference', proceedings=True,
+                            date=datetime.date(2026, 12, 1), reference=paper)
+
+        tex = "\n".join(cv_builder.build_section_i(self.profile))
+        self.assertEqual(tex.count("Quantale-enriched co-design"), 1)
+
+    def test_empty_sections_are_skipped(self):
+        self.assertEqual(cv_builder.build_section_ii(), [])
+        self.assertEqual(cv_builder.build_section_iii(self.profile), [])
+        self.assertEqual(cv_builder.build_section_v(self.profile), [])
+
+    def test_funded_awards_and_proposals_go_to_different_sections(self):
+        Grant.objects.create(title="SEAMAN", funding_agency="DARPA", role='pi',
+                             amount=180687, grant_number="HR0011-25-3-0235")
+        tex = "\n".join(cv_builder.build_section_iii(self.profile))
+        self.assertIn("Leadership in Funded Research", tex)
+        self.assertIn("$180,687", tex)
+        # No proposals exist, so Section IV stays empty.
+        self.assertEqual(cv_builder.build_section_iv(self.profile), [])
+
+
+class CvDownloadTests(TestCase):
+    """/cv/ rebuilds on demand, busts caches, and honours the custom override."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess")
+        self.url = reverse('cv_redirect')
+
+    def _fake_build(self, *args, **kwargs):
+        """Stand in for the management command so the tests need no LaTeX."""
+        self.profile.refresh_from_db()
+        self.profile.cv.save('cv.pdf', ContentFile(b'%PDF-1.4 generated'), save=True)
+
+    def test_regenerates_before_redirecting(self):
+        with mock.patch('academic.views.call_command', side_effect=self._fake_build) as build:
+            response = self.client.get(self.url)
+        build.assert_called_once_with('generate_cv')
+        self.assertEqual(response.status_code, 302)
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.cv)
+
+    def test_redirect_is_cache_busted_and_not_cacheable(self):
+        with mock.patch('academic.views.call_command', side_effect=self._fake_build):
+            response = self.client.get(self.url)
+        self.assertIn('?v=', response['Location'])
+        self.assertIn('no-store', response['Cache-Control'])
+
+    def test_a_build_failure_still_serves_the_stored_copy(self):
+        self.profile.cv.save('cv.pdf', ContentFile(b'%PDF-1.4 stale'), save=True)
+        with mock.patch('academic.views.call_command', side_effect=OSError("pdflatex exploded")):
+            # assertLogs both asserts the failure was logged and keeps the
+            # expected traceback out of the test output.
+            with self.assertLogs('academic.views', level='ERROR'):
+                response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_custom_cv_is_served_and_never_regenerated_over(self):
+        self.profile.custom_cv.save('mine.pdf', ContentFile(b'%PDF-1.4 custom'), save=True)
+        self.profile.use_custom_cv = True
+        self.profile.save()
+        with mock.patch('academic.views.call_command') as build:
+            response = self.client.get(self.url)
+        build.assert_not_called()
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('mine', response['Location'])
+
+    def test_no_cv_at_all_is_a_404(self):
+        self.profile.use_custom_cv = True
+        self.profile.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 404)
+
+
+class CvButtonTests(TestCase):
+    """The button no longer depends on a placeholder file being uploaded."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess")
+
+    def test_shown_with_no_stored_file(self):
+        self.assertTrue(self.profile.show_cv_button())
+
+    def test_hidden_when_explicitly_turned_off(self):
+        self.profile.cv_button = False
+        self.assertFalse(self.profile.show_cv_button())
+
+    def test_custom_mode_needs_an_uploaded_file(self):
+        self.profile.use_custom_cv = True
+        self.assertFalse(self.profile.show_cv_button())
+
+
+class MigrationStateTests(TestCase):
+    """The models and the migrations must not drift apart."""
+
+    def test_no_migrations_are_missing(self):
+        try:
+            call_command('makemigrations', 'academic', check=True, dry_run=True,
+                         stdout=StringIO(), stderr=StringIO())
+        except SystemExit:
+            self.fail("Model changes are not captured in a migration; "
+                      "run manage.py makemigrations academic.")
+        except CommandError as exc:
+            self.fail(f"makemigrations --check failed: {exc}")

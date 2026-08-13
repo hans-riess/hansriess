@@ -1,6 +1,17 @@
 # My Academic Website
 Developed by Hans Riess.
 
+## Tests and CI
+
+`python manage.py test academic` runs the suite. GitHub Actions runs it on every
+push to `main` and on every pull request, alongside a second job that installs
+LaTeX and builds a real PDF from the sample fixture — so a broken style file or
+an unresolved cross-reference fails the build rather than surfacing the next
+time someone hits Download CV. The generated `cv.pdf`, `cv.tex` and `cv.log` are
+attached to the run as artifacts.
+
+Both jobs need PostgreSQL: some early migrations are not SQLite compatible.
+
 ## CV generation
 
 `python manage.py generate_cv` renders the CV from the database in the official
