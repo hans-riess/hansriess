@@ -1,154 +1,289 @@
 % academic-cv.sty
-% A LaTeX style for academic CVs, designed to be populated by a Django backend.
+% LaTeX style for the official Georgia Tech research-faculty CV, designed to be
+% populated by the Django backend (see academic/cv_builder.py).
+%
+% The document is organised into five Roman-numeral sections, each divided into
+% lettered subsections, numbered subsubsections, and numbered items:
+%
+%     I.        MASTERY OF A COMPLEX FIELD          \cvsection
+%       A.      Publications, Presentations         \cvsubsection
+%         1.    Published Journal Papers            \cvsubsubsection
+%           1.1 <a citation>                        \cventryitem
+%
+% Items print the short label (1.1) but \label/\ref resolve to the full dotted
+% path (I.B.1.1), which is how the CV cross-references itself.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{academic-cv}[2025/07/31 Academic CV Style]
+\ProvidesPackage{academic-cv}[2026/08/12 Georgia Tech Academic CV Style]
 
 % --- PACKAGES ----------------------------------------------------------------
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
-\RequirePackage{mathpazo}
+\RequirePackage{mathptmx}          % Times metrics, matching the official CV
 \RequirePackage{geometry}
-\RequirePackage[dvipsnames]{xcolor}
-\RequirePackage{titlesec}
-\RequirePackage{hyperref}
-\RequirePackage{fontawesome5}
+\RequirePackage{xcolor}
+\RequirePackage{array}             % L{} ragged-right fixed-width columns
+\RequirePackage[normalem]{ulem}    % \uline breaks across lines; \underline does not
+\RequirePackage{fancyhdr}
 \RequirePackage{etoolbox}
+\RequirePackage{hyperref}
 
-% Page geometry
 \geometry{
-    left=0.75in,
-    right=0.75in,
-    top=0.75in,
+    letterpaper,
+    left=1in,
+    right=1in,
+    top=1in,
     bottom=1in,
     headheight=0pt,
     headsep=0pt,
-    footskip=0.4in
+    footskip=0.45in
 }
 
-% Colors
-\definecolor{primary}{HTML}{2c3e50}
-\definecolor{secondary}{HTML}{3498db}
-\definecolor{muted}{HTML}{7f8c8d}
+\definecolor{cvrule}{HTML}{7F1D1D}  % dark red footer rule
 
-% Hyperref setup
 \hypersetup{
-    colorlinks=true,
-    urlcolor=secondary,
-    linkcolor=secondary,
-    pdfborder={0 0 0},
+    hidelinks,
     pdftitle={Curriculum Vitae},
-    pdfauthor={Hans Riess},
 }
 
-% Include page numbers
-\pagestyle{plain}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}  % absorb long URLs in citations
+\widowpenalty=10000
+\clubpenalty=10000
+\setlength{\parskip}{0pt}
+\setcounter{secnumdepth}{-2}
+\setcounter{tocdepth}{-2}
 
-% Section styling
-\titleformat{\section}
-    {\color{primary}\Large\bfseries\scshape}
-    {}
-    {0em}
-    {}
-    [\titlerule]
-\titlespacing*{\section}{0pt}{1.5\baselineskip}{0.5\baselineskip}
+% --- FOOTER ------------------------------------------------------------------
+\newcommand{\@cvfootername}{}
+\newcommand{\cvfootername}[1]{\renewcommand{\@cvfootername}{#1}}
 
-% --- HEADER COMMANDS ---------------------------------------------------------
-\newcommand{\cvname}[1]{\def\@cvname{#1}}
-\newcommand{\cvoccupation}[1]{\def\@cvoccupation{#1}}
-\newcommand{\cvemail}[1]{\def\@cvemail{#1}}
-\newcommand{\cvphone}[1]{\def\@cvphone{#1}}
-\newcommand{\cvwebsite}[2]{\def\@cvwebsite{#1}\def\@cvwebsiteurl{#2}}
-\newcommand{\cvlinkedin}[1]{\def\@cvlinkedin{#1}}
-\newcommand{\cvgithub}[1]{\def\@cvgithub{#1}}
-\newcommand{\cvorcid}[1]{\def\@cvorcid{#1}}
-\newcommand{\cvaddress}[1]{\def\@cvaddress{#1}}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\footrule}{%
+    \vskip-6pt{\color{cvrule}\hrule height 1.6pt width\headwidth}\vskip6pt%
+}
+\fancyfoot[L]{\small\@cvfootername}
+\fancyfoot[R]{\small Page \thepage}
 
-\newcommand{\makecvheader}{%
-    \begin{center}
-        {\Huge\bfseries\color{primary}\@cvname\par}
-        \vspace{2mm}
-        {\Large\color{muted}\@cvoccupation\par}
-        \vspace{3mm}
-        \begin{tabular}{@{}c@{}}
-            \small
-            \ifdefined\@cvemail \faEnvelope\ \href{mailto:\@cvemail}{\@cvemail} \fi
-            \ifdefined\@cvphone \quad \faPhone\ \@cvphone \fi
-            \ifdefined\@cvwebsite \quad \faGlobe\ \href{\@cvwebsiteurl}{\@cvwebsite} \fi
-            \\
-            \ifdefined\@cvlinkedin \faLinkedin\ \href{\@cvlinkedin}{\@cvlinkedin} \fi
-            \ifdefined\@cvgithub \quad \faGithub\ \href{\@cvgithub}{\@cvgithub} \fi
-            \ifdefined\@cvorcid \quad \faOrcid\ \href{\@cvorcid}{\@cvorcid} \fi
-            \\
-            \ifdefined\@cvaddress \faMapMarker\ \@cvaddress \fi
-        \end{tabular}
-    \end{center}
+% --- COUNTERS ----------------------------------------------------------------
+% \thecv... always expands to the FULL dotted path so that \ref produces
+% "I.B.3.4"; headings print the short form explicitly.
+\newcounter{cvsec}
+\newcounter{cvsub}[cvsec]
+\newcounter{cvssub}[cvsub]
+\newcounter{cvitm}[cvssub]
+\renewcommand{\thecvsec}{\Roman{cvsec}}
+\renewcommand{\thecvsub}{\thecvsec.\Alph{cvsub}}
+\renewcommand{\thecvssub}{\thecvsub.\arabic{cvssub}}
+\renewcommand{\thecvitm}{\thecvssub.\arabic{cvitm}}
+
+\newlength{\cvsubindent}   \setlength{\cvsubindent}{0.25in}
+\newlength{\cvssubindent}  \setlength{\cvssubindent}{0.5in}
+\newlength{\cvitemindent}  \setlength{\cvitemindent}{0.75in}
+\newlength{\cvnumwidth}    \setlength{\cvnumwidth}{2.6em}
+
+% --- HEADER BLOCK ------------------------------------------------------------
+\newenvironment{cvheader}{\begin{center}}{\end{center}\vspace{2mm}}
+\newcommand{\cvheadertitle}[1]{{\bfseries\MakeUppercase{#1}}\par}
+\newcommand{\cvheadername}[1]{{\bfseries #1}\par}
+\newcommand{\cvheaderline}[1]{#1\par}
+
+% Bold + underlined mini-heading used for CURRENT FIELDS OF INTEREST, KEY, and
+% the EDUCATION / PROFESSIONAL APPOINTMENTS preamble blocks.
+%
+% Note the font is declared OUTSIDE \uline throughout this file: ulem re-typesets
+% its argument word by word, so a \bfseries inside is lost after the first word
+% and a \textbf around the whole argument stops it breaking across lines.
+\newcommand{\cvminihead}[1]{%
+    \par\vspace{1.2\baselineskip}%
+    {\bfseries\uline{\MakeUppercase{#1}}}\par\nobreak\vspace{0.2\baselineskip}%
 }
 
-% --- SUMMARY SECTION ---------------------------------------------------------
-\newenvironment{summary}{
-    \vspace{2mm}
-    \begin{quote}
-        \small\color{muted}
-    \end{quote}
-    \vspace{2mm}
+% A line of body text at the left margin (used under \cvminihead).
+\newcommand{\cvline}[1]{\par #1\par}
+
+% An EDUCATION / PROFESSIONAL APPOINTMENTS entry.
+% #1 role or degree (bold), #2 institution line, #3 date (flush right).
+\newlength{\cvdatewidth} \setlength{\cvdatewidth}{1.6in}
+\newcommand{\cvpreentry}[3]{%
+    \par\vspace{0.4\baselineskip}%
+    \begingroup\interlinepenalty=10000
+    \noindent
+    \parbox[t]{\dimexpr\textwidth-\cvdatewidth-1em\relax}{\raggedright\bfseries #1}%
+    \hfill
+    \parbox[t]{\cvdatewidth}{\raggedleft #3}%
+    \par
+    \ifstrempty{#2}{}{%
+        \begingroup\setlength{\hangindent}{1em}\noindent #2\par\endgroup
+    }%
+    \endgroup
 }
 
-% --- CV ENTRY ENVIRONMENTS ---------------------------------------------------
-
-% A generic entry for Education, Experience, Service, etc.
-% #1: Title (e.g., Ph.D. in Mathematics)
-% #2: Subtitle (e.g., Institution Name)
-% #3: Date range (e.g., 2020 -- 2025)
-% #4: Description (e.g., bullet points)
-\newenvironment{cventries}{
-    \begin{list}{}{\setlength{\leftmargin}{1em}\setlength{\itemsep}{0.5em}}
-}{
-    \end{list}
-}
-\newcommand{\cventry}[4]{
-    \item
-    \begin{minipage}[t]{\linewidth}
-    \textbf{\color{primary}#1} \hfill {\color{muted}#3} \\
-    \textit{\color{secondary}#2}
-    \ifstrempty{#4}{}{\\{\small#4}}
-    \end{minipage}
+% --- SECTION HEADINGS --------------------------------------------------------
+\newcommand{\cvsection}[1]{%
+    \par\vspace{1.4\baselineskip}%
+    \refstepcounter{cvsec}%
+    \begingroup
+    \raggedright
+    \setlength{\hangindent}{\dimexpr\cvsubindent+1.5em\relax}%
+    \noindent\makebox[\dimexpr\cvsubindent+1.5em\relax][l]{\bfseries\thecvsec.}%
+    {\bfseries\uline{\MakeUppercase{#1}}}\par\nobreak
+    \endgroup
+    \vspace{0.5\baselineskip}%
 }
 
-% A specialized entry for publications
-% #1: Author list
-% #2: Title
-% #3: Publication details (Journal, Year, etc.)
-% #4: Links ([PDF], [Code], etc.)
-% #5: Special indicators (alphabetical order, shared first author)
-\newenvironment{publications}{
-    \begin{list}{\labelitemi}{\setlength{\leftmargin}{1em}\setlength{\itemsep}{0.8em}}
-    \renewcommand{\labelitemi}{\color{secondary}\textbullet}
-}{
-    \end{list}
-}
-\newcommand{\publication}[5]{
-    \item
-    \begin{minipage}[t]{\linewidth}
-    #1. \\
-    \textbf{#2}. \\
-    \textit{#3} \quad #4
-    \ifstrempty{#5}{}{\\{\small#5}}
-    \end{minipage}
+\newcommand{\cvsubsection}[1]{%
+    \par\vspace{0.9\baselineskip}%
+    \refstepcounter{cvsub}%
+    \begingroup
+    \raggedright
+    \setlength{\hangindent}{\dimexpr\cvsubindent+1.5em\relax}%
+    \noindent\hspace*{\cvsubindent}\makebox[1.5em][l]{\bfseries\Alph{cvsub}.}%
+    {\bfseries\uline{#1}}\par\nobreak
+    \endgroup
+    \vspace{0.35\baselineskip}%
 }
 
-% A specialized entry for talks
-% #1: Title
-% #2: Event
-% #3: Location
-% #4: Date
-\newcommand{\cvtalk}[4]{
-    \item
-    \begin{minipage}[t]{\linewidth}
-    \textbf{#1}. \\
-    \textit{#2} \hfill {\color{muted}#4} \\
-    #3
-    \end{minipage}
+% Numbered subsubsection on its own line, e.g. "1.  Published Journal Papers".
+\newcommand{\cvsubsubsection}[1]{%
+    \par\vspace{0.7\baselineskip}%
+    \refstepcounter{cvssub}%
+    \begingroup
+    \raggedright
+    \setlength{\hangindent}{\dimexpr\cvssubindent+1.5em\relax}%
+    \noindent\hspace*{\cvssubindent}\makebox[1.5em][l]{\bfseries\arabic{cvssub}.}%
+    {\bfseries\uline{#1}}\par\nobreak
+    \endgroup
+    \vspace{0.3\baselineskip}%
 }
+
+% Numbered subsubsection whose bold title runs into a following paragraph,
+% e.g. "1. SEAMAN -- Technical Report Series. <prose>". Not underlined, matching
+% the official document.
+\newcommand{\cvsubsubrun}[2]{%
+    \par\vspace{0.6\baselineskip}%
+    \refstepcounter{cvssub}%
+    \begingroup
+    \interlinepenalty=10000
+    \setlength{\hangindent}{\dimexpr\cvssubindent+1.5em\relax}%
+    \noindent\hspace*{\cvssubindent}\makebox[1.5em][l]{\bfseries\arabic{cvssub}.}%
+    {\bfseries #1}%
+    \ifstrempty{#2}{}{ #2}%
+    \par
+    \endgroup
+    \vspace{0.2\baselineskip}%
+}
+
+% --- ENTRIES -----------------------------------------------------------------
+% Entries below set \interlinepenalty so that a page break cannot fall inside
+% one -- a citation or table caption is moved to the next page whole rather than
+% being cut in half. Long-form prose (\cvnarrative, \cvbody) is deliberately
+% left breakable, since those paragraphs can legitimately run past a page.
+% A numbered item, printed as "3.4" with a hanging indent.
+\newcommand{\cventryitem}[1]{%
+    \par\vspace{0.35\baselineskip}%
+    \refstepcounter{cvitm}%
+    \begingroup
+    \interlinepenalty=10000
+    \setlength{\hangindent}{\dimexpr\cvitemindent+\cvnumwidth\relax}%
+    \noindent\hspace*{\cvitemindent}%
+    \makebox[\cvnumwidth][l]{\arabic{cvssub}.\arabic{cvitm}}%
+    #1\par
+    \endgroup
+}
+
+% A numbered item used as a caption above a program table (III.A, IV.B).
+\newcommand{\cvitemhead}[1]{%
+    \par\vspace{0.7\baselineskip}%
+    \refstepcounter{cvitm}%
+    \begingroup
+    \interlinepenalty=10000
+    \setlength{\hangindent}{\dimexpr\cvitemindent+\cvnumwidth\relax}%
+    \noindent\hspace*{\cvitemindent}%
+    \makebox[\cvnumwidth][l]{\arabic{cvssub}.\arabic{cvitm}}%
+    #1\par
+    \endgroup
+    \nopagebreak\vspace{0.2\baselineskip}%
+}
+
+% An unnumbered paragraph indented to the subsection level (I.A, I.D, V.A--F).
+\newcommand{\cvplainentry}[1]{%
+    \par\vspace{0.3\baselineskip}%
+    \begingroup
+    \interlinepenalty=10000
+    \setlength{\hangindent}{\dimexpr\cvsubindent+1em\relax}%
+    \noindent\hspace*{\cvsubindent}#1\par
+    \endgroup
+}
+
+% A body paragraph indented to the subsection level, used for narrative prose
+% (IV.A) and for explanatory lead-ins under a heading.
+\newcommand{\cvnarrative}[1]{%
+    \par\vspace{0.4\baselineskip}%
+    \begingroup
+    \leftskip=\cvsubindent
+    \noindent #1\par
+    \endgroup
+}
+
+% A body paragraph indented to the item level, used under \cvsubsubrun headings
+% (II.B) where the prose sits below rather than beside the title.
+\newcommand{\cvbody}[1]{%
+    \par\vspace{0.25\baselineskip}%
+    \begingroup
+    \leftskip=\cvitemindent
+    \noindent #1\par
+    \endgroup
+}
+
+% An italic run-in label used inside I.C items ("Product description: ...").
+\newcommand{\cvlabelled}[2]{\textit{#1}: #2}
+
+% --- TABLES ------------------------------------------------------------------
+% Table cells are ragged right; justifying them stretches the short values badly.
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Two-column key/value table for funded programs (III.A) and proposals (IV.B).
+% longtable so it breaks across pages, as the official document's tables do.
+\newenvironment{cvkeytable}{%
+    \par\vspace{0.3\baselineskip}%
+    \noindent\begin{minipage}{\textwidth}%
+    \footnotesize
+    \begin{tabular}{|L{2.75in}|L{3.35in}|}
+    \hline
+}{%
+    \end{tabular}%
+    \end{minipage}%
+    \normalsize
+    \par\vspace{0.4\baselineskip}%
+}
+
+% One row of a cvkeytable: bold label, value.
+\newcommand{\cvkeyrow}[2]{\textbf{#1:} & #2 \tabularnewline \hline}
+
+% Five-column Knowledge Sharing table (I.E), with a repeating header row.
+\newenvironment{cvteachtable}{%
+    \par\vspace{0.5\baselineskip}%
+    \noindent\begin{minipage}{\textwidth}%
+    \footnotesize
+    \begin{tabular}{|L{1.15in}|L{0.72in}|L{1.15in}|L{1.35in}|L{1.08in}|}
+    \hline
+    \textbf{Institution/ Organization} &
+    \textbf{When Taught} &
+    \textbf{Course Title (course code)} &
+    \textbf{Role in Curriculum Development} &
+    \textbf{Approx. Number of Students/Attendees}
+    \tabularnewline \hline
+}{%
+    \end{tabular}%
+    \end{minipage}%
+    \normalsize
+    \par\vspace{0.4\baselineskip}%
+}
+
+\newcommand{\cvteachrow}[5]{#1 & #2 & #3 & #4 & #5 \tabularnewline \hline}
 
 \endinput

@@ -3,19 +3,22 @@ from academic.models import Profile, Reference, Talk, Grant, Course, Service, Ed
 from django.http import HttpResponse, Http404
 from django.core.management import call_command
 from django.conf import settings
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
 def index(request):
     profile = Profile.objects.first()
-    journal_articles = Reference.objects.filter(reference_type='journal_article')
-    conference_proceedings = Reference.objects.filter(reference_type='conference_proceedings')
-    book_chapters = Reference.objects.filter(reference_type='book_chapter')
-    books = Reference.objects.filter(reference_type='book')
-    preprints = Reference.objects.filter(reference_type='preprint')
-    theses = Reference.objects.filter(reference_type='thesis')
-    other = Reference.objects.filter(reference_type='other')
+    journal_articles = Reference.objects.filter(medium='journal_article')
+    conference_proceedings = Reference.objects.filter(medium='conference_proceedings')
+    book_chapters = Reference.objects.filter(medium='book_chapter')
+    books = Reference.objects.filter(medium='book')
+    preprints = Reference.objects.filter(medium='preprint')
+    theses = Reference.objects.filter(medium='thesis')
+    other = Reference.objects.filter(medium='other')
     talks = Talk.objects.all()
     grants = Grant.objects.all()
     courses = Course.objects.all()
@@ -61,15 +64,50 @@ def generate_cv_pdf(request):
 
 def cv_redirect(request):
     """
-    Redirects /cv/ to the profile's current CV file, giving the CV a stable,
-    shareable URL (hansriess.com/cv) independent of the underlying storage URL.
+    Redirects /cv/ to the profile's current CV, giving it a stable, shareable
+    URL (hansriess.com/cv) independent of the underlying storage URL.
+
+    The CV is rebuilt from the database on the way through, so the download is
+    always current without anyone having to remember to regenerate it. A custom
+    uploaded CV is served as-is and is never regenerated over.
     """
     profile = Profile.objects.first()
+    if not profile:
+        raise Http404("CV not found.")
 
-    if profile and profile.cv:
-        return redirect(profile.cv.url)
+    if not profile.use_custom_cv:
+        try:
+            call_command('generate_cv')
+        except Exception:
+            # A LaTeX or storage failure should not take the download with it;
+            # fall through and serve whichever copy is already stored.
+            logger.exception("CV regeneration failed; serving the stored copy")
+        profile.refresh_from_db()
 
-    raise Http404("CV not found.")
+    cv_file = profile.cv_file()
+    if not cv_file:
+        raise Http404("CV not found.")
+
+    # The stored file keeps the same name every time it is rebuilt, so its URL
+    # is stable and both browsers and any CDN in front of storage will happily
+    # serve a stale copy. Bust that with the file's own modification time, and
+    # tell the client not to cache the redirect itself.
+    response = redirect(_cache_busted_url(cv_file))
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    return response
+
+
+def _cache_busted_url(cv_file):
+    """The file's URL with a version stamp, so a rebuilt CV is not served stale."""
+    url = cv_file.url
+    try:
+        stamp = int(cv_file.storage.get_modified_time(cv_file.name).timestamp())
+    except Exception:
+        # Not every storage backend reports modification times.
+        logger.debug("Could not read the CV's modification time", exc_info=True)
+        return url
+    return f"{url}{'&' if '?' in url else '?'}v={stamp}"
 
 def project_view(request, project_slug):
     grant = get_object_or_404(Grant, slug=project_slug)

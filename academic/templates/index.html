@@ -39,7 +39,7 @@
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
                                 <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
-                                {% if profile.cv %}
+                                {% if profile.show_cv_button %}
                                     <a href="{% url 'cv_redirect' %}" class="button bio-button">Download CV</a>
                                 {% endif %}
                             </li>
@@ -98,6 +98,7 @@
         </section>
 
         <!-- Publications Section -->
+        {% if profile.show_publications %}
         <section id="papers">
             <div class="wrapper style2">
                 <article class="container special">
@@ -219,6 +220,7 @@
                 </article>
             </div>
         </section>
+        {% endif %}
 
         <!-- Quote Section -->
         <article class="container special">
