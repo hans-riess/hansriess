@@ -696,9 +696,9 @@ def _student_guidance_block():
         r'Trained/Supervised}',
     ]
     for student in students:
-        bits = ["%s, %s student, %s." % (clean(student.name),
-                                         clean(student.get_level_display()),
-                                         clean(student.institution))]
+        bits = [r"\textbf{%s}, %s student, %s." % (clean(student.name),
+                                                    clean(student.get_level_display()),
+                                                    clean(student.institution))]
         appointment = [clean(student.appointment_note)] if student.appointment_note else []
         appointment.append(student.get_date_range())
         bits.append(" %s." % ", ".join(part for part in appointment if part))
@@ -772,7 +772,8 @@ def build_section_v(profile):
 def _review_entry(review, profile):
     """A reviewing or editorial entry, e.g. "Reviewer, Automatica, 2026 (1 manuscript)."."""
     bits = [", ".join(part for part in (
-        clean(review.get_role()), clean(review.venue), clean(review.get_years())) if part)]
+        r'\textbf{%s}' % clean(review.get_role()),
+        clean(review.venue), clean(review.get_years())) if part)]
     if review.manuscript_count:
         bits.append(" (%d manuscript%s)" % (review.manuscript_count,
                                             "" if review.manuscript_count == 1 else "s"))
@@ -785,7 +786,7 @@ def _review_entry(review, profile):
 def _service_entry(service, profile):
     bits = []
 
-    lead = [clean(service.get_role_display())]
+    lead = [r'\textbf{%s}' % clean(service.get_role_display())]
     if service.title:
         lead.append(clean(service.title))
     lead.append(clean(service.organization))

@@ -10,8 +10,8 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from academic import cv_builder
-from academic.models import (Course, Grant, Profile, Reference, Review, Service,
-                             Talk)
+from academic.models import (Award, Course, Grant, Profile, Reference, Review,
+                             Service, Student, Talk, TechReport)
 
 
 class AdminFormTests(TestCase):
@@ -157,8 +157,8 @@ class SectionBuilderTests(TestCase):
 
         # Editorial work sits with journal reviewing, not with conference work.
         self.assertIn("Reviewer and Editorial Work for Technical Journals", tex)
-        self.assertIn("Associate Editor, Compositionality", tex)
-        self.assertIn("Reviewer, Automatica, 2026 (1 manuscript)", tex)
+        self.assertIn(r"\textbf{Associate Editor}, Compositionality", tex)
+        self.assertIn(r"\textbf{Reviewer}, Automatica, 2026 (1 manuscript)", tex)
         self.assertIn("Reviewer Work for Conferences", tex)
         self.assertIn("Conference Session Chairs", tex)
 
@@ -301,3 +301,44 @@ class MigrationStateTests(TestCase):
                       "run manage.py makemigrations academic.")
         except CommandError as exc:
             self.fail(f"makemigrations --check failed: {exc}")
+
+
+class EntryEmphasisTests(TestCase):
+    """Every entry leads with its identifier in bold.
+
+    Awards and technical reports already did; students and Section V entries did
+    not, which read inconsistently against the rest of the document.
+    """
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess")
+
+    def test_student_names_are_bold(self):
+        Student.objects.create(name="Nivar Anwer", level='masters',
+                               institution="Georgia Tech",
+                               start_date=datetime.date(2026, 4, 1))
+        tex = "\n".join(cv_builder.build_section_iii(self.profile))
+        self.assertIn(r'\textbf{Nivar Anwer}', tex)
+
+    def test_review_and_service_roles_are_bold(self):
+        Review.objects.create(venue="Automatica", kind='journal_review', year=2026)
+        Review.objects.create(venue="Compositionality", kind='editorial_board',
+                              role="Associate Editor", year=2026)
+        Service.objects.create(title="GRASP Seminar", role='organizer',
+                               organization="Penn", service_type='seminar', year=2020)
+        tex = "\n".join(cv_builder.build_section_v(self.profile))
+        self.assertIn(r'\textbf{Reviewer}, Automatica', tex)
+        self.assertIn(r'\textbf{Associate Editor}, Compositionality', tex)
+        self.assertIn(r'\textbf{Organizer}, GRASP Seminar', tex)
+
+    def test_awards_and_reports_keep_their_bold(self):
+        Award.objects.create(title="Leggett Family Fellowship",
+                             organization="Penn", year=2017)
+        grant = Grant.objects.create(title="SEAMAN", funding_agency="DARPA", role='pi')
+        TechReport.objects.create(grant=grant, title="Milestone 3",
+                                  report_type='interim_report',
+                                  date=datetime.date(2026, 5, 1))
+        section_i = "\n".join(cv_builder.build_section_i(self.profile))
+        section_ii = "\n".join(cv_builder.build_section_ii())
+        self.assertIn(r'\textbf{Leggett Family Fellowship}', section_i)
+        self.assertIn(r'\textbf{Milestone 3}', section_ii)
