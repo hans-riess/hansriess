@@ -80,7 +80,10 @@ body {
 /* Mobile background handling */
 @media screen and (max-width: 736px) {
     body {
-        background-image: url("../images/header.jpeg");
+        background-image:
+            radial-gradient(circle at 20% 15%, rgba(179, 163, 105, 0.18), transparent 55%),
+            radial-gradient(circle at 85% 75%, rgba(179, 163, 105, 0.12), transparent 60%),
+            linear-gradient(160deg, #1a1a1a 0%, #2b2b2b 45%, #1f1f1f 100%);
         background-attachment: scroll;
         background-position: center top;
         background-size: cover;
@@ -92,7 +95,10 @@ body {
 @media screen and (max-width: 736px) and (-webkit-min-device-pixel-ratio: 2),
        screen and (max-width: 736px) and (min-resolution: 192dpi) {
     body {
-        background-image: url("../images/header.jpeg");
+        background-image:
+            radial-gradient(circle at 20% 15%, rgba(179, 163, 105, 0.18), transparent 55%),
+            radial-gradient(circle at 85% 75%, rgba(179, 163, 105, 0.12), transparent 60%),
+            linear-gradient(160deg, #1a1a1a 0%, #2b2b2b 45%, #1f1f1f 100%);
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
@@ -102,7 +108,10 @@ body {
 /* Very small mobile devices */
 @media screen and (max-width: 480px) {
     body {
-        background-image: url("../images/header.jpeg");
+        background-image:
+            radial-gradient(circle at 20% 15%, rgba(179, 163, 105, 0.18), transparent 55%),
+            radial-gradient(circle at 85% 75%, rgba(179, 163, 105, 0.12), transparent 60%),
+            linear-gradient(160deg, #1a1a1a 0%, #2b2b2b 45%, #1f1f1f 100%);
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
