@@ -21,3 +21,4 @@ scrap/
 hansriess-django-app_accessKeys.csv
 hansriess/settings_local.py
 .env
+.claude/

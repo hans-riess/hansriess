@@ -1,0 +1,496 @@
+/*
+ * Coordination sheaf demo — panel styling.
+ *
+ * Loaded eagerly in <head> after main.css (it is small, and injecting it lazily would race
+ * the open transition and flash unstyled content). The demo's JavaScript is what loads on
+ * demand.
+ *
+ * Everything is scoped under .sheaf-demo. The original demo styled bare `body`, `h1`, `dl`
+ * and `canvas` selectors and declared its palette on :root; dropped into this site as-is
+ * that would both leak out and inherit main.css's 15pt/1.85em body type and gold headings.
+ * So the palette lives on .sheaf-demo itself — the JavaScript reads it from there — and the
+ * inherited typography is restated rather than left to chance.
+ */
+
+/* ---------------------------------------------------------------------------
+ * The hero launcher
+ *
+ * Both hero buttons already share a single <li>, and below 736px main.css turns ul.actions
+ * into a column flex with `li { display: block }`, so the anchors inline-wrap inside one
+ * block item. A third makes that worse; a wrapping flex row with a gap handles any number and
+ * replaces the inline margin-right that used to separate the first two.
+ * ------------------------------------------------------------------------ */
+
+#title ul.actions li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.7em;
+}
+
+/* Georgia Tech Navy, which is also the demo's chalkboard ground: the button reads as the way
+   into the dark panel rather than as a third gold thing to weigh against the other two. */
+#title .bio-button.bio-button--demo,
+.bio-button--demo {
+    background-color: #003057;
+}
+
+#title .bio-button.bio-button--demo:hover,
+.bio-button--demo:hover {
+    background-color: #00507F;
+}
+
+/* The demo is keyboard-and-mouse: arrows drive the target and the number keys set observation
+   ranks, none of which a phone has. Rather than offer a control surface that cannot be
+   worked, the launcher is simply absent below the site's mobile breakpoint. /demo/ still
+   resolves for anyone who has the link. */
+@media (max-width: 736px) {
+    #sheaf-demo-open {
+        display: none;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * The panel
+ * ------------------------------------------------------------------------ */
+
+.sheaf-demo {
+    /* Georgia Tech palette, one mode only. Navy Blue is the ground and Tech Gold the
+       structure. White is reserved for exactly one thing, the target, so the element you
+       steer is the only pure white on the board. The two tertiary accents earn their place by
+       being stateful: Electric Blue appears only on a full-rank agent, New Horizon only when
+       something is undetermined. */
+    --slate: #16202B;      /* Navy Blue, taken down to a chalkboard */
+    --ink: #F2F0E6;        /* chalk */
+    --muted: #9FA9AE;      /* chalk, rubbed back */
+    --heading: #B3A369;    /* Tech Gold — the site's own gold, unchanged */
+    --line: #ffffff1f;
+    --agent: #B3A369;
+    --target: #FFFFFF;
+    --bisector: #D6DBD4;   /* Pi Mile — quiet construction line */
+    --observer: #EAAA00;   /* Buzz Gold — the single reading a rank-1 agent takes */
+    --full: #64CCC9;       /* Electric Blue — a rank-2 agent's full sight line */
+    --warn: #E04F39;       /* New Horizon — undetermined directions, and cutting an edge */
+    --ghost: #D6DBD4;
+
+    color-scheme: dark;
+    color: var(--ink);
+
+    /* main.css sets 15pt/1.85em Source Sans Pro on body and gold 400-weight Oswald on every
+       heading. Both are wrong inside a dense instrument panel, so both are restated here. */
+    font-family: 'Source Sans Pro', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+
+    /* The site's own chalkboard, so the panel reads as the same room rather than a separate
+       application. On the landing page this costs nothing: main.css already paints
+       header.jpeg on <body>, so it is a cache hit by the time the panel opens.
+
+       The vignette on top darkens it enough that chalk-coloured strokes stay legible over the
+       brighter patches of the photograph, and doubles as the fallback if the image is ever
+       missing — background-color then shows through. */
+    background-color: var(--slate);
+    background-image:
+        radial-gradient(120% 100% at 50% 45%, rgba(22, 32, 43, 0.42) 30%, rgba(0, 0, 0, 0.78) 100%),
+        url("../images/header.jpeg");
+    background-size: cover, cover;
+    background-position: center center, center center;
+    background-repeat: no-repeat, no-repeat;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 210px;
+    gap: 14px;
+    padding: 14px;
+}
+
+/* Overlay variant: the panel that slides up over the landing page. -------- */
+
+.sheaf-demo--overlay {
+    position: fixed;
+    inset: 0;
+    /* #header is position:fixed at z-index 10000. */
+    z-index: 10500;
+    overscroll-behavior: contain;
+
+    /* The panel waits *above* the viewport and descends into it.
+
+       That is the opposite of what a panel appearing from nowhere would do, and deliberately
+       so: the board and the page share the same chalkboard, so a panel coming down past you
+       reads as the view travelling up a single tall surface rather than as a sheet of paper
+       being dealt onto the page. Closing sends it back up the way it came, which is also the
+       edge the close button sits on. */
+    transform: translateY(-100%);
+    visibility: hidden;
+    /* visibility rather than display: display:none cannot transition, and visibility:hidden
+       correctly removes descendants from the tab order and the accessibility tree. The delay
+       holds it visible until the slide-out has finished. */
+    transition: transform 420ms cubic-bezier(.22, .61, .36, 1), visibility 0s linear 420ms;
+}
+
+.sheaf-demo--overlay.is-open {
+    transform: translateY(0);
+    visibility: visible;
+    transition: transform 420ms cubic-bezier(.22, .61, .36, 1), visibility 0s;
+}
+
+/* main.css:1733 clamps transition-duration to 0.01ms under reduced motion but leaves
+   transition-delay alone, which would strand the visibility hop behind a 420ms wait. */
+@media (prefers-reduced-motion: reduce) {
+    .sheaf-demo--overlay,
+    .sheaf-demo--overlay.is-open {
+        transition: none;
+    }
+}
+
+/* Standalone /demo/ page: same panel, no sliding. ------------------------ */
+
+.sheaf-demo--page {
+    position: fixed;
+    inset: 0;
+}
+
+/* Top centre: the panel exits upward, so the control that sends it away sits on the edge it
+   leaves through, like the handle of a blind.
+
+   Sized in pixels throughout. In `em` the offsets would compound against this element's own
+   enlarged font-size rather than the panel's, which is how it ended up sitting on top of the
+   masthead the first time. */
+.sheaf-demo-close {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--muted);
+    background: #ffffff0f;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+
+.sheaf-demo-close:hover,
+.sheaf-demo-close:focus-visible {
+    color: var(--ink);
+    background: #ffffff1f;
+    border-color: var(--heading);
+}
+
+/* ---------------------------------------------------------------------------
+ * Stage
+ * ------------------------------------------------------------------------ */
+
+.sheaf-demo-stage {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    gap: 10px;
+}
+
+.sheaf-demo-masthead {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* The close button sits centred in this band, so keep the title clear of the middle. */
+.sheaf-demo--overlay .sheaf-demo-masthead {
+    padding-right: 62px;
+    min-height: 38px;
+    align-items: center;
+}
+
+.sheaf-demo h1,
+.sheaf-demo h2 {
+    margin: 0;
+    font-family: 'Oswald', 'Source Sans Pro', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+    text-transform: uppercase;
+    color: var(--heading);
+    white-space: nowrap;
+}
+
+.sheaf-demo-lede {
+    margin: 0;
+    flex: 1 1 240px;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted);
+    white-space: normal;
+}
+
+/* No panel, no border: the canvas draws straight onto the chalkboard. */
+.sheaf-demo-board {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sheaf-demo-canvaswrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
+
+.sheaf-demo canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Mandatory: without it the browser claims pointermove as a scroll gesture and dragging
+       an agent does nothing at all on touch. */
+    touch-action: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Readout
+ * ------------------------------------------------------------------------ */
+
+.sheaf-demo-readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 22px;
+    flex: none;
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+}
+
+.sheaf-demo-cell {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+}
+
+.sheaf-demo-cell .k {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.sheaf-demo-cell .v {
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+}
+
+.sheaf-demo-cell .v.is-warn {
+    color: var(--warn);
+}
+
+/* ---------------------------------------------------------------------------
+ * Sidebar
+ * ------------------------------------------------------------------------ */
+
+.sheaf-demo-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-top: 2px;
+}
+
+.sheaf-demo-sidebar h3 {
+    margin: 0 0 6px;
+    font-family: 'Oswald', 'Source Sans Pro', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    line-height: 1.25;
+    text-transform: uppercase;
+    color: var(--heading);
+}
+
+.sheaf-demo dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 10px;
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.sheaf-demo dt {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: var(--ink);
+    white-space: nowrap;
+    opacity: 0.85;
+}
+
+.sheaf-demo dd {
+    margin: 0;
+    color: var(--muted);
+}
+
+.sheaf-demo-status {
+    margin-top: auto;
+    padding-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    opacity: 0.75;
+}
+
+.sheaf-demo-status.is-bad {
+    color: var(--warn);
+    opacity: 1;
+}
+
+/* Bottom right of the panel: the status line above it carries `margin-top: auto`, so both are
+   pushed to the foot of the sidebar. */
+.sheaf-demo-credit {
+    margin: 0;
+    padding-top: 10px;
+    /* Chalk, at full strength — the same weight as the readout values along the bottom left,
+       rather than the rubbed-back grey the status line uses. */
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: right;
+    color: var(--ink);
+}
+
+/* main.css styles every anchor on the site, including a blue hover that would look like a
+   mistake against this palette. */
+.sheaf-demo-credit a {
+    color: var(--heading);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(179, 163, 105, 0.35);
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.sheaf-demo-credit a:hover,
+.sheaf-demo-credit a:focus-visible {
+    color: #D4C285;
+    border-bottom-color: #D4C285;
+}
+
+/* Stacked layouts put the sidebar under the board, where a right-aligned credit reads as
+   detached from everything. */
+@media (max-width: 900px) {
+    .sheaf-demo-credit {
+        text-align: left;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Touch controls
+ *
+ * Hidden entirely on a fine pointer — the keyboard is better in every way there, and the
+ * handlers never fire against a display:none element.
+ * ------------------------------------------------------------------------ */
+
+.sheaf-demo-stick,
+.sheaf-demo-actions {
+    display: none;
+}
+
+@media (pointer: coarse) {
+    .sheaf-demo-stick {
+        position: absolute;
+        left: 14px;
+        bottom: 14px;
+        width: 108px;
+        height: 108px;
+        display: block;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: #ffffff0d;
+        touch-action: none;
+        opacity: 0.55;
+        transition: opacity 0.2s;
+    }
+
+    .sheaf-demo-stick.is-live {
+        opacity: 0.95;
+    }
+
+    .sheaf-demo-knob {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 46px;
+        height: 46px;
+        margin: -23px 0 0 -23px;
+        border-radius: 50%;
+        background: var(--heading);
+        box-shadow: 0 2px 10px #00000055;
+    }
+
+    .sheaf-demo-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        flex: none;
+        padding-top: 8px;
+    }
+
+    .sheaf-demo-actions button {
+        /* The site declares a 44px minimum touch target at main.css:1681. */
+        min-height: 44px;
+        padding: 0 0.85em;
+        font-family: inherit;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink);
+        background: #ffffff12;
+        border: 1px solid var(--line);
+        border-radius: 0.4em;
+        cursor: pointer;
+    }
+
+    .sheaf-demo-actions button:active {
+        background: #ffffff26;
+        border-color: var(--heading);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Narrow layouts
+ * ------------------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+    .sheaf-demo {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+    }
+
+    .sheaf-demo-canvaswrap {
+        aspect-ratio: 8 / 5;
+        flex: none;
+    }
+
+    .sheaf-demo-sidebar {
+        overflow-y: visible;
+    }
+
+    .sheaf-demo-lede {
+        white-space: normal;
+    }
+}
+
+@media (max-width: 560px) {
+    .sheaf-demo h1,
+    .sheaf-demo h2 {
+        white-space: normal;
+    }
+
+    .sheaf-demo-readout {
+        gap: 4px 14px;
+    }
+}

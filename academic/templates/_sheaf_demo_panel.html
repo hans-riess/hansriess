@@ -1,0 +1,102 @@
+{% comment %}
+The coordination sheaf demo panel, shared by the landing page overlay and the standalone
+/demo/ page. Include it with a `variant` of "overlay" or "page":
+
+    {% include "_sheaf_demo_panel.html" with variant="overlay" %}
+
+Everything the JavaScript reaches for is addressed by data-sheaf attributes rather than ids,
+so both copies can coexist without colliding, and so a page is free to leave a readout cell
+out without breaking the rest.
+{% endcomment %}
+{% comment %}
+Only the overlay is a dialog. On its own page the panel *is* the page, and calling that a
+dialog would announce a modal the reader can neither dismiss nor escape from.
+{% endcomment %}
+<div id="sheaf-demo" class="sheaf-demo sheaf-demo--{{ variant }}"
+     {% if variant == 'overlay' %}role="dialog" aria-modal="true" aria-labelledby="sheaf-demo-title" inert{% endif %}>
+
+    {% if variant == 'overlay' %}
+    <button type="button" class="sheaf-demo-close" data-sheaf="close" aria-label="Close the demo">&times;</button>
+    {% endif %}
+
+    <main class="sheaf-demo-stage">
+        <div class="sheaf-demo-masthead">
+            <h2 id="sheaf-demo-title">Coordination sheaf</h2>
+        </div>
+
+        <div class="sheaf-demo-board">
+            <div class="sheaf-demo-canvaswrap">
+                <canvas data-sheaf="view"></canvas>
+                <div class="sheaf-demo-stick" data-sheaf="stick" aria-hidden="true">
+                    <span class="sheaf-demo-knob" data-sheaf="knob"></span>
+                </div>
+            </div>
+
+            <div class="sheaf-demo-readout">
+                <div class="sheaf-demo-cell"><div class="k">Ranks</div><div class="v" data-sheaf="obs">&mdash;</div></div>
+                {% comment %}
+                What used to read "Undetermined". The number is the nullity of the restricted
+                Laplacian, which is exactly the dimension of degree-0 cohomology of the sheaf
+                relative to the target vertex: cochains supported on the agents that cost no
+                Dirichlet energy, i.e. the directions the observations leave free.
+                {% endcomment %}
+                <div class="sheaf-demo-cell">
+                    <div class="k">Relative cohomology dim.</div>
+                    <div class="v" data-sheaf="nullity">0</div>
+                </div>
+                <div class="sheaf-demo-cell"><div class="k">Lag</div><div class="v" data-sheaf="lag">0.00</div></div>
+                <div class="sheaf-demo-cell"><div class="k">Gain / Feed-Forward</div><div class="v" data-sheaf="gains">2.5 / 0</div></div>
+                <div class="sheaf-demo-cell"><div class="k">Dirichlet energy</div><div class="v" data-sheaf="energy">0</div></div>
+            </div>
+
+            {% comment %}
+            The discrete actions that are otherwise keyboard-only. Shown only under a coarse
+            pointer, where there are no number keys to press.
+            {% endcomment %}
+            <div class="sheaf-demo-actions" data-sheaf="actions">
+                <button type="button" data-action="feedforward">Feed-Forward</button>
+                <button type="button" data-action="gain-down">Gain &minus;</button>
+                <button type="button" data-action="gain-up">Gain &plus;</button>
+                <button type="button" data-action="clear-nodes">Clear</button>
+                <button type="button" data-action="reset">Reset</button>
+            </div>
+        </div>
+    </main>
+
+    <aside class="sheaf-demo-sidebar">
+        <div>
+            <h3>Keys</h3>
+            <dl>
+                <dt>arrows / WASD</dt><dd>drive the target</dd>
+                <dt>1 &hellip; 6</dt><dd>rank, restriction map</dd>
+                <dt>[ ]</dt><dd>gain</dd>
+                <dt>F</dt><dd>feed-forward</dd>
+                <dt>C</dt><dd>clear the board</dd>
+                <dt>space</dt><dd>reset</dd>
+                {% if variant == 'overlay' %}<dt>esc</dt><dd>close</dd>{% endif %}
+            </dl>
+        </div>
+
+        <div>
+            <h3>Mouse</h3>
+            <dl>
+                <dt>click</dt><dd>board, to add an agent</dd>
+                <dt>drag</dt><dd>agent to agent, to wire</dd>
+                <dt>click</dt><dd>an edge, to cut</dd>
+                <dt>shift-click</dt><dd>an agent, to remove</dd>
+            </dl>
+        </div>
+
+        <div class="sheaf-demo-status" data-sheaf="status"></div>
+
+        {% comment %}
+        The simulation here is a JavaScript port of the Julia one, so the credit belongs to the
+        library the mathematics came from.
+        {% endcomment %}
+        <p class="sheaf-demo-credit">
+            Powered by
+            <a href="https://github.com/AlgebraicJulia/CellularSheaves.jl"
+               target="_blank" rel="noopener noreferrer">CellularSheaves.jl</a>
+        </p>
+    </aside>
+</div>

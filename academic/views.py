@@ -8,6 +8,22 @@ import os
 
 logger = logging.getLogger(__name__)
 
+# Cache buster for the coordination sheaf demo's JavaScript and CSS.
+#
+# In production static files are served from S3 with CacheControl max-age=86400, and
+# S3Boto3Storage does not hash filenames, so an edited asset would otherwise be shadowed by
+# yesterday's copy in every browser that has already been here. Bump this in the same commit
+# that touches static/js/sheaf-demo.js or static/css/sheaf-demo.css.
+#
+# Deliberately a constant rather than the files' mtime: on Heroku that is slug build time, so
+# it would churn on every deploy and throw the cache away for no reason.
+DEMO_ASSET_VERSION = "7"
+
+
+def _demo_context():
+    """Everything a template needs to reference the demo's static assets."""
+    return {'demo_asset_version': DEMO_ASSET_VERSION}
+
 
 # Create your views here.
 def index(request):
@@ -46,9 +62,25 @@ def index(request):
         'quotes':quotes,
         'figures':figures,
     }
+    context.update(_demo_context())
 
     # The {% static %} template tag will now automatically handle S3 URLs in production
     return render(request, 'index.html', context)
+
+
+def demo_view(request):
+    """
+    The coordination sheaf demo on a page of its own.
+
+    The landing page already opens it as an overlay at /#sheaf-demo, but a plain URL is worth
+    having on its own: it is what goes in a paper, a talk or a grant report, and it is a far
+    easier thing to point a browser at while working on the demo than the homepage is.
+
+    Entirely client-side, and deliberately touches no models: the page needs nothing from the
+    database, so it costs no query and still renders if the database is unreachable.
+    """
+    return render(request, 'demo.html', _demo_context())
+
 
 def generate_cv_pdf(request):
     """

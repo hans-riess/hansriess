@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Coordination Sheaf &mdash; Hans Riess</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover" />
+    <meta name="description" content="An interactive coordination sheaf: a formation holds station around a target while only some agents observe it, and those that do read a single scalar each." />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/sheaf-demo.css' %}?v={{ demo_asset_version }}" />
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <style>
+        /* The panel fills the viewport here, so the page itself must not scroll or paint the
+           site's chalkboard photograph behind it. */
+        html, body { height: 100%; margin: 0; overflow: hidden; background: #16202B; }
+        body::before { content: none; }
+    </style>
+</head>
+<body>
+    {% include "_sheaf_demo_panel.html" with variant="page" %}
+
+    <script src="{% static 'js/sheaf-demo.js' %}?v={{ demo_asset_version }}"></script>
+    <script>
+        (function () {
+            var panel = document.getElementById('sheaf-demo');
+            if (panel && window.SheafDemo) window.SheafDemo.mount(panel);
+        })();
+    </script>
+</body>
+</html>
