@@ -6,6 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover" />
     <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/sheaf-demo.css' %}?v={{ demo_asset_version }}" />
     <noscript><link rel="stylesheet" href="{% static 'css/noscript.css' %}" /></noscript>
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
 </head>
@@ -38,7 +39,16 @@
                         </h3>
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
-                                <a href="#footer" class="button bio-button" style="margin-right: 0.7em;">Contact Info</a>
+                                <a href="#footer" class="button bio-button">Contact Info</a>
+                                {% comment %}
+                                A hash href, so the back button and a shareable deep link both
+                                come for free. The demo's JavaScript is fetched on click, not
+                                on page load; the URL is carried on the element because only a
+                                template can resolve {% templatetag openblock %} static {% templatetag closeblock %}.
+                                {% endcomment %}
+                                <a href="#sheaf-demo" class="button bio-button bio-button--demo" id="sheaf-demo-open"
+                                   aria-haspopup="dialog" aria-controls="sheaf-demo" aria-expanded="false"
+                                   data-demo-src="{% static 'js/sheaf-demo.js' %}?v={{ demo_asset_version }}">Coordination Sheaf</a>
                                 {% if profile.show_cv_button %}
                                     <a href="{% url 'cv_redirect' %}" class="button bio-button">Download CV</a>
                                 {% endif %}
@@ -327,6 +337,17 @@
         </div>
     </div>
 
+    {% comment %}
+    The demo panel sits here, as a direct child of <body>, rather than inside the hero.
+
+    It is position:fixed, which resolves against the viewport regardless of ancestry so long
+    as no ancestor establishes a containing block via transform / filter / will-change /
+    contain / perspective. At body level there is none — which conveniently sidesteps the
+    mismatched #page-wrapper above, whose opening div closes right after the title section
+    while a second closing div sits after the footer.
+    {% endcomment %}
+    {% include "_sheaf_demo_panel.html" with variant="overlay" %}
+
     <!-- Scripts -->
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/jquery.scrolly.min.js' %}"></script>
@@ -376,6 +397,158 @@
             });
 
             startTimer();
+        })();
+    </script>
+    <script>
+        /*
+         * Coordination sheaf demo launcher.
+         *
+         * The demo's own code is fetched the first time the panel is opened, so the landing
+         * page carries none of its weight until somebody asks for it.
+         *
+         * location.hash is the single source of truth for open/closed, which means the back
+         * button, a bookmark and a pasted link all behave without any extra state to keep in
+         * step.
+         */
+        (function () {
+            var panel = document.getElementById('sheaf-demo');
+            var launcher = document.getElementById('sheaf-demo-open');
+            if (!panel || !launcher) return;
+
+            var HASH = '#sheaf-demo';
+            var closeButton = panel.querySelector('[data-sheaf="close"]');
+            var pending = null;
+            var isOpen = false;
+            var lastFocused = null;
+            var unmountTimer = null;
+
+            /*
+             * An injected classic script, deliberately not a dynamic import(). In production
+             * these assets come from S3 while the page is on hansriess.com, and module
+             * scripts are always fetched in CORS mode — an import() would work perfectly on
+             * localhost and fail only once deployed.
+             */
+            function loadDemo() {
+                if (pending) return pending;
+                pending = new Promise(function (resolve, reject) {
+                    var script = document.createElement('script');
+                    script.src = launcher.getAttribute('data-demo-src');
+                    script.async = true;
+                    script.onload = function () {
+                        if (window.SheafDemo) resolve(window.SheafDemo);
+                        else reject(new Error('the demo loaded but did not register'));
+                    };
+                    script.onerror = function () {
+                        pending = null;              // so a retry can work
+                        reject(new Error('could not load the demo'));
+                    };
+                    document.head.appendChild(script);
+                });
+                return pending;
+            }
+
+            // Warm the fetch on hover or focus, so the click itself feels instant.
+            launcher.addEventListener('pointerenter', function () { loadDemo().catch(function () {}); });
+            launcher.addEventListener('focus', function () { loadDemo().catch(function () {}); });
+
+            function lockScroll() {
+                // Compensate for the scrollbar's width, or the page jumps sideways underneath
+                // the panel. Not the `body { position: fixed; top: -Ny }` trick: that fights
+                // the chalkboard's background-attachment: fixed and repaints visibly.
+                var gutter = window.innerWidth - document.documentElement.clientWidth;
+                document.documentElement.style.overflow = 'hidden';
+                if (gutter > 0) document.body.style.paddingRight = gutter + 'px';
+            }
+
+            function unlockScroll() {
+                document.documentElement.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+
+            function open(animate) {
+                if (isOpen) return;
+                isOpen = true;
+                if (unmountTimer) { clearTimeout(unmountTimer); unmountTimer = null; }
+
+                lastFocused = document.activeElement;
+                panel.removeAttribute('inert');
+                launcher.setAttribute('aria-expanded', 'true');
+                lockScroll();
+                // On the deep-link path body.is-preload suppresses transitions for the first
+                // 100ms anyway, and arriving already-open is the right behaviour there.
+                if (!animate) panel.style.transition = 'none';
+                panel.classList.add('is-open');
+                if (!animate) requestAnimationFrame(function () { panel.style.transition = ''; });
+
+                loadDemo().then(function (demo) {
+                    if (!isOpen) return;                     // closed again while loading
+                    demo.mount(panel, { onClose: close, isActive: function () { return isOpen; } });
+                    if (closeButton) closeButton.focus();
+                }).catch(function (err) {
+                    var status = panel.querySelector('[data-sheaf="status"]');
+                    if (status) {
+                        status.textContent = err.message + ' — check your connection and try again';
+                        status.classList.add('is-bad');
+                    }
+                });
+            }
+
+            function close() {
+                if (!isOpen) return;
+                isOpen = false;
+                panel.classList.remove('is-open');
+                panel.setAttribute('inert', '');
+                launcher.setAttribute('aria-expanded', 'false');
+                unlockScroll();
+                if (lastFocused && lastFocused.focus) lastFocused.focus();
+
+                // transitionend does not fire under prefers-reduced-motion, where the
+                // transition is suppressed outright, so this is a timer rather than an event.
+                unmountTimer = setTimeout(function () {
+                    unmountTimer = null;
+                    if (!isOpen && window.SheafDemo) window.SheafDemo.unmount();
+                }, 450);
+
+                if (location.hash === HASH) {
+                    history.pushState(null, '', location.pathname + location.search);
+                }
+            }
+
+            if (closeButton) closeButton.addEventListener('click', close);
+
+            // Escape is handled inside the demo once it is mounted; this covers the window
+            // between opening and the script arriving.
+            document.addEventListener('keydown', function (event) {
+                if (isOpen && event.key === 'Escape') close();
+            });
+
+            // Clicking the launcher pushes the hash, and pushState above pops it back off, so
+            // hashchange is the one place open and close are decided.
+            window.addEventListener('hashchange', function () {
+                if (location.hash === HASH) open(true); else close();
+            });
+
+            // Keep the focus trap tight: the panel is modal while it is open.
+            panel.addEventListener('keydown', function (event) {
+                if (!isOpen || event.key !== 'Tab') return;
+                // offsetParent filters out the touch controls, which are display:none on a
+                // fine pointer: they still match the selector but cannot take focus, and
+                // including them would send Tab into a hole.
+                var focusable = Array.prototype.filter.call(
+                    panel.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'),
+                    function (el) { return el.offsetParent !== null; });
+                if (focusable.length < 2) return;
+                var first = focusable[0], last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            });
+
+            if (location.hash === HASH) open(false);
         })();
     </script>
     <script src="https://kit.fontawesome.com/ff0bf837c9.js" crossorigin="anonymous"></script>

@@ -1,15 +1,18 @@
 import datetime
+import shutil
+import tempfile
 from io import StringIO
 from unittest import mock
 
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.contrib.staticfiles import finders
 from django.core.files.base import ContentFile
 from django.core.management import CommandError, call_command
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
-from academic import cv_builder
+from academic import cv_builder, views
 from academic.models import (Award, Course, Grant, Profile, Reference, Review,
                              Service, Student, Talk, TechReport)
 
@@ -342,3 +345,72 @@ class EntryEmphasisTests(TestCase):
         section_ii = "\n".join(cv_builder.build_section_ii())
         self.assertIn(r'\textbf{Leggett Family Fellowship}', section_i)
         self.assertIn(r'\textbf{Milestone 3}', section_ii)
+
+
+class SheafDemoTests(TestCase):
+    """The coordination sheaf demo's markup, assets and standalone page.
+
+    These are the first tests in the suite that render the landing page, which
+    needs a headshot: `index.html` reaches for `{{ profile.headshot.url }}`
+    unguarded, and `FieldFile.url` raises `ValueError` on an empty field --
+    something Django's template variable resolution does *not* swallow.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Otherwise every run drops another headshot into the developer's media/.
+        media = tempfile.mkdtemp()
+        cls.addClassCleanup(shutil.rmtree, media, ignore_errors=True)
+        override = override_settings(MEDIA_ROOT=media)
+        override.enable()
+        cls.addClassCleanup(override.disable)
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess")
+        self.profile.headshot.save('headshot.png', ContentFile(b'x'), save=True)
+
+    def test_launcher_sits_beside_the_cv_button(self):
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'id="sheaf-demo-open"')
+        self.assertContains(response, 'href="#sheaf-demo"')
+
+    def test_demo_assets_carry_a_cache_buster(self):
+        """S3 serves these with max-age=86400 and does not hash filenames, so an
+        edited asset without a fresh token is invisible for a day."""
+        response = self.client.get(reverse('index'))
+        content = response.content.decode()
+        self.assertIn(f'js/sheaf-demo.js?v={views.DEMO_ASSET_VERSION}', content)
+        self.assertIn(f'css/sheaf-demo.css?v={views.DEMO_ASSET_VERSION}', content)
+
+    def test_the_panel_stays_outside_the_page_wrapper(self):
+        """`#page-wrapper` opens before the header and closes right after the
+        title section, with a second closing div after the footer. The panel is
+        `position: fixed`, so it only escapes that tangle by being a direct child
+        of <body>; tidying it back inside would put it in a containing block."""
+        content = self.client.get(reverse('index')).content.decode()
+        self.assertGreater(content.index('id="sheaf-demo"'), content.index('id="footer"'))
+
+    def test_static_assets_are_findable(self):
+        """Catches a typo'd path or a file left out of a commit, which would
+        otherwise surface only as a 404 in production."""
+        self.assertIsNotNone(finders.find('js/sheaf-demo.js'))
+        self.assertIsNotNone(finders.find('css/sheaf-demo.css'))
+
+    def test_standalone_page_renders(self):
+        response = self.client.get(reverse('demo'))
+        self.assertContains(response, 'data-sheaf="view"')
+        self.assertContains(response, 'sheaf-demo--page')
+
+    def test_standalone_page_needs_no_database(self):
+        """The demo is entirely client-side, so it should cost no query and keep
+        working if the database is unreachable."""
+        with self.assertNumQueries(0):
+            self.client.get(reverse('demo'))
+
+    def test_overlay_starts_inert(self):
+        """Until it is opened the panel must stay out of the tab order and the
+        accessibility tree."""
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'inert')
+        self.assertContains(response, 'aria-expanded="false"')

@@ -60,6 +60,27 @@ jobs:
       - name: Run tests
         run: python manage.py test academic -v 2
 
+  demo:
+    name: Sheaf demo maths
+    runs-on: ubuntu-latest
+
+    # The coordination sheaf demo is a JavaScript port of the Julia simulation in
+    # CellularSheaves.jl, so it can drift from the original without anything on
+    # the Django side noticing. The self-test checks it against invariants of the
+    # construction -- the escort formation being an exact global section, the
+    # feedforward being the reference's true derivative, the documented nullity
+    # table -- plus the golden values exported from the Julia. No database and no
+    # browser: sheaf-demo.js touches the DOM only inside mount().
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run the numerical self-test
+        run: node tests/js/sheaf-demo.selftest.mjs
+
   cv:
     name: CV builds
     runs-on: ubuntu-latest
