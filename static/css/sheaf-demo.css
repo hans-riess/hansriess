@@ -15,10 +15,10 @@
 /* ---------------------------------------------------------------------------
  * The hero launcher
  *
- * Both hero buttons already share a single <li>, and below 736px main.css turns ul.actions
- * into a column flex with `li { display: block }`, so the anchors inline-wrap inside one
- * block item. A third makes that worse; a wrapping flex row with a gap handles any number and
- * replaces the inline margin-right that used to separate the first two.
+ * Every hero button shares a single <li>, and below 736px main.css turns ul.actions into a
+ * column flex with `li { display: block }`, so the anchors inline-wrap inside one block item.
+ * A wrapping flex row with a gap handles any number of them, and replaces the inline
+ * margin-right that used to do the separating.
  * ------------------------------------------------------------------------ */
 
 #title ul.actions li {
@@ -29,22 +29,11 @@
     gap: 0.7em;
 }
 
-/* Georgia Tech Navy, which is also the demo's chalkboard ground: the button reads as the way
-   into the dark panel rather than as a third gold thing to weigh against the other two. */
-#title .bio-button.bio-button--demo,
-.bio-button--demo {
-    background-color: #003057;
-}
-
-#title .bio-button.bio-button--demo:hover,
-.bio-button--demo:hover {
-    background-color: #00507F;
-}
-
 /* The demo is keyboard-and-mouse: arrows drive the target and the number keys set observation
    ranks, none of which a phone has. Rather than offer a control surface that cannot be
-   worked, the launcher is simply absent below the site's mobile breakpoint. /demo/ still
-   resolves for anyone who has the link. */
+   worked, the launcher is simply absent below the site's mobile breakpoint. Anyone who
+   deep-links to #sheaf-demo anyway gets the notice further down this file, and /demo/ still
+   resolves for anyone who has that link. */
 @media (max-width: 736px) {
     #sheaf-demo-open {
         display: none;
@@ -135,7 +124,7 @@
     transition: transform 420ms cubic-bezier(.22, .61, .36, 1), visibility 0s;
 }
 
-/* main.css:1733 clamps transition-duration to 0.01ms under reduced motion but leaves
+/* main.css:1754 clamps transition-duration to 0.01ms under reduced motion but leaves
    transition-delay alone, which would strand the visibility hop behind a 420ms wait. */
 @media (prefers-reduced-motion: reduce) {
     .sheaf-demo--overlay,
@@ -183,6 +172,77 @@
 .sheaf-demo-close:focus-visible {
     color: var(--ink);
     background: #ffffff1f;
+    border-color: var(--heading);
+}
+
+/* ---------------------------------------------------------------------------
+ * The mobile notice
+ *
+ * .is-unsupported is put on the panel by the launcher when the overlay is opened below
+ * 736px, in place of loading the demo at all. The board and its sidebar come out entirely
+ * rather than being merely hidden, so the focus trap — which keeps only what has an
+ * offsetParent — is left with the two buttons that are actually on screen.
+ * ------------------------------------------------------------------------ */
+
+.sheaf-demo-unsupported {
+    display: none;
+}
+
+.sheaf-demo.is-unsupported {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sheaf-demo.is-unsupported .sheaf-demo-stage,
+.sheaf-demo.is-unsupported .sheaf-demo-sidebar {
+    display: none;
+}
+
+.sheaf-demo.is-unsupported .sheaf-demo-unsupported {
+    display: block;
+    max-width: 24em;
+    /* Clear of the close button, which sits centred on the top edge. */
+    padding: 3em 1.5em 1.5em;
+    text-align: center;
+}
+
+/* .sheaf-demo h2 sets `white-space: nowrap` for the masthead title, which would push this
+   one off both edges of a phone. */
+.sheaf-demo-unsupported h2 {
+    white-space: normal;
+}
+
+.sheaf-demo-unsupported p {
+    margin: 0.9em 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+    /* main.css:183 justifies every <p> on the site, which at this width opens rivers of white
+       space across five lines. A direct rule beats the centring inherited from the wrapper. */
+    text-align: center;
+}
+
+.sheaf-demo-unsupported button {
+    margin-top: 1.6em;
+    /* The site declares a 44px minimum touch target at main.css:1700. */
+    min-height: 44px;
+    padding: 0 1.4em;
+    font-family: 'Oswald', 'Source Sans Pro', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: #ffffff12;
+    border: 1px solid var(--line);
+    border-radius: 0.4em;
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+
+.sheaf-demo-unsupported button:hover,
+.sheaf-demo-unsupported button:focus-visible {
+    background: #ffffff26;
     border-color: var(--heading);
 }
 
@@ -379,10 +439,23 @@
     border-bottom-color: #D4C285;
 }
 
+/* The site's own footer line, restated here: the overlay covers the page whole, and /demo/
+   has no footer of its own at all, so this is the only place either one carries it. */
+.sheaf-demo-copyright {
+    margin: 0;
+    padding-top: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: right;
+    color: var(--muted);
+    opacity: 0.75;
+}
+
 /* Stacked layouts put the sidebar under the board, where a right-aligned credit reads as
    detached from everything. */
 @media (max-width: 900px) {
-    .sheaf-demo-credit {
+    .sheaf-demo-credit,
+    .sheaf-demo-copyright {
         text-align: left;
     }
 }
@@ -440,7 +513,7 @@
     }
 
     .sheaf-demo-actions button {
-        /* The site declares a 44px minimum touch target at main.css:1681. */
+        /* The site declares a 44px minimum touch target at main.css:1700. */
         min-height: 44px;
         padding: 0 0.85em;
         font-family: inherit;

@@ -17,6 +17,23 @@ dialog would announce a modal the reader can neither dismiss nor escape from.
 
     {% if variant == 'overlay' %}
     <button type="button" class="sheaf-demo-close" data-sheaf="close" aria-label="Close the demo">&times;</button>
+
+    {% comment %}
+    Shown instead of the board when the overlay is opened on a phone. The launcher is already
+    display:none below 736px, so the only way here is a deep link to #sheaf-demo — which the
+    launcher script answers by putting .is-unsupported on this panel and never fetching the
+    demo at all. /demo/ is left alone: it is the page that goes in a talk or a paper, and
+    anyone who has that link should still get the board.
+    {% endcomment %}
+    <div class="sheaf-demo-unsupported">
+        <h2>Not on mobile yet</h2>
+        <p>
+            The coordination sheaf demo is steered with arrow keys, number keys and a mouse,
+            so it is not compatible with phones yet. Open this page on a laptop or desktop to
+            try it out.
+        </p>
+        <button type="button" data-sheaf="dismiss">Back to the site</button>
+    </div>
     {% endif %}
 
     <main class="sheaf-demo-stage">
@@ -98,5 +115,12 @@ dialog would announce a modal the reader can neither dismiss nor escape from.
             <a href="https://github.com/AlgebraicJulia/CellularSheaves.jl"
                target="_blank" rel="noopener noreferrer">CellularSheaves.jl</a>
         </p>
+
+        {% comment %}
+        The site's footer notice, cut to fit: the sidebar is 210px wide, and the landing
+        page's full "Copyright 2026. All rights reserved." wraps to two lines there with
+        "rights reserved." left orphaned on the second.
+        {% endcomment %}
+        <p class="sheaf-demo-copyright">Hans Riess &copy; 2026</p>
     </aside>
 </div>
