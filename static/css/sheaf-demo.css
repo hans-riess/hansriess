@@ -13,12 +13,16 @@
  */
 
 /* ---------------------------------------------------------------------------
- * The hero launcher
+ * The launcher
  *
- * Every hero button shares a single <li>, and below 736px main.css turns ul.actions into a
- * column flex with `li { display: block }`, so the anchors inline-wrap inside one block item.
- * A wrapping flex row with a gap handles any number of them, and replaces the inline
- * margin-right that used to do the separating.
+ * A section of its own between Projects and Publications, rather than a third button in the
+ * hero: beside Download CV it read as a utility action, when it is really a thing to play
+ * with. The panel is painted in the demo's own chalkboard rather than the white card the
+ * sections around it use, so it looks like the window into the board that it is.
+ *
+ * It stays visible on a phone. The demo itself is keyboard-and-mouse, but hiding the section
+ * would take the explanation away too, so the card carries its own "desktop only" line and a
+ * tap gets the notice further down this file. /demo/ is unaffected either way.
  * ------------------------------------------------------------------------ */
 
 #title ul.actions li {
@@ -29,14 +33,144 @@
     gap: 0.7em;
 }
 
-/* The demo is keyboard-and-mouse: arrows drive the target and the number keys set observation
-   ranks, none of which a phone has. Rather than offer a control surface that cannot be
-   worked, the launcher is simply absent below the site's mobile breakpoint. Anyone who
-   deep-links to #sheaf-demo anyway gets the notice further down this file, and /demo/ still
-   resolves for anyone who has that link. */
+#interactive .container {
+    /* Navy Blue taken down to a chalkboard — the panel's own --slate, which cannot be read
+       from here because that variable is scoped to .sheaf-demo. */
+    background: rgba(22, 32, 43, 0.92);
+    border-radius: 1em;
+    padding: 2.5em 2em;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(179, 163, 105, 0.35);
+    backdrop-filter: blur(10px);
+}
+
+#interactive .bio-title {
+    color: #D4C285;
+}
+
+.sheaf-teaser {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+    /* main.css underlines and recolours every anchor on the site. */
+    color: inherit;
+    text-decoration: none;
+    border-bottom: none;
+    border-radius: 0.75em;
+    padding: 1em;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.sheaf-teaser:hover,
+.sheaf-teaser:focus-visible {
+    background: rgba(179, 163, 105, 0.1);
+    transform: translateY(-3px);
+}
+
+.sheaf-teaser-sketch {
+    flex: 0 0 200px;
+    max-width: 100%;
+}
+
+.sheaf-teaser-sketch svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* The formation's own wiring: quiet, because it is the ground the rest is read against. */
+.sheaf-sketch-edges line {
+    stroke: rgba(214, 219, 212, 0.35);
+    stroke-width: 1.1;
+    stroke-linecap: round;
+}
+
+/* Buzz Gold, dashed: the single scalar each observing agent reads. Only three of the six
+   have one, which is the whole point of the construction. */
+.sheaf-sketch-sight line {
+    stroke: #EAAA00;
+    stroke-width: 1.1;
+    stroke-dasharray: 3.5 4.5;
+    stroke-linecap: round;
+    opacity: 0.85;
+}
+
+.sheaf-sketch-agents circle {
+    fill: #B3A369;
+}
+
+/* White is reserved for exactly one thing here, as it is on the board itself. */
+.sheaf-sketch-target {
+    fill: #FFFFFF;
+}
+
+.sheaf-teaser-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sheaf-teaser-title {
+    font-family: 'Oswald', 'Source Sans Pro', sans-serif;
+    font-size: 1.6em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #D4C285;
+}
+
+.sheaf-teaser-blurb {
+    margin-top: 0.6em;
+    font-size: 1.05em;
+    line-height: 1.6;
+    font-weight: 300;
+    color: #E5E5E5;
+}
+
+.sheaf-teaser-cta {
+    margin-top: 1.2em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    color: #B3A369;
+    transition: color 0.3s ease;
+}
+
+.sheaf-teaser:hover .sheaf-teaser-cta,
+.sheaf-teaser:focus-visible .sheaf-teaser-cta {
+    color: #D4C285;
+}
+
+.sheaf-teaser-note {
+    margin-top: 0.4em;
+    font-size: 0.8em;
+    color: #9FA9AE;
+}
+
+/* Stacked, sketch above the words, once there is no longer room to sit them side by side. */
 @media (max-width: 736px) {
-    #sheaf-demo-open {
-        display: none;
+    .sheaf-teaser {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.2em;
+        padding: 0.5em 0;
+        text-align: center;
+    }
+
+    /* Full width the sketch swallows the whole card; this keeps it an illustration. */
+    .sheaf-teaser-sketch {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 170px;
+    }
+
+    .sheaf-teaser-body {
+        align-items: center;
+    }
+
+    #interactive .container {
+        padding: 2em 1.25em;
     }
 }
 
@@ -412,34 +546,9 @@
 }
 
 /* Bottom right of the panel: the status line above it carries `margin-top: auto`, so both are
-   pushed to the foot of the sidebar. */
-.sheaf-demo-credit {
-    margin: 0;
-    padding-top: 10px;
-    /* Chalk, at full strength — the same weight as the readout values along the bottom left,
-       rather than the rubbed-back grey the status line uses. */
-    font-size: 12px;
-    line-height: 1.4;
-    text-align: right;
-    color: var(--ink);
-}
+   pushed to the foot of the sidebar.
 
-/* main.css styles every anchor on the site, including a blue hover that would look like a
-   mistake against this palette. */
-.sheaf-demo-credit a {
-    color: var(--heading);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(179, 163, 105, 0.35);
-    transition: color 0.2s, border-color 0.2s;
-}
-
-.sheaf-demo-credit a:hover,
-.sheaf-demo-credit a:focus-visible {
-    color: #D4C285;
-    border-bottom-color: #D4C285;
-}
-
-/* The site's own footer line, restated here: the overlay covers the page whole, and /demo/
+   The site's own footer line, restated here: the overlay covers the page whole, and /demo/
    has no footer of its own at all, so this is the only place either one carries it. */
 .sheaf-demo-copyright {
     margin: 0;
@@ -451,10 +560,9 @@
     opacity: 0.75;
 }
 
-/* Stacked layouts put the sidebar under the board, where a right-aligned credit reads as
+/* Stacked layouts put the sidebar under the board, where a right-aligned line reads as
    detached from everything. */
 @media (max-width: 900px) {
-    .sheaf-demo-credit,
     .sheaf-demo-copyright {
         text-align: left;
     }
