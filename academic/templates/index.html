@@ -39,15 +39,6 @@
                         </h3>
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
-                                {% comment %}
-                                A hash href, so the back button and a shareable deep link both
-                                come for free. The demo's JavaScript is fetched on click, not
-                                on page load; the URL is carried on the element because only a
-                                template can resolve {% templatetag openblock %} static {% templatetag closeblock %}.
-                                {% endcomment %}
-                                <a href="#sheaf-demo" class="button bio-button" id="sheaf-demo-open"
-                                   aria-haspopup="dialog" aria-controls="sheaf-demo" aria-expanded="false"
-                                   data-demo-src="{% static 'js/sheaf-demo.js' %}?v={{ demo_asset_version }}">Coordination Sheaf</a>
                                 {% if profile.show_cv_button %}
                                     <a href="{% url 'cv_redirect' %}" class="button bio-button">Download CV</a>
                                 {% endif %}
@@ -64,6 +55,12 @@
                                 {% if profile.twitter %}<li><a href="{{ profile.twitter }}" aria-label="X"><i class="fa-brands fa-x-twitter"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.youtube %}<li><a href="{{ profile.youtube }}" aria-label="YouTube"><i class="fa-brands fa-youtube"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.blue_sky %}<li><a href="{{ profile.blue_sky }}" aria-label="Bluesky"><i class="fa-brands fa-bluesky"></i><span class="label"></span></a></li>{% endif %}
+                                {% comment %}
+                                rel="me" is what Mastodon checks when you list this site on
+                                your profile there: it looks for a link back carrying it, and
+                                marks the entry verified when it finds one.
+                                {% endcomment %}
+                                {% if profile.mastodon %}<li><a href="{{ profile.mastodon }}" rel="me" aria-label="Mastodon"><i class="fa-brands fa-mastodon"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.linkedin %}<li><a href="{{ profile.linkedin }}" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.orcid %}<li><a href="{{ profile.orcid }}" aria-label="ORCID"><i class="fa-brands fa-orcid"></i><span class="label"></span></a></li>{% endif %}
                             </ul>
@@ -118,6 +115,65 @@
                     </div>
                     {% endfor %}
                 </div>
+            </div>
+        </section>
+
+        <!-- Interactive Section -->
+        {% comment %}
+        The demo used to be a third button in the hero, where it read as a utility action
+        sitting next to Download CV rather than as something to play with. Here it gets room
+        for a sentence of context and a picture of what it actually is.
+
+        A hash href, so the back button and a shareable deep link both come for free. The
+        demo's JavaScript is fetched on click, not on page load; the URL is carried on the
+        element because only a template can resolve {% templatetag openblock %} static {% templatetag closeblock %}.
+        {% endcomment %}
+        <section id="interactive" class="wrapper style2">
+            <div class="container special">
+                <header>
+                    <h2 class="bio-title">Interactive</h2>
+                </header>
+                <a href="#sheaf-demo" class="sheaf-teaser" id="sheaf-demo-open"
+                   aria-haspopup="dialog" aria-controls="sheaf-demo" aria-expanded="false"
+                   data-demo-src="{% static 'js/sheaf-demo.js' %}?v={{ demo_asset_version }}">
+                    <span class="sheaf-teaser-sketch">
+                        <svg viewBox="104 20.4 132.1 149.2" role="img" aria-hidden="true" focusable="false">
+                            <g class="sheaf-sketch-edges">
+                                <line x1="170" y1="31" x2="225.4" y2="63" />
+                                <line x1="225.4" y1="63" x2="225.4" y2="127" />
+                                <line x1="225.4" y1="127" x2="170" y2="159" />
+                                <line x1="170" y1="159" x2="114.6" y2="127" />
+                                <line x1="114.6" y1="127" x2="114.6" y2="63" />
+                                <line x1="114.6" y1="63" x2="170" y2="31" />
+                            </g>
+                            <g class="sheaf-sketch-sight">
+                                <line x1="170" y1="31" x2="170" y2="95" />
+                                <line x1="225.4" y1="127" x2="170" y2="95" />
+                                <line x1="114.6" y1="127" x2="170" y2="95" />
+                            </g>
+                            <g class="sheaf-sketch-agents">
+                                <circle cx="170" cy="31" r="4.6" />
+                                <circle cx="225.4" cy="63" r="4.6" />
+                                <circle cx="225.4" cy="127" r="4.6" />
+                                <circle cx="170" cy="159" r="4.6" />
+                                <circle cx="114.6" cy="127" r="4.6" />
+                                <circle cx="114.6" cy="63" r="4.6" />
+                            </g>
+                            <polygon class="sheaf-sketch-target" points="170,85.5 172.4,91.8 179,92.1 173.8,96.2 175.6,102.7 170,99 164.4,102.7 166.2,96.2 161,92.1 167.6,91.8" />
+                        </svg>
+                    </span>
+                    <span class="sheaf-teaser-body">
+                        <span class="sheaf-teaser-title">Coordination sheaf</span>
+                        <span class="sheaf-teaser-blurb">
+                            A formation holds station around a target only some of the agents
+                            can see &mdash; and those that do read a single number each. Steer
+                            the target, wire the agents up differently, and watch what the
+                            others can still infer.
+                        </span>
+                        <span class="sheaf-teaser-cta">Try it <span aria-hidden="true">&rarr;</span></span>
+                        <span class="sheaf-teaser-note">Keyboard and mouse &mdash; desktop only for now</span>
+                    </span>
+                </a>
             </div>
         </section>
 
@@ -473,9 +529,14 @@
                 return pending;
             }
 
-            // Warm the fetch on hover or focus, so the click itself feels instant.
-            launcher.addEventListener('pointerenter', function () { loadDemo().catch(function () {}); });
-            launcher.addEventListener('focus', function () { loadDemo().catch(function () {}); });
+            // Warm the fetch on hover or focus, so the click itself feels instant. Never on a
+            // viewport that is going to get the notice instead: the whole point of that path is
+            // that the demo is not downloaded at all.
+            function warm() {
+                if (!isUnsupportedViewport()) loadDemo().catch(function () {});
+            }
+            launcher.addEventListener('pointerenter', warm);
+            launcher.addEventListener('focus', warm);
 
             function lockScroll() {
                 // Compensate for the scrollbar's width, or the page jumps sideways underneath
@@ -533,7 +594,10 @@
                 panel.setAttribute('inert', '');
                 launcher.setAttribute('aria-expanded', 'false');
                 unlockScroll();
-                if (lastFocused && lastFocused.focus) lastFocused.focus();
+                var restore = (lastFocused && lastFocused !== document.body && lastFocused.focus)
+                    ? lastFocused
+                    : launcher;
+                if (restore && restore.focus) restore.focus();
 
                 // transitionend does not fire under prefers-reduced-motion, where the
                 // transition is suppressed outright, so this is a timer rather than an event.

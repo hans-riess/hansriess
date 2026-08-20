@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 #
 # Deliberately a constant rather than the files' mtime: on Heroku that is slug build time, so
 # it would churn on every deploy and throw the cache away for no reason.
-DEMO_ASSET_VERSION = "8"
+DEMO_ASSET_VERSION = "9"
 
 
 def _demo_context():

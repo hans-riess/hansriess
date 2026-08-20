@@ -72,6 +72,10 @@ class Profile(models.Model):
     website = models.URLField(blank=True, null=True)
     twitter = models.URLField(blank=True, null=True)
     blue_sky = models.URLField(blank=True, null=True)
+    mastodon = models.URLField(
+        blank=True, null=True,
+        help_text="Full profile URL, e.g. https://mathstodon.xyz/@you — not the @you@server handle.",
+    )
     youtube = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     github = models.URLField(blank=True, null=True)

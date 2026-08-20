@@ -179,7 +179,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ['collapse']
         }),
         ('Social Media', {
-            'fields': ['twitter','blue_sky','youtube','linkedin', 'github', 'google_scholar', 'orcid'],
+            'fields': ['twitter','blue_sky','mastodon','youtube','linkedin', 'github', 'google_scholar', 'orcid'],
             'classes': ['collapse']
         }),
         ('Curriculum Vitae', {

@@ -705,6 +705,20 @@ ul.icons li {
     padding: 0;
 }
 
+/* Tech Gold rather than the generic white-on-grey the base rule paints: on the chalkboard
+   those read as unstyled placeholders, and gold ties the row to the button above it. */
+.connect-icons ul.icons li a {
+    color: #D4C285;
+    background: rgba(179, 163, 105, 0.16);
+    border: 1px solid rgba(179, 163, 105, 0.4);
+}
+
+.connect-icons ul.icons li a:hover {
+    color: #fff;
+    background: rgba(179, 163, 105, 0.5);
+    border-color: #D4C285;
+}
+
 ul.icons li a {
     color: #fff;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
@@ -1376,18 +1390,29 @@ ul.icons li a:hover {
         border-top: 1px solid rgba(179, 163, 105, 0.3);
     }
     
+    /* At 1.8em on a 50px floor these came out ~63px wide, so they overflowed a phone and
+       dropped the last icon onto a row of its own. Taken down to the site's own 44px
+       touch-target floor (main.css:1702), and let out to the container's padding edges,
+       seven fit on one line from about 350px up. More than seven still wrap, centred. */
+    .connect-icons {
+        margin-left: -1em;
+        margin-right: -1em;
+    }
+    
+    .connect-icons ul.icons {
+        gap: 0.35em;
+    }
+    
     .connect-icons .icons li a {
-        font-size: 1.8em;
-        padding: 0.6em;
-        min-width: 50px;
-        min-height: 50px;
+        font-size: 1.35em;
+        padding: 0.45em;
+        min-width: 44px;
+        min-height: 44px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         border-radius: 0.5em;
-        background: rgba(255, 255, 255, 0.15);
         transition: all 0.3s ease;
-        border: 1px solid rgba(179, 163, 105, 0.2);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         text-decoration: none;
         border-bottom: none;
@@ -1404,9 +1429,7 @@ ul.icons li a:hover {
     }
     
     .connect-icons .icons li a:hover {
-        background: rgba(212, 194, 133, 0.3);
         transform: scale(1.1);
-        border-color: rgba(212, 194, 133, 0.5);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
@@ -1616,29 +1639,6 @@ ul.icons li a:hover {
         font-size: 0.95em;
         color: #fff;
         font-weight: 300;
-    }
-    
-    .connect-icons .icons li a {
-        font-size: 1.6em;
-        padding: 0.5em;
-        min-width: 48px;
-        min-height: 48px;
-        border-radius: 0.4em;
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(179, 163, 105, 0.2);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        text-decoration: none;
-        border-bottom: none;
-    }
-    
-    .connect-icons .icons li a i {
-        display: inline-block;
-        font-style: normal;
-        font-variant: normal;
-        text-rendering: auto;
-        line-height: 1;
-        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro";
-        font-weight: 900;
     }
     
 
