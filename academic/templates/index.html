@@ -39,14 +39,13 @@
                         </h3>
                         <ul class="actions" style="margin-top: 1em;">
                             <li>
-                                <a href="#footer" class="button bio-button">Contact Info</a>
                                 {% comment %}
                                 A hash href, so the back button and a shareable deep link both
                                 come for free. The demo's JavaScript is fetched on click, not
                                 on page load; the URL is carried on the element because only a
                                 template can resolve {% templatetag openblock %} static {% templatetag closeblock %}.
                                 {% endcomment %}
-                                <a href="#sheaf-demo" class="button bio-button bio-button--demo" id="sheaf-demo-open"
+                                <a href="#sheaf-demo" class="button bio-button" id="sheaf-demo-open"
                                    aria-haspopup="dialog" aria-controls="sheaf-demo" aria-expanded="false"
                                    data-demo-src="{% static 'js/sheaf-demo.js' %}?v={{ demo_asset_version }}">Coordination Sheaf</a>
                                 {% if profile.show_cv_button %}
@@ -54,6 +53,21 @@
                                 {% endif %}
                             </li>
                         </ul>
+
+                        <!-- Connect Icons -->
+                        <div class="connect-icons">
+                            <ul class="icons">
+                                {% if profile.phone %}<li><a href="tel:{{profile.phone}}" aria-label="Phone"><i class="fa-solid fa-phone"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.email %}<li><a href="mailto:{{ profile.email }}" aria-label="Email"><i class="fa-solid fa-envelope"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.github %}<li><a href="{{ profile.github }}" aria-label="GitHub"><i class="fa-brands fa-github"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.google_scholar %}<li><a href="{{ profile.google_scholar }}" aria-label="Google Scholar"><i class="fa-brands fa-google-scholar"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.twitter %}<li><a href="{{ profile.twitter }}" aria-label="X"><i class="fa-brands fa-x-twitter"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.youtube %}<li><a href="{{ profile.youtube }}" aria-label="YouTube"><i class="fa-brands fa-youtube"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.blue_sky %}<li><a href="{{ profile.blue_sky }}" aria-label="Bluesky"><i class="fa-brands fa-bluesky"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.linkedin %}<li><a href="{{ profile.linkedin }}" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i><span class="label"></span></a></li>{% endif %}
+                                {% if profile.orcid %}<li><a href="{{ profile.orcid }}" aria-label="ORCID"><i class="fa-brands fa-orcid"></i><span class="label"></span></a></li>{% endif %}
+                            </ul>
+                        </div>
                     </header>
                 </article>
             </div>
@@ -313,24 +327,10 @@
 
         <!-- Footer -->
         <div id="footer">
-            <div class="contact" style="text-align: center">
-                <ul class="icons">
-                    {% if profile.phone %}<li><a href="tel:{{profile.phone}}"><i class="fa-solid fa-phone"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.email %}<li><a href="mailto:{{ profile.email }}"><i class="fa-solid fa-envelope"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.github %}<li><a href="{{ profile.github }}"><i class="fa-brands fa-github"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.google_scholar %}<li><a href="{{ profile.google_scholar }}"><i class="fa-brands fa-google-scholar"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.twitter %}<li><a href="{{ profile.twitter }}"><i class="fa-brands fa-x-twitter"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.youtube %}<li><a href="{{ profile.youtube }}"><i class="fa-brands fa-youtube"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.blue_sky %}<li><a href="{{ profile.blue_sky }}"><i class="fa-brands fa-bluesky"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.linkedin %}<li><a href="{{ profile.linkedin }}"><i class="fa-brands fa-linkedin"></i><span class="label"></span></a></li>{% endif %}
-                    {% if profile.orcid %}<li><a href="{{ profile.orcid }}"><i class="fa-brands fa-orcid"></i><span class="label"></span></a></li>{% endif %}
-                </ul>
-            </div>
-
             <div class="container">
                 <div class="copyright">
                     <ul class="menu">
-                        <li>Hans Riess &copy; Copyright 2026. All rights reserved | <a href="{{ profile.generate_cv_url }}">Update CV</a></li>
+                        <li>Hans Riess &copy; Copyright 2026. All rights reserved.</li>
                     </ul>
                 </div>
             </div>
@@ -417,10 +417,36 @@
 
             var HASH = '#sheaf-demo';
             var closeButton = panel.querySelector('[data-sheaf="close"]');
+            var dismissButton = panel.querySelector('[data-sheaf="dismiss"]');
             var pending = null;
             var isOpen = false;
             var lastFocused = null;
             var unmountTimer = null;
+
+            /*
+             * The demo is driven by arrow keys, number keys and a mouse, so the launcher is
+             * display:none below 736px (sheaf-demo.css). A deep link to #sheaf-demo is the one
+             * way past that, and it is worth answering: rather than mount an instrument the
+             * phone cannot work, the panel shows a notice and the demo is never fetched at all.
+             *
+             * Same breakpoint as the rule that hides the launcher, so the two cannot drift.
+             */
+            function isUnsupportedViewport() {
+                return !!(window.matchMedia && window.matchMedia('(max-width: 736px)').matches);
+            }
+
+            /*
+             * On the deep-link path open() runs while the document is still parsing, and the
+             * browser applies the URL fragment itself once it finishes — which sends focus
+             * back to <body> and would strand the panel with nothing focused. Waiting for the
+             * document to settle puts it where it belongs. Every other path is already past
+             * load, and focuses straight away.
+             */
+            function focusWhenReady(el) {
+                if (!el) return;
+                if (document.readyState === 'complete') el.focus();
+                else window.addEventListener('load', function () { el.focus(); }, { once: true });
+            }
 
             /*
              * An injected classic script, deliberately not a dynamic import(). In production
@@ -480,10 +506,16 @@
                 panel.classList.add('is-open');
                 if (!animate) requestAnimationFrame(function () { panel.style.transition = ''; });
 
+                if (isUnsupportedViewport()) {
+                    panel.classList.add('is-unsupported');
+                    focusWhenReady(dismissButton || closeButton);
+                    return;
+                }
+
                 loadDemo().then(function (demo) {
                     if (!isOpen) return;                     // closed again while loading
                     demo.mount(panel, { onClose: close, isActive: function () { return isOpen; } });
-                    if (closeButton) closeButton.focus();
+                    focusWhenReady(closeButton);
                 }).catch(function (err) {
                     var status = panel.querySelector('[data-sheaf="status"]');
                     if (status) {
@@ -497,6 +529,7 @@
                 if (!isOpen) return;
                 isOpen = false;
                 panel.classList.remove('is-open');
+                panel.classList.remove('is-unsupported');
                 panel.setAttribute('inert', '');
                 launcher.setAttribute('aria-expanded', 'false');
                 unlockScroll();
@@ -515,6 +548,7 @@
             }
 
             if (closeButton) closeButton.addEventListener('click', close);
+            if (dismissButton) dismissButton.addEventListener('click', close);
 
             // Escape is handled inside the demo once it is mounted; this covers the window
             // between opening and the script arriving.

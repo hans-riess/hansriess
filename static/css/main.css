@@ -385,16 +385,28 @@ p {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
+/* Every slide is laid into the same single grid cell, one on top of another, so the carousel
+   is always as tall as its longest quote and the box holds its size as the quotes rotate.
+   Taking the inactive slides out of flow with position: absolute would instead let the height
+   snap to whichever quote happens to be showing, and the page below it jump with every
+   change. */
 .quote-carousel {
     position: relative;
+    display: grid;
     min-height: 12em;
 }
 
 .quote-carousel .quote-block {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    grid-area: 1 / 1;
+    /* The base rule's `margin: 0 auto` centres a standalone quote, but auto inline margins on
+       a grid item suppress the default justify-self: stretch, which would leave a short quote
+       in a narrower box than a long one. The cell is already centred; the slide fills it. */
+    margin: 0;
+    /* Each slide is stretched to the full height of that cell, so a short quote would
+       otherwise sit against the top of a box sized for a long one. */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
@@ -402,7 +414,6 @@ p {
 }
 
 .quote-carousel .quote-block.active {
-    position: relative;
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
@@ -674,6 +685,24 @@ ul.icons {
 ul.icons li {
     display: inline-block;
     padding: 0 1em 0 0;
+}
+
+/* The connect icons sit directly under the hero buttons, so they wrap as one centred row
+   rather than relying on the inline-block flow and trailing padding below. */
+.connect-icons {
+    margin-top: 1.5em;
+}
+
+.connect-icons ul.icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5em;
+    margin: 0;
+}
+
+.connect-icons ul.icons li {
+    padding: 0;
 }
 
 ul.icons li a {
@@ -1347,19 +1376,7 @@ ul.icons li a:hover {
         border-top: 1px solid rgba(179, 163, 105, 0.3);
     }
     
-    #footer .icons {
-        margin-bottom: 1.5em;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.5em;
-    }
-    
-    #footer .icons li {
-        padding: 0;
-    }
-    
-    #footer .icons li a {
+    .connect-icons .icons li a {
         font-size: 1.8em;
         padding: 0.6em;
         min-width: 50px;
@@ -1376,7 +1393,7 @@ ul.icons li a:hover {
         border-bottom: none;
     }
     
-    #footer .icons li a i {
+    .connect-icons .icons li a i {
         display: inline-block;
         font-style: normal;
         font-variant: normal;
@@ -1386,7 +1403,7 @@ ul.icons li a:hover {
         font-weight: 900;
     }
     
-    #footer .icons li a:hover {
+    .connect-icons .icons li a:hover {
         background: rgba(212, 194, 133, 0.3);
         transform: scale(1.1);
         border-color: rgba(212, 194, 133, 0.5);
@@ -1601,7 +1618,7 @@ ul.icons li a:hover {
         font-weight: 300;
     }
     
-    #footer .icons li a {
+    .connect-icons .icons li a {
         font-size: 1.6em;
         padding: 0.5em;
         min-width: 48px;
@@ -1614,7 +1631,7 @@ ul.icons li a:hover {
         border-bottom: none;
     }
     
-    #footer .icons li a i {
+    .connect-icons .icons li a i {
         display: inline-block;
         font-style: normal;
         font-variant: normal;
@@ -1699,7 +1716,7 @@ ul.icons li a:hover {
         background: rgba(179, 163, 105, 0.2);
     }
     
-    #footer .icons li a:hover {
+    .connect-icons .icons li a:hover {
         transform: none;
         background: rgba(212, 194, 133, 0.2);
     }
@@ -1749,7 +1766,7 @@ ul.icons li a:hover {
         transform: none;
     }
     
-    #footer .icons li a:hover {
+    .connect-icons .icons li a:hover {
         transform: none;
     }
     
