@@ -93,41 +93,7 @@
             </div>
         </section>
 
-        <!-- Projects Section -->
-        <section id="projects" class="wrapper style2">
-            <div class="container special">
-                <header>
-                    <h2 class="bio-title">Projects</h2>
-                </header>
-                <div class="row">
-                    {% for grant in grants %}
-                    <div class="col-4 col-12-mobile">
-                        <article class="project-card">
-                            <a href="{% url 'project_view' grant.slug %}">
-                                {% if grant.image %}
-                                <img src="{{ grant.image.url }}" alt="{{ grant.title }}" class="image fit" />
-                                {% endif %}
-                                {%if grant.role %}
-                                 <h3>{{ grant.get_role_display_name }}</h3>
-                                {% endif %}
-                            </a>
-                        </article>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-
         <!-- Interactive Section -->
-        {% comment %}
-        The demo used to be a third button in the hero, where it read as a utility action
-        sitting next to Download CV rather than as something to play with. Here it gets room
-        for a sentence of context and a picture of what it actually is.
-
-        A hash href, so the back button and a shareable deep link both come for free. The
-        demo's JavaScript is fetched on click, not on page load; the URL is carried on the
-        element because only a template can resolve {% templatetag openblock %} static {% templatetag closeblock %}.
-        {% endcomment %}
         <section id="interactive" class="wrapper style2">
             <div class="container special">
                 <a href="#sheaf-demo" class="sheaf-teaser" id="sheaf-demo-open"
@@ -171,6 +137,31 @@
                         <span class="sheaf-teaser-note">Keyboard and mouse &mdash; desktop only for now</span>
                     </span>
                 </a>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="wrapper style2">
+            <div class="container special">
+                <header>
+                    <h2 class="bio-title">Projects</h2>
+                </header>
+                <div class="row">
+                    {% for grant in grants %}
+                    <div class="col-4 col-12-mobile">
+                        <article class="project-card">
+                            <a href="{% url 'project_view' grant.slug %}">
+                                {% if grant.image %}
+                                <img src="{{ grant.image.url }}" alt="{{ grant.title }}" class="image fit" />
+                                {% endif %}
+                                {%if grant.role %}
+                                 <h3>{{ grant.get_role_display_name }}</h3>
+                                {% endif %}
+                            </a>
+                        </article>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </section>
 
