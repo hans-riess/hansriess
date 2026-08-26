@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Award, Profile, Proposal, Reference, Course, DeliveredProduct,
                      Experience, Innovation, Talk, Grant, Education, Service, Quote,
-                     Figure, Student, ReferencePerson, Milestone, Review, TechReport)
+                     Figure, Student, ReferencePerson, Milestone, Review, TechReport, Demo)
 
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['get_short_title', 'year', 'medium', 'status', 'refereed']
@@ -370,3 +370,21 @@ class MilestoneAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
 
 admin.site.register(Milestone, MilestoneAdmin)
+
+
+class DemoAdmin(admin.ModelAdmin):
+    list_display = ['title', 'slug', 'is_active', 'order']
+    list_editable = ['is_active', 'order']
+    search_fields = ['title', 'slug']
+    prepopulated_fields = {'slug': ('title',)}
+
+    fieldsets = [
+        ('Basic Information', {
+            'fields': ['title', 'slug', 'is_active', 'order']
+        }),
+        ('Teaser Copy', {
+            'fields': ['blurb', 'note']
+        })
+    ]
+
+admin.site.register(Demo, DemoAdmin)

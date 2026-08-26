@@ -1209,6 +1209,39 @@ class Innovation(models.Model):
         return "; ".join(parts)
 
 
+class Demo(models.Model):
+    """An interactive demo teased on the landing page, e.g. 'Coordination Sheaf'.
+
+    Each demo is hand-built (its own JS module and bespoke teaser artwork), so
+    this model does not drive that markup generically -- it just lets a demo's
+    copy be edited and its teaser switched on or off without a deploy.
+    """
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(
+        max_length=200, unique=True,
+        help_text="Matches the demo's static assets and template, e.g. 'coordination-sheaf'.",
+    )
+    blurb = models.TextField(blank=True, help_text="Teaser copy shown under the title.")
+    note = models.CharField(
+        max_length=200, blank=True,
+        help_text="Small print under the call to action, e.g. device requirements.",
+    )
+    is_active = models.BooleanField(
+        default=True, help_text="Show this demo's teaser on the landing page.",
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Manual ordering; lower numbers print first.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'title']
+        verbose_name = "Demo"
+        verbose_name_plural = "Demos"
+
+    def __str__(self):
+        return self.title
+
+
 class ReferencePerson(models.Model):
     """Model for professional references (distinct from Publication References)"""
     RELATIONSHIP_CHOICES = [

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from academic.models import Profile, Reference, Talk, Grant, Course, Service, Education, Experience,Quote,Figure
+from academic.models import Profile, Reference, Talk, Grant, Course, Service, Education, Experience,Quote,Figure, Demo
 from django.http import HttpResponse, Http404
 from django.core.management import call_command
 from django.conf import settings
@@ -43,6 +43,7 @@ def index(request):
     experience = Experience.objects.all()
     quotes = Quote.objects.all()
     figures = Figure.objects.all()
+    sheaf_demo = Demo.objects.filter(slug='coordination-sheaf', is_active=True).first()
 
     context = {
         'profile': profile,
@@ -61,6 +62,7 @@ def index(request):
         'experience': experience,
         'quotes':quotes,
         'figures':figures,
+        'sheaf_demo': sheaf_demo,
     }
     context.update(_demo_context())
 
