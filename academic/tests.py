@@ -13,7 +13,7 @@ from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from academic import cv_builder, views
-from academic.models import (Award, Course, Grant, Profile, Reference, Review,
+from academic.models import (Award, Course, Demo, Grant, Profile, Reference, Review,
                              Service, Student, Talk, TechReport)
 
 
@@ -414,3 +414,21 @@ class SheafDemoTests(TestCase):
         response = self.client.get(reverse('index'))
         self.assertContains(response, 'inert')
         self.assertContains(response, 'aria-expanded="false"')
+
+    def test_teaser_uses_the_demo_record_copy(self):
+        """The landing page's title/blurb/note come from the Demo row, not from
+        markup baked into the template."""
+        demo = Demo.objects.get(slug='coordination-sheaf')
+        demo.title = 'Custom Demo Title'
+        demo.blurb = 'Custom blurb text.'
+        demo.save()
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'Custom Demo Title')
+        self.assertContains(response, 'Custom blurb text.')
+
+    def test_switching_the_demo_off_hides_the_teaser(self):
+        """Toggling Demo.is_active off in the admin removes the launcher (and
+        the panel it would open) from the landing page entirely."""
+        Demo.objects.filter(slug='coordination-sheaf').update(is_active=False)
+        response = self.client.get(reverse('index'))
+        self.assertNotContains(response, 'id="sheaf-demo-open"')
