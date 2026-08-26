@@ -20,6 +20,28 @@ logger = logging.getLogger(__name__)
 DEMO_ASSET_VERSION = "9"
 
 
+# Which standalone demo page a slug renders, and the assets/template it needs.
+#
+# Deliberately a plain dict rather than the Demo model: the standalone page's whole
+# point is to render with zero database queries (see demo_view below), so what URL
+# maps to what demo template has to be known without touching the database. The Demo
+# model still exists per slug and controls whether the landing page teases it, but it
+# does not drive which code runs -- that only happens for slugs registered here.
+DEMO_REGISTRY = {
+    'coordination-sheaf': {
+        'title': 'Coordination Sheaf',
+        'description': (
+            "An interactive coordination sheaf: a formation holds station around a "
+            "target while only some agents observe it, and those that do read a "
+            "single scalar each."
+        ),
+        'panel_template': '_sheaf_demo_panel.html',
+        'js': 'js/sheaf-demo.js',
+        'css': 'css/sheaf-demo.css',
+    },
+}
+
+
 def _demo_context():
     """Everything a template needs to reference the demo's static assets."""
     return {'demo_asset_version': DEMO_ASSET_VERSION}
@@ -70,18 +92,29 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-def demo_view(request):
+def demo_view(request, demo_slug='coordination-sheaf'):
     """
-    The coordination sheaf demo on a page of its own.
+    A demo on a page of its own, keyed by slug.
 
-    The landing page already opens it as an overlay at /#sheaf-demo, but a plain URL is worth
-    having on its own: it is what goes in a paper, a talk or a grant report, and it is a far
-    easier thing to point a browser at while working on the demo than the homepage is.
+    The landing page already opens the coordination sheaf demo as an overlay at
+    /#sheaf-demo, but a plain URL is worth having on its own: it is what goes in a
+    paper, a talk or a grant report, and it is a far easier thing to point a browser
+    at while working on the demo than the homepage is. /demo/ with no slug keeps
+    working as a shorthand for the coordination sheaf, the only demo there has ever
+    been a page for.
 
-    Entirely client-side, and deliberately touches no models: the page needs nothing from the
-    database, so it costs no query and still renders if the database is unreachable.
+    Entirely client-side, and deliberately touches no models: the page needs nothing
+    from the database, so it costs no query and still renders if the database is
+    unreachable. The slug is resolved against DEMO_REGISTRY, a plain dict, not the
+    Demo model, to keep that guarantee.
     """
-    return render(request, 'demo.html', _demo_context())
+    demo = DEMO_REGISTRY.get(demo_slug)
+    if demo is None:
+        raise Http404("Demo not found.")
+
+    context = _demo_context()
+    context['demo'] = demo
+    return render(request, 'demo.html', context)
 
 
 def generate_cv_pdf(request):

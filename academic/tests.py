@@ -408,6 +408,22 @@ class SheafDemoTests(TestCase):
         with self.assertNumQueries(0):
             self.client.get(reverse('demo'))
 
+    def test_slugged_standalone_page_renders_the_same_demo(self):
+        """/demo/coordination-sheaf/ is the explicit form of the /demo/ shorthand."""
+        response = self.client.get(reverse('demo_slug', args=['coordination-sheaf']))
+        self.assertContains(response, 'data-sheaf="view"')
+        self.assertContains(response, 'sheaf-demo--page')
+
+    def test_slugged_standalone_page_needs_no_database(self):
+        """The slug is resolved against a static registry, not the Demo model, so
+        this keeps the same zero-query guarantee as the unslugged /demo/."""
+        with self.assertNumQueries(0):
+            self.client.get(reverse('demo_slug', args=['coordination-sheaf']))
+
+    def test_unknown_demo_slug_404s(self):
+        response = self.client.get(reverse('demo_slug', args=['no-such-demo']))
+        self.assertEqual(response.status_code, 404)
+
     def test_overlay_starts_inert(self):
         """Until it is opened the panel must stay out of the tab order and the
         accessibility tree."""
