@@ -1,29 +1,26 @@
 % academic-cv.sty
-% LaTeX style for the official Georgia Tech research-faculty CV, designed to be
-% populated by the Django backend (see academic/cv_builder.py).
+% LaTeX style for an academic job-market CV, designed to be populated by the
+% Django backend (see academic/cv_builder.py).
 %
-% The document is organised into five Roman-numeral sections, each divided into
-% lettered subsections, numbered subsubsections, and numbered items:
+% Black on white throughout. Sections are unnumbered headings over a thin rule,
+% subsections are bold run-of-text headings, and entries come in three kinds:
 %
-%     I.        MASTERY OF A COMPLEX FIELD          \cvsection
-%       A.      Publications, Presentations         \cvsubsection
-%         1.    Published Journal Papers            \cvsubsubsection
-%           1.1 <a citation>                        \cventryitem
+%     \cventry{G2}{<heading>}{<date>}{<details>}   a dated entry; the tag may
+%                                                  be empty for an unnumbered one
+%     \cvcite{J3}{<citation>}                      a numbered citation
+%     \cvplain{<text>}                             an unnumbered list item
 %
-% Items print the short label (1.1) but \label/\ref resolve to the full dotted
-% path (I.B.1.1), which is how the CV cross-references itself.
+% A tag prints in brackets in a hanging column, and \label/\ref resolve to the
+% same bracketed tag ("[J3]"), which is how the CV cross-references itself.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{academic-cv}[2026/08/12 Georgia Tech Academic CV Style]
+\ProvidesPackage{academic-cv}[2026/10/04 Academic CV Style]
 
 % --- PACKAGES ----------------------------------------------------------------
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
-\RequirePackage{mathptmx}          % Times metrics, matching the official CV
+\RequirePackage{mathptmx}          % Times
 \RequirePackage{geometry}
-\RequirePackage{xcolor}
-\RequirePackage{array}             % L{} ragged-right fixed-width columns
-\RequirePackage[normalem]{ulem}    % \uline breaks across lines; \underline does not
 \RequirePackage{fancyhdr}
 \RequirePackage{etoolbox}
 \RequirePackage{hyperref}
@@ -38,8 +35,6 @@
     headsep=0pt,
     footskip=0.45in
 }
-
-\definecolor{cvrule}{HTML}{7F1D1D}  % dark red footer rule
 
 \hypersetup{
     hidelinks,
@@ -62,232 +57,131 @@
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
-\renewcommand{\footrule}{%
-    \vskip-6pt{\color{cvrule}\hrule height 1.6pt width\headwidth}\vskip6pt%
-}
 \fancyfoot[L]{\small\@cvfootername}
-\fancyfoot[R]{\small Page \thepage}
-
-% --- COUNTERS ----------------------------------------------------------------
-% \thecv... always expands to the FULL dotted path so that \ref produces
-% "I.B.3.4"; headings print the short form explicitly.
-\newcounter{cvsec}
-\newcounter{cvsub}[cvsec]
-\newcounter{cvssub}[cvsub]
-\newcounter{cvitm}[cvssub]
-\renewcommand{\thecvsec}{\Roman{cvsec}}
-\renewcommand{\thecvsub}{\thecvsec.\Alph{cvsub}}
-\renewcommand{\thecvssub}{\thecvsub.\arabic{cvssub}}
-\renewcommand{\thecvitm}{\thecvssub.\arabic{cvitm}}
-
-\newlength{\cvsubindent}   \setlength{\cvsubindent}{0.25in}
-\newlength{\cvssubindent}  \setlength{\cvssubindent}{0.5in}
-\newlength{\cvitemindent}  \setlength{\cvitemindent}{0.75in}
-\newlength{\cvnumwidth}    \setlength{\cvnumwidth}{2.6em}
+\fancyfoot[R]{\small\thepage}
 
 % --- HEADER BLOCK ------------------------------------------------------------
-\newenvironment{cvheader}{\begin{center}}{\end{center}\vspace{2mm}}
-\newcommand{\cvheadertitle}[1]{{\bfseries\MakeUppercase{#1}}\par}
-\newcommand{\cvheadername}[1]{{\bfseries #1}\par}
+\newenvironment{cvheader}{\begin{center}}{\end{center}\vspace{1mm}}
+\newcommand{\cvname}[1]{{\LARGE\bfseries #1}\par\vspace{0.6ex}}
 \newcommand{\cvheaderline}[1]{#1\par}
+\newcommand{\cvcontact}[1]{\vspace{0.4ex}#1\par}
+\newcommand{\cvsep}{\enspace\textbullet\enspace}
 
-% Bold + underlined mini-heading used for CURRENT FIELDS OF INTEREST, KEY, and
-% the EDUCATION / PROFESSIONAL APPOINTMENTS preamble blocks.
-%
-% Note the font is declared OUTSIDE \uline throughout this file: ulem re-typesets
-% its argument word by word, so a \bfseries inside is lost after the first word
-% and a \textbf around the whole argument stops it breaking across lines.
-\newcommand{\cvminihead}[1]{%
-    \par\vspace{1.2\baselineskip}%
-    {\bfseries\uline{\MakeUppercase{#1}}}\par\nobreak\vspace{0.2\baselineskip}%
-}
-
-% A line of body text at the left margin (used under \cvminihead).
-\newcommand{\cvline}[1]{\par #1\par}
-
-% An EDUCATION / PROFESSIONAL APPOINTMENTS entry.
-% #1 role or degree (bold), #2 institution line, #3 date (flush right).
-\newlength{\cvdatewidth} \setlength{\cvdatewidth}{1.6in}
-\newcommand{\cvpreentry}[3]{%
-    \par\vspace{0.4\baselineskip}%
-    \begingroup\interlinepenalty=10000
-    \noindent
-    \parbox[t]{\dimexpr\textwidth-\cvdatewidth-1em\relax}{\raggedright\bfseries #1}%
-    \hfill
-    \parbox[t]{\cvdatewidth}{\raggedleft #3}%
-    \par
-    \ifstrempty{#2}{}{%
-        \begingroup\setlength{\hangindent}{1em}\noindent #2\par\endgroup
-    }%
-    \endgroup
-}
-
-% --- SECTION HEADINGS --------------------------------------------------------
+% --- HEADINGS ----------------------------------------------------------------
+% A page break can never fall between a heading and what follows it: every
+% heading ends in \nobreak, and the entries below open with glue only.
 \newcommand{\cvsection}[1]{%
-    \par\vspace{1.4\baselineskip}%
-    \refstepcounter{cvsec}%
-    \begingroup
-    \raggedright
-    \setlength{\hangindent}{\dimexpr\cvsubindent+1.5em\relax}%
-    \noindent\makebox[\dimexpr\cvsubindent+1.5em\relax][l]{\bfseries\thecvsec.}%
-    {\bfseries\uline{\MakeUppercase{#1}}}\par\nobreak
-    \endgroup
-    \vspace{0.5\baselineskip}%
-}
-
-\newcommand{\cvsubsection}[1]{%
-    \par\vspace{0.9\baselineskip}%
-    \refstepcounter{cvsub}%
-    \begingroup
-    \raggedright
-    \setlength{\hangindent}{\dimexpr\cvsubindent+1.5em\relax}%
-    \noindent\hspace*{\cvsubindent}\makebox[1.5em][l]{\bfseries\Alph{cvsub}.}%
-    {\bfseries\uline{#1}}\par\nobreak
-    \endgroup
+    \par\addvspace{1.4\baselineskip}%
+    {\large\bfseries\scshape #1}\par\nobreak
+    \vspace{1.5pt}\hrule height 0.4pt\nobreak
     \vspace{0.35\baselineskip}%
 }
 
-% Numbered subsubsection on its own line, e.g. "1.  Published Journal Papers".
-\newcommand{\cvsubsubsection}[1]{%
-    \par\vspace{0.7\baselineskip}%
-    \refstepcounter{cvssub}%
-    \begingroup
-    \raggedright
-    \setlength{\hangindent}{\dimexpr\cvssubindent+1.5em\relax}%
-    \noindent\hspace*{\cvssubindent}\makebox[1.5em][l]{\bfseries\arabic{cvssub}.}%
-    {\bfseries\uline{#1}}\par\nobreak
-    \endgroup
-    \vspace{0.3\baselineskip}%
+\newcommand{\cvsubsection}[1]{%
+    \par\addvspace{0.75\baselineskip}%
+    {\bfseries #1}\par\nobreak
+    \vspace{0.05\baselineskip}%
 }
 
-% Numbered subsubsection whose bold title runs into a following paragraph,
-% e.g. "1. SEAMAN -- Technical Report Series. <prose>". Not underlined, matching
-% the official document.
-\newcommand{\cvsubsubrun}[2]{%
-    \par\vspace{0.6\baselineskip}%
-    \refstepcounter{cvssub}%
+% An italic run-in label opening a group of entries, e.g. a report series:
+% "SEAMAN technical report series. <note>".
+\newcommand{\cvrunin}[2]{%
+    \par\addvspace{0.5\baselineskip}%
     \begingroup
     \interlinepenalty=10000
-    \setlength{\hangindent}{\dimexpr\cvssubindent+1.5em\relax}%
-    \noindent\hspace*{\cvssubindent}\makebox[1.5em][l]{\bfseries\arabic{cvssub}.}%
-    {\bfseries #1}%
-    \ifstrempty{#2}{}{ #2}%
-    \par
+    \noindent\textit{#1}\ifstrempty{#2}{}{ #2}\par
     \endgroup
-    \vspace{0.2\baselineskip}%
+    \nobreak
 }
+
+% --- BODY TEXT ---------------------------------------------------------------
+% A free-standing paragraph: research interests, the research program
+% narrative. Left breakable, since these can legitimately run past a page.
+\newcommand{\cvparagraph}[1]{%
+    \par\addvspace{0.35\baselineskip}%
+    \noindent #1\par
+}
+
+% A small note under a heading, e.g. the dagger key above the publications.
+\newcommand{\cvnote}[1]{%
+    \par\addvspace{0.3\baselineskip}%
+    {\small\noindent #1\par}\nobreak
+}
+
+% A paragraph break inside an entry's details.
+\newcommand{\cvpar}{\par\vspace{0.15\baselineskip}}
+
+% An italic label run into its text inside entry details ("Maturity: ...").
+\newcommand{\cvlabelled}[2]{\textit{#1:} #2}
 
 % --- ENTRIES -----------------------------------------------------------------
-% Entries below set \interlinepenalty so that a page break cannot fall inside
-% one -- a citation or table caption is moved to the next page whole rather than
-% being cut in half. Long-form prose (\cvnarrative, \cvbody) is deliberately
-% left breakable, since those paragraphs can legitimately run past a page.
-% A numbered item, printed as "3.4" with a hanging indent.
-\newcommand{\cventryitem}[1]{%
-    \par\vspace{0.35\baselineskip}%
-    \refstepcounter{cvitm}%
+% Entries set \interlinepenalty so that a page break cannot fall inside one:
+% a citation is moved to the next page whole rather than cut in half.
+\newcounter{cvitem}
+\newlength{\cvtagwidth}   \setlength{\cvtagwidth}{3.3em}
+\newlength{\cvdatemax}    \setlength{\cvdatemax}{2.1in}
+\newlength{\cv@datewidth}
+\newlength{\cv@headwidth}
+
+% Number the current entry so that a \label inside it resolves to "[#1]".
+% \refstepcounter supplies the hyperref anchor; the label text is then
+% replaced by the tag.
+\newcommand{\cv@tag}[1]{%
+    \refstepcounter{cvitem}%
+    \protected@edef\@currentlabel{[#1]}%
+}
+
+% Print the tag in the hanging column at the left margin.
+\newcommand{\cv@tagbox}[1]{%
+    \hspace*{-\cvtagwidth}\makebox[\cvtagwidth][l]{[#1]}%
+}
+
+% A dated entry: #1 tag (or empty), #2 heading, #3 date (or empty), #4 details
+% (or empty). The heading sits on the left with the date flush right beside it;
+% the details follow below, aligned with the heading. The date column is as
+% wide as the date, up to \cvdatemax, after which the date wraps.
+\newcommand{\cventry}[4]{%
+    \par\addvspace{0.5\baselineskip}%
     \begingroup
     \interlinepenalty=10000
-    \setlength{\hangindent}{\dimexpr\cvitemindent+\cvnumwidth\relax}%
-    \noindent\hspace*{\cvitemindent}%
-    \makebox[\cvnumwidth][l]{\arabic{cvssub}.\arabic{cvitm}}%
-    #1\par
+    \ifstrempty{#1}{}{\cv@tag{#1}\setlength{\leftskip}{\cvtagwidth}}%
+    \ifstrempty{#3}{%
+        \setlength{\cv@headwidth}{\dimexpr\linewidth-\leftskip\relax}%
+    }{%
+        \settowidth{\cv@datewidth}{#3}%
+        \ifdim\cv@datewidth>\cvdatemax \setlength{\cv@datewidth}{\cvdatemax}\fi
+        \setlength{\cv@headwidth}{\dimexpr\linewidth-\leftskip-\cv@datewidth-1.5em\relax}%
+    }%
+    \noindent
+    \ifstrempty{#1}{}{\cv@tagbox{#1}}%
+    % \leavevmode starts the line before any \label in #2, which would otherwise
+    % sit above it in the box and push the heading down off the tag's baseline.
+    \parbox[t]{\cv@headwidth}{\raggedright\leavevmode #2}%
+    \ifstrempty{#3}{}{\hfill\parbox[t]{\cv@datewidth}{\raggedleft #3}}%
+    \par
+    \ifstrempty{#4}{}{\nobreak\vspace{1pt}\noindent #4\par}%
     \endgroup
 }
 
-% A numbered item used as a caption above a program table (III.A, IV.B).
-\newcommand{\cvitemhead}[1]{%
-    \par\vspace{0.7\baselineskip}%
-    \refstepcounter{cvitm}%
+% A numbered citation, printed as "[J3]  <citation>" with a hanging indent.
+\newcommand{\cvcite}[2]{%
+    \par\addvspace{0.4\baselineskip}%
     \begingroup
     \interlinepenalty=10000
-    \setlength{\hangindent}{\dimexpr\cvitemindent+\cvnumwidth\relax}%
-    \noindent\hspace*{\cvitemindent}%
-    \makebox[\cvnumwidth][l]{\arabic{cvssub}.\arabic{cvitm}}%
-    #1\par
-    \endgroup
-    \nopagebreak\vspace{0.2\baselineskip}%
-}
-
-% An unnumbered paragraph indented to the subsection level (I.A, I.D, V.A--F).
-\newcommand{\cvplainentry}[1]{%
-    \par\vspace{0.3\baselineskip}%
-    \begingroup
-    \interlinepenalty=10000
-    \setlength{\hangindent}{\dimexpr\cvsubindent+1em\relax}%
-    \noindent\hspace*{\cvsubindent}#1\par
+    \cv@tag{#1}%
+    \setlength{\leftskip}{\cvtagwidth}%
+    \noindent\cv@tagbox{#1}#2\par
     \endgroup
 }
 
-% A body paragraph indented to the subsection level, used for narrative prose
-% (IV.A) and for explanatory lead-ins under a heading.
-\newcommand{\cvnarrative}[1]{%
-    \par\vspace{0.4\baselineskip}%
+% An unnumbered list item with a small hanging indent (service, reviewing).
+\newcommand{\cvplain}[1]{%
+    \par\addvspace{0.3\baselineskip}%
     \begingroup
-    \leftskip=\cvsubindent
+    \interlinepenalty=10000
+    \setlength{\hangindent}{1em}%
     \noindent #1\par
     \endgroup
 }
-
-% A body paragraph indented to the item level, used under \cvsubsubrun headings
-% (II.B) where the prose sits below rather than beside the title.
-\newcommand{\cvbody}[1]{%
-    \par\vspace{0.25\baselineskip}%
-    \begingroup
-    \leftskip=\cvitemindent
-    \noindent #1\par
-    \endgroup
-}
-
-% An italic run-in label used inside I.C items ("Product description: ...").
-\newcommand{\cvlabelled}[2]{\textit{#1}: #2}
-
-% --- TABLES ------------------------------------------------------------------
-% Table cells are ragged right; justifying them stretches the short values badly.
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-
-% Two-column key/value table for funded programs (III.A) and proposals (IV.B).
-% longtable so it breaks across pages, as the official document's tables do.
-\newenvironment{cvkeytable}{%
-    \par\vspace{0.3\baselineskip}%
-    \noindent\begin{minipage}{\textwidth}%
-    \footnotesize
-    \begin{tabular}{|L{2.75in}|L{3.35in}|}
-    \hline
-}{%
-    \end{tabular}%
-    \end{minipage}%
-    \normalsize
-    \par\vspace{0.4\baselineskip}%
-}
-
-% One row of a cvkeytable: bold label, value.
-\newcommand{\cvkeyrow}[2]{\textbf{#1:} & #2 \tabularnewline \hline}
-
-% Five-column Knowledge Sharing table (I.E), with a repeating header row.
-% Each heading is kept to one line. The official wording ("Role in Curriculum
-% Development", "Approx. Number of Students/Attendees") is about 120pt too wide
-% for the text block at this size, so two headings are shortened, and every
-% column is at least as wide as its heading.
-\newenvironment{cvteachtable}{%
-    \par\vspace{0.5\baselineskip}%
-    \noindent\begin{minipage}{\textwidth}%
-    \footnotesize
-    \begin{tabular}{|L{1.33in}|L{0.76in}|L{1.35in}|L{1.12in}|L{1.03in}|}
-    \hline
-    \textbf{Institution/Organization} &
-    \textbf{When Taught} &
-    \textbf{Course Title (Code)} &
-    \textbf{Curriculum Role} &
-    \textbf{Approx. Attendees}
-    \tabularnewline \hline
-}{%
-    \end{tabular}%
-    \end{minipage}%
-    \normalsize
-    \par\vspace{0.4\baselineskip}%
-}
-
-\newcommand{\cvteachrow}[5]{#1 & #2 & #3 & #4 & #5 \tabularnewline \hline}
 
 \endinput

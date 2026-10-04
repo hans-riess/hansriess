@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from academic.models import Profile, Reference, Talk, Grant, Course, Service, Education, Experience,Quote,Figure, Demo
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.core.management import call_command
 from django.conf import settings
+from academic.site_data import build_site_data
 import logging
 import os
 
@@ -175,6 +176,20 @@ def _cache_busted_url(cv_file):
         logger.debug("Could not read the CV's modification time", exc_info=True)
         return url
     return f"{url}{'&' if '?' in url else '?'}v={stamp}"
+
+def site_data(request):
+    """The CV as structured JSON, for people and AI tools; see academic/site_data.py.
+
+    Built on every request, like the CV PDF, so it is never out of date.
+    """
+    profile = Profile.objects.first()
+    if not profile:
+        raise Http404("No profile found.")
+    data = build_site_data(profile, base_url=request.build_absolute_uri('/'))
+    response = JsonResponse(data, json_dumps_params={'indent': 2, 'ensure_ascii': False},
+                            content_type='application/json; charset=utf-8')
+    response['Cache-Control'] = 'no-cache'
+    return response
 
 def project_view(request, project_slug):
     grant = get_object_or_404(Grant, slug=project_slug)

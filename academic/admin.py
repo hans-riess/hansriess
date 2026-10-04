@@ -13,7 +13,7 @@ class ReferenceAdmin(admin.ModelAdmin):
 
     @admin.display(description='CV subsection')
     def cv_subsection(self, obj):
-        """Where Section I.B prints this, and why not when it is left out."""
+        """Where the CV prints this, and why not when it is left out."""
         category = obj.get_category()
         if not category:
             return "—"
@@ -90,9 +90,9 @@ class TalkAdmin(admin.ModelAdmin):
                        'talk_type', 'invited', 'proceedings', 'reference',
                        'note', 'credit_roles', 'cv_ref_slug']
         }),
-        ('Knowledge Sharing', {
-            'description': 'Used when the talk is a tutorial, which the CV lists in '
-                           'Section I.E rather than with the publications.',
+        ('Teaching', {
+            'description': 'Used when the talk is a tutorial, which the CV lists under '
+                           'Teaching rather than with the presentations.',
             'fields': ['curriculum_role', 'attendee_count']
         }),
         ('Materials', {
@@ -250,7 +250,7 @@ class ReferencePersonAdmin(admin.ModelAdmin):
     ]
 
 class AwardAdmin(admin.ModelAdmin):
-    """Section I.D of the CV."""
+    """Honors and Awards on the CV."""
     list_display = ['title', 'organization', 'year', 'order']
     search_fields = ['title', 'organization']
     ordering = ['order', '-year', 'title']
@@ -265,7 +265,7 @@ class AwardAdmin(admin.ModelAdmin):
     ]
 
 class DeliveredProductAdmin(admin.ModelAdmin):
-    """Section I.C of the CV."""
+    """Delivered Products, under Technical Contributions."""
     list_display = ['name', 'sponsor', 'order']
     search_fields = ['name', 'summary', 'sponsor']
     ordering = ['order', 'name']
@@ -283,7 +283,7 @@ class DeliveredProductAdmin(admin.ModelAdmin):
     ]
 
 class InnovationAdmin(admin.ModelAdmin):
-    """Section II.B of the CV."""
+    """Technical Innovations, under Technical Contributions."""
     list_display = ['title', 'sponsors_projects_dates', 'order']
     search_fields = ['title', 'sponsors_projects_dates']
     ordering = ['order', 'title']
@@ -301,7 +301,7 @@ class InnovationAdmin(admin.ModelAdmin):
     ]
 
 class ProposalAdmin(admin.ModelAdmin):
-    """Section IV.B of the CV."""
+    """Proposals, under Sponsored Research."""
     list_display = ['title', 'sponsor', 'result', 'amount_requested', 'date_abstract_submitted']
     list_filter = ['result', 'sponsor']
     search_fields = ['title', 'sponsor', 'solicitation']
@@ -323,7 +323,7 @@ class ProposalAdmin(admin.ModelAdmin):
     ]
 
 class TechReportAdmin(admin.ModelAdmin):
-    """Section II.A of the CV."""
+    """Technical Reports and Briefings, under Technical Contributions."""
     list_display = ['title', 'grant', 'report_type', 'date', 'authorship_percent']
     list_filter = ['report_type', 'grant']
     search_fields = ['title', 'description']
@@ -342,7 +342,7 @@ class TechReportAdmin(admin.ModelAdmin):
     ]
 
 class ReviewAdmin(admin.ModelAdmin):
-    """Sections V.A and V.B: peer review and editorial work."""
+    """Peer review and editorial work, the first two Service subsections."""
     list_display = ['venue', 'kind', 'year', 'manuscript_count']
     list_filter = ['kind', 'year']
     search_fields = ['venue', 'role']

@@ -1,4 +1,6 @@
 import datetime
+import json
+import os
 import shutil
 import tempfile
 from io import StringIO
@@ -13,8 +15,8 @@ from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from academic import cv_builder, views
-from academic.models import (Award, Course, Demo, Grant, Profile, Reference, Review,
-                             Service, Student, Talk, TechReport)
+from academic.models import (Award, Course, Demo, Education, Grant, Profile, Proposal,
+                             Reference, Review, Service, Student, Talk, TechReport)
 
 
 class AdminFormTests(TestCase):
@@ -63,7 +65,7 @@ class AdminFormTests(TestCase):
         preprint.status = 'rejected'
         self.assertEqual(column(preprint), "Preprints")
         preprint.status = 'in_review'
-        self.assertEqual(column(preprint), "Submitted Journal Papers in Review")
+        self.assertEqual(column(preprint), "Papers Under Review")
         preprint.medium = 'thesis'
         self.assertEqual(column(preprint), "—")
 
@@ -75,7 +77,7 @@ class AdminFormTests(TestCase):
 
 
 class ReferenceClassificationTests(TestCase):
-    """The Section I.B placement and status filter, which are pure derivations."""
+    """The publication-list placement and status filter, which are pure derivations."""
 
     def _reference(self, **kwargs):
         return Reference(title="T", authors="H. Riess", year=2026, **kwargs)
@@ -140,10 +142,24 @@ class TalkClassificationTests(TestCase):
     def test_tutorial_is_knowledge_sharing(self):
         self.assertTrue(self._talk(talk_type='tutorial').is_knowledge_sharing())
 
-    def test_non_conference_lands_without_proceedings(self):
-        for talk_type in ('seminar', 'colloquium', 'guest_lecture', 'webinar'):
+    def test_uninvited_talks_are_contributed(self):
+        for talk_type in ('seminar', 'colloquium', 'guest_lecture', 'webinar', 'poster'):
             with self.subTest(talk_type=talk_type):
                 self.assertEqual(self._talk(talk_type=talk_type).get_category(), 'no_proc')
+
+    def test_an_invited_seminar_is_an_invited_talk(self):
+        # Job-market CVs count invited seminars and colloquia as invited talks,
+        # not only invited conference presentations.
+        for talk_type in ('seminar', 'colloquium'):
+            with self.subTest(talk_type=talk_type):
+                talk = self._talk(talk_type=talk_type, invited=True)
+                self.assertEqual(talk.get_category(), 'invited_conf')
+
+    def test_proceedings_only_count_for_conference_talks(self):
+        talk = self._talk(talk_type='seminar', invited=True, proceedings=True)
+        self.assertEqual(talk.get_category(), 'invited_conf')
+        talk = self._talk(talk_type='conference', proceedings=True)
+        self.assertEqual(talk.get_category(), 'proc_nonrefereed')
 
 
 class CvBuilderTests(TestCase):
@@ -173,7 +189,7 @@ class SectionBuilderTests(TestCase):
     def setUp(self):
         self.profile = Profile.objects.create(name="Hans Riess", institution="Georgia Tech")
 
-    def test_reviews_and_service_split_section_v(self):
+    def test_reviews_and_service_split_into_subsections(self):
         Review.objects.create(venue="Automatica", kind='journal_review',
                               year=2026, manuscript_count=1)
         Review.objects.create(venue="Compositionality", kind='editorial_board',
@@ -182,24 +198,24 @@ class SectionBuilderTests(TestCase):
         Service.objects.create(title="Game Theory session", role='co_chair',
                                organization="CDC", service_type='conference', year=2022)
 
-        lines = cv_builder.build_section_v(self.profile)
+        lines = cv_builder.build_service(self.profile)
         tex = "\n".join(lines)
 
         # Editorial work sits with journal reviewing, not with conference work.
-        self.assertIn("Reviewer and Editorial Work for Technical Journals", tex)
+        self.assertIn("Editorial Service and Journal Reviewing", tex)
         self.assertIn(r"\textbf{Associate Editor}, Compositionality", tex)
         self.assertIn(r"\textbf{Reviewer}, Automatica, 2026 (1 manuscript)", tex)
-        self.assertIn("Reviewer Work for Conferences", tex)
-        self.assertIn("Conference Session Chairs", tex)
+        self.assertIn("Conference Reviewing and Program Committees", tex)
+        self.assertIn("Conference Organization and Session Chairs", tex)
 
     def test_service_alone_does_not_emit_review_subsections(self):
         Service.objects.create(title="Seminar", role='organizer',
                                organization="Penn", service_type='seminar', year=2020)
-        tex = "\n".join(cv_builder.build_section_v(self.profile))
+        tex = "\n".join(cv_builder.build_service(self.profile))
         self.assertNotIn("Reviewer", tex)
-        self.assertIn("Special Activities", tex)
+        self.assertIn("Other Professional Service", tex)
 
-    def test_knowledge_sharing_merges_courses_and_tutorials(self):
+    def test_teaching_merges_courses_and_tutorials(self):
         Course.objects.create(title="Elementary Statistics", course_code="MATH 103",
                               institution="College of Charleston", semester='fall',
                               year=2024, attendee_count="~30")
@@ -212,15 +228,33 @@ class SectionBuilderTests(TestCase):
         Talk.objects.create(title="Lattice theory", venue="BIRS", talk_type='workshop',
                             invited=True, date=datetime.date(2023, 2, 1))
 
-        tex = "\n".join(cv_builder.build_section_i(self.profile))
-        self.assertIn("Knowledge Sharing", tex)
-        self.assertIn("Elementary Statistics (MATH 103)", tex)
-        self.assertIn("Applied Category Theory (workshop)", tex)
-        self.assertIn("Applied sheaf theory (tutorial)", tex)
-        self.assertIn("Invited Conference Presentations", tex)
-        # The BIRS talk is a citation, never a row in the teaching table.
-        teaching = tex[tex.index("Knowledge Sharing"):]
+        teaching = "\n".join(cv_builder.build_teaching_and_mentoring(self.profile))
+        self.assertIn(r"\cvsection{Teaching}", teaching)
+        self.assertIn("Elementary Statistics (MATH 103)", teaching)
+        self.assertIn("Enrollment: ", teaching)
+        self.assertIn("Applied Category Theory (workshop)", teaching)
+        self.assertIn("Applied sheaf theory (tutorial)", teaching)
+        # The BIRS talk is a presentation, never a teaching entry.
         self.assertNotIn("BIRS", teaching)
+        presentations = "\n".join(cv_builder.build_presentations(self.profile))
+        self.assertIn("Invited Talks", presentations)
+        self.assertIn("BIRS", presentations)
+        self.assertNotIn("Applied sheaf theory", presentations)
+
+    def test_teaching_is_newest_first_by_semester(self):
+        Course.objects.create(title="Spring course", institution="X", semester='spring', year=2024)
+        Course.objects.create(title="Fall course", institution="X", semester='fall', year=2024)
+        tex = "\n".join(cv_builder.build_teaching_and_mentoring(self.profile))
+        self.assertLess(tex.index("Fall course"), tex.index("Spring course"))
+
+    def test_mentoring_joins_teaching_under_one_heading(self):
+        Course.objects.create(title="Elementary Statistics", institution="X",
+                              semester='fall', year=2024)
+        Student.objects.create(name="Nivar Anwer", level='masters', institution="Georgia Tech",
+                               start_date=datetime.date(2026, 4, 1))
+        tex = "\n".join(cv_builder.build_teaching_and_mentoring(self.profile))
+        self.assertIn(r"\cvsection{Teaching and Mentoring}", tex)
+        self.assertIn(r"\cvsubsection{Student Mentoring}", tex)
 
     def test_a_talk_linked_to_a_listed_paper_is_not_cited_twice(self):
         paper = Reference.objects.create(
@@ -231,7 +265,8 @@ class SectionBuilderTests(TestCase):
                             talk_type='conference', proceedings=True,
                             date=datetime.date(2026, 12, 1), reference=paper)
 
-        tex = "\n".join(cv_builder.build_section_i(self.profile))
+        tex = "\n".join(cv_builder.build_publications(self.profile)
+                        + cv_builder.build_presentations(self.profile))
         self.assertEqual(tex.count("Quantale-enriched co-design"), 1)
 
     def test_conference_submissions_and_preprints_need_show_all(self):
@@ -244,15 +279,15 @@ class SectionBuilderTests(TestCase):
             medium='preprint', status='rejected', journal="Proc. ICASSP",
             arxiv_id="2401.00001")
 
-        tex = "\n".join(cv_builder.build_section_i(self.profile))
+        tex = "\n".join(cv_builder.build_publications(self.profile))
         self.assertNotIn("Sheaf coordination", tex)
         self.assertNotIn("Lattice diffusion", tex)
 
         self.profile.cv_show_all_references = True
-        tex = "\n".join(cv_builder.build_section_i(self.profile))
+        tex = "\n".join(cv_builder.build_publications(self.profile))
         # A submission is not listed among the accepted proceedings.
-        self.assertNotIn("with Proceedings", tex)
-        submitted = tex[tex.index("Submitted Conference Papers in Review"):tex.index("Preprints")]
+        self.assertNotIn("Conference Proceedings", tex)
+        submitted = tex[tex.index("Papers Under Review"):tex.index("Preprints")]
         self.assertIn("Sheaf coordination", submitted)
         self.assertIn(r"Submitted to \textit{Proc. CDC}", submitted)
         preprints = tex[tex.index("Preprints"):]
@@ -261,19 +296,222 @@ class SectionBuilderTests(TestCase):
         # The venue that turned it down is never named.
         self.assertNotIn("ICASSP", tex)
 
-    def test_empty_sections_are_skipped(self):
-        self.assertEqual(cv_builder.build_section_ii(), [])
-        self.assertEqual(cv_builder.build_section_iii(self.profile), [])
-        self.assertEqual(cv_builder.build_section_v(self.profile), [])
+    def test_journal_and_conference_submissions_share_a_subsection(self):
+        self.profile.cv_show_all_references = True
+        Reference.objects.create(title="Journal submission", authors="H. Riess", year=2026,
+                                 medium='journal_article', status='in_review', journal="TAC")
+        Reference.objects.create(title="Conference submission", authors="H. Riess", year=2027,
+                                 medium='conference_proceedings', status='in_review',
+                                 journal="CDC")
+        tex = "\n".join(cv_builder.build_publications(self.profile))
+        self.assertEqual(tex.count("Papers Under Review"), 1)
+        self.assertIn(r"\cvcite{S2}{\textbf{H. Riess}, ``Conference submission", tex)
+        self.assertIn(r"\cvcite{S1}{\textbf{H. Riess}, ``Journal submission", tex)
 
-    def test_funded_awards_and_proposals_go_to_different_sections(self):
+    def test_empty_sections_are_skipped(self):
+        for build in (cv_builder.build_interests, cv_builder.build_education,
+                      cv_builder.build_appointments, cv_builder.build_sponsored_research,
+                      cv_builder.build_teaching_and_mentoring, cv_builder.build_publications,
+                      cv_builder.build_presentations, cv_builder.build_service):
+            with self.subTest(build=build.__name__):
+                self.assertEqual(build(self.profile), [])
+        self.assertEqual(cv_builder.build_technical_contributions(), [])
+        self.assertEqual(cv_builder.build_awards(), [])
+
+    def test_funded_awards_and_proposals_are_listed_apart(self):
         Grant.objects.create(title="SEAMAN", funding_agency="DARPA", role='pi',
                              amount=180687, grant_number="HR0011-25-3-0235")
-        tex = "\n".join(cv_builder.build_section_iii(self.profile))
-        self.assertIn("Leadership in Funded Research", tex)
+        tex = "\n".join(cv_builder.build_sponsored_research(self.profile))
+        self.assertIn("Funded Projects", tex)
         self.assertIn("$180,687", tex)
-        # No proposals exist, so Section IV stays empty.
-        self.assertEqual(cv_builder.build_section_iv(self.profile), [])
+        self.assertIn("Role: Principal Investigator.", tex)
+        # The candidate is PI of record by default, which the role already says.
+        self.assertNotIn("PI:", tex)
+        # No proposals exist, so that subsection stays out.
+        self.assertNotIn("Proposals", tex)
+
+        Proposal.objects.create(title="ARGUS", sponsor="DARPA", amount_requested=2100000,
+                                date_abstract_submitted=datetime.date(2026, 6, 30))
+        tex = "\n".join(cv_builder.build_sponsored_research(self.profile))
+        self.assertIn(r"\cvsubsection{Proposals}", tex)
+        self.assertIn(r"\cventry{PR1}{\textbf{ARGUS}}{Jun 2026}", tex)
+        self.assertIn(r"Amount requested: \$2,100,000.", tex)
+
+    def test_dissertation_is_listed_under_its_degree(self):
+        Education.objects.create(degree_type="Ph.D.", field_of_study="ESE",
+                                 institution="Penn", graduation_year=2022,
+                                 thesis_title="Lattice Theory in Multi-Agent Systems",
+                                 advisor="Robert Ghrist", is_dissertation=True)
+        tex = "\n".join(cv_builder.build_education(self.profile))
+        self.assertIn("Dissertation: ``Lattice Theory in Multi-Agent Systems.''", tex)
+        self.assertIn("Advisor: Robert Ghrist.", tex)
+
+
+class CvLayoutTests(TestCase):
+    """The job-market layout: section order, numbering, and no colour."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess, Ph.D.",
+                                              email="hans@example.com",
+                                              website="https://hansriess.com/")
+
+    def test_sponsored_research_and_teaching_come_before_publications(self):
+        Grant.objects.create(title="SEAMAN", funding_agency="DARPA", role='pi')
+        Course.objects.create(title="Statistics", institution="X", semester='fall', year=2024)
+        Reference.objects.create(title="A paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', journal="TAC")
+        Talk.objects.create(title="A talk", venue="V", talk_type='seminar', invited=True,
+                            date=datetime.date(2025, 1, 1))
+        tex = cv_builder.build_document(self.profile)
+        order = [tex.index(r'\cvsection{%s}' % name) for name in
+                 ("Sponsored Research", "Teaching", "Publications", "Presentations")]
+        self.assertEqual(order, sorted(order))
+
+    def test_header_is_the_plain_name_with_contact_details(self):
+        tex = "\n".join(cv_builder.build_header(self.profile))
+        self.assertIn(r'\cvname{Hans Riess}', tex)
+        self.assertIn(r'\href{mailto:hans@example.com}{hans@example.com}', tex)
+        self.assertIn(r'\href{https://hansriess.com/}{hansriess.com}', tex)
+
+    def test_numbers_count_down_and_proceedings_share_a_series(self):
+        for year, refereed in ((2022, True), (2024, True), (2026, False)):
+            Reference.objects.create(title="Paper %d" % year, authors="H. Riess", year=year,
+                                     medium='conference_proceedings', refereed=refereed,
+                                     journal="Proc. %d" % year)
+        tex = "\n".join(cv_builder.build_publications(self.profile))
+        # Refereed proceedings print first, so they take the higher numbers even
+        # though the non-refereed paper is newer.
+        self.assertIn(r'\cvcite{C3}{\textbf{H. Riess}, ``Paper 2024', tex)
+        self.assertIn(r'\cvcite{C2}{\textbf{H. Riess}, ``Paper 2022', tex)
+        self.assertIn(r'\cvcite{C1}{\textbf{H. Riess}, ``Paper 2026', tex)
+
+    def test_cross_references_point_at_the_numbered_entry(self):
+        Reference.objects.create(title="A paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', journal="TAC",
+                                 cv_ref_slug="a-paper")
+        tex = "\n".join(cv_builder.build_publications(self.profile))
+        self.assertIn(r'\cvcite{J1}{\label{cv:a-paper}', tex)
+
+    def test_marker_key_only_names_markers_in_use(self):
+        Reference.objects.create(title="A paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', alphabetical_order=True)
+        tex = "\n".join(cv_builder.build_publications(self.profile))
+        self.assertIn("Authors listed alphabetically", tex)
+        self.assertNotIn("Shared first authorship", tex)
+
+    def test_style_file_uses_no_colour(self):
+        path = os.path.join(os.path.dirname(cv_builder.__file__), 'tex', 'academic-cv.sty')
+        with open(path, encoding='utf-8') as sty:
+            source = sty.read()
+        self.assertNotIn('xcolor', source)
+        self.assertNotIn(r'\color', source)
+        self.assertNotIn(r'\definecolor', source)
+
+
+class SiteDataTests(TestCase):
+    """/sitedata/data.json mirrors the public CV and leaks nothing it hides."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess, Ph.D.",
+                                              website="https://hansriess.com",
+                                              email="hans@example.com")
+        self.url = reverse('site_data')
+
+    def _data(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response['Content-Type'].startswith('application/json'))
+        return response.json()
+
+    def test_serves_json_with_self_links(self):
+        data = self._data()
+        self.assertEqual(data['profile']['name'], "Hans Riess")
+        self.assertEqual(data['about']['source'], "https://hansriess.com/sitedata/data.json")
+        self.assertEqual(data['about']['cv_pdf'], "https://hansriess.com/cv/")
+
+    def test_no_profile_is_a_404(self):
+        self.profile.delete()
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+
+    def test_numbers_match_the_cv(self):
+        for year in (2022, 2024):
+            Reference.objects.create(title="Paper %d" % year, authors="H. Riess", year=year,
+                                     medium='journal_article', journal="TAC")
+        Grant.objects.create(title="SEAMAN", funding_agency="DARPA", role='pi', amount=180687)
+        data = self._data()
+        tex = cv_builder.build_document(self.profile)
+        for entry in data['publications']:
+            self.assertIn(r'\cvcite{%s}{\textbf{H. Riess}, ``%s' % (entry['cv_number'],
+                                                                     entry['title']), tex)
+        grant = data['sponsored_research']['funded_projects'][0]
+        self.assertEqual((grant['cv_number'], grant['amount']), ("G1", 180687))
+
+    def test_cross_references_resolve_to_title_and_number(self):
+        Reference.objects.create(title="A paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', journal="TAC",
+                                 cv_ref_slug="a-paper")
+        self.profile.research_program = "See [[ref:a-paper]].\n\nSecond   paragraph."
+        self.profile.save()
+        program = self._data()['sponsored_research']['research_program']
+        self.assertEqual(program, "See \u201cA paper\u201d [J1].\n\nSecond paragraph.")
+
+    def test_hidden_references_stay_hidden(self):
+        Reference.objects.create(title="Conference submission", authors="H. Riess",
+                                 year=2027, medium='conference_proceedings',
+                                 status='in_review', journal="CDC")
+        Reference.objects.create(title="Rejected paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', status='rejected', journal="TAC")
+        self.assertNotIn('publications', self._data())
+
+    def test_a_rejected_preprint_never_names_the_venue(self):
+        self.profile.cv_show_all_references = True
+        self.profile.save()
+        Reference.objects.create(title="Lattice diffusion", authors="H. Riess", year=2024,
+                                 medium='preprint', status='rejected', journal="Proc. ICASSP",
+                                 arxiv_id="2401.00001")
+        response = self.client.get(self.url)
+        self.assertNotIn("ICASSP", response.content.decode())
+        entry = response.json()['publications'][0]
+        self.assertEqual((entry['status'], entry['arxiv_id']), ("preprint", "2401.00001"))
+
+    def test_protected_grants_keep_their_password_and_description_private(self):
+        Grant.objects.create(title="Open", funding_agency="NSF", role='pi', slug="open",
+                             description="<p>Public <b>overview</b>.</p>")
+        Grant.objects.create(title="Closed", funding_agency="DARPA", role='pi', slug="closed",
+                             description="Secret overview.", password_protected=True,
+                             password="hunter2")
+        body = self.client.get(self.url).content.decode()
+        self.assertNotIn("hunter2", body)
+        self.assertNotIn("Secret overview", body)
+        projects = {g['title']: g for g in
+                    self._data()['sponsored_research']['funded_projects']}
+        self.assertEqual(projects['Open']['description'], "Public overview.")
+        self.assertNotIn('description', projects['Closed'])
+
+    def test_a_talk_on_a_listed_paper_is_noted_on_the_paper(self):
+        paper = Reference.objects.create(
+            title="Quantale-enriched co-design", authors="H. Riess", year=2026,
+            medium='conference_proceedings', refereed=True, journal="Proc. CDC")
+        Talk.objects.create(title="Quantale-enriched co-design", venue="CDC",
+                            talk_type='conference', proceedings=True,
+                            date=datetime.date(2026, 12, 1), reference=paper)
+        data = self._data()
+        self.assertNotIn('presentations', data)
+        self.assertEqual(data['publications'][0]['presented_at'],
+                         [{'venue': "CDC", 'date': "2026-12-01"}])
+
+    def test_command_writes_the_same_data(self):
+        Reference.objects.create(title="A paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', journal="TAC")
+        path = os.path.join(tempfile.mkdtemp(), 'data.json')
+        self.addCleanup(shutil.rmtree, os.path.dirname(path))
+        call_command('export_site_data', output=path, stdout=StringIO())
+        with open(path, encoding='utf-8') as exported:
+            written = json.load(exported)
+        served = self._data()
+        for data in (written, served):
+            data['about'].pop('generated_at')
+        self.assertEqual(written, served)
 
 
 class CvDownloadTests(TestCase):
@@ -374,7 +612,7 @@ class EntryEmphasisTests(TestCase):
         Student.objects.create(name="Nivar Anwer", level='masters',
                                institution="Georgia Tech",
                                start_date=datetime.date(2026, 4, 1))
-        tex = "\n".join(cv_builder.build_section_iii(self.profile))
+        tex = "\n".join(cv_builder.build_teaching_and_mentoring(self.profile))
         self.assertIn(r'\textbf{Nivar Anwer}', tex)
 
     def test_review_and_service_roles_are_bold(self):
@@ -383,7 +621,7 @@ class EntryEmphasisTests(TestCase):
                               role="Associate Editor", year=2026)
         Service.objects.create(title="GRASP Seminar", role='organizer',
                                organization="Penn", service_type='seminar', year=2020)
-        tex = "\n".join(cv_builder.build_section_v(self.profile))
+        tex = "\n".join(cv_builder.build_service(self.profile))
         self.assertIn(r'\textbf{Reviewer}, Automatica', tex)
         self.assertIn(r'\textbf{Associate Editor}, Compositionality', tex)
         self.assertIn(r'\textbf{Organizer}, GRASP Seminar', tex)
@@ -395,10 +633,10 @@ class EntryEmphasisTests(TestCase):
         TechReport.objects.create(grant=grant, title="Milestone 3",
                                   report_type='interim_report',
                                   date=datetime.date(2026, 5, 1))
-        section_i = "\n".join(cv_builder.build_section_i(self.profile))
-        section_ii = "\n".join(cv_builder.build_section_ii())
-        self.assertIn(r'\textbf{Leggett Family Fellowship}', section_i)
-        self.assertIn(r'\textbf{Milestone 3}', section_ii)
+        awards = "\n".join(cv_builder.build_awards())
+        reports = "\n".join(cv_builder.build_technical_contributions())
+        self.assertIn(r'\textbf{Leggett Family Fellowship}', awards)
+        self.assertIn(r'\textbf{Milestone 3}', reports)
 
 
 class SheafDemoTests(TestCase):

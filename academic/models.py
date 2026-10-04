@@ -1,19 +1,19 @@
 from django.db import models
 
 
-# Subsections of Section I.B ("Publications, Presentations, Posters") of the CV.
-# Both Reference and Talk feed these, so the choices live at module level and are
-# shared by the two models.
+# Subsections of the CV's Publications and Presentations sections, labelled by
+# the heading each prints under. Both Reference and Talk feed these, so the
+# choices live at module level and are shared by the two models.
 PUBLICATION_CATEGORIES = [
-    ('journal', 'Published Journal Papers'),
-    ('invited_conf', 'Invited Conference Presentations'),
-    ('proc_refereed', 'Conference Presentations with Proceedings (refereed)'),
-    ('proc_nonrefereed', 'Conference Presentations with Proceedings (non-refereed)'),
-    ('no_proc', 'Conference Presentations without Proceedings'),
-    ('submitted', 'Submitted Journal Papers in Review'),
-    # Not in the official format, so printed only when the profile asks for
-    # every reference.
-    ('submitted_conf', 'Submitted Conference Papers in Review'),
+    ('journal', 'Journal Articles'),
+    ('invited_conf', 'Invited Talks'),
+    ('proc_refereed', 'Refereed Conference Proceedings'),
+    ('proc_nonrefereed', 'Non-Refereed Conference Proceedings'),
+    ('no_proc', 'Contributed Talks and Posters'),
+    ('submitted', 'Papers Under Review'),
+    # Printed only when the profile asks for every reference. Conference
+    # submissions share the journal submissions' subsection.
+    ('submitted_conf', 'Papers Under Review'),
     ('preprints', 'Preprints'),
 ]
 
@@ -27,7 +27,7 @@ CREDIT_HELP = (
 
 CV_REF_HELP = (
     "Cross-reference handle. Write [[ref:this-slug]] in any CV prose field to "
-    "produce a live reference such as I.B.3.4."
+    "produce a live reference to this entry's number, such as [J3]."
 )
 
 
@@ -90,22 +90,24 @@ class Profile(models.Model):
     # --- Curriculum vitae ---
     fields_of_interest = models.TextField(
         blank=True,
-        help_text="Semicolon-separated research interests, printed under CURRENT FIELDS OF INTEREST.",
+        help_text="Semicolon-separated research interests, printed under Research Interests.",
     )
     research_program = models.TextField(
         blank=True,
-        help_text="Section IV.A narrative. Blank lines separate paragraphs. Supports [[ref:slug]].",
+        help_text="Research Program Development narrative, printed under Sponsored Research. "
+                  "Blank lines separate paragraphs. Supports [[ref:slug]].",
     )
     cv_show_all_references = models.BooleanField(
         default=False,
-        help_text="Also list conference papers in review and preprints that are not under "
-                  "review, each in a subsection of its own. When off, only accepted and "
-                  "published work appears, plus journal articles and preprints in review.",
+        help_text="Also list conference papers in review (under Papers Under Review) and "
+                  "preprints that are not under review (under Preprints). When off, only "
+                  "accepted and published work appears, plus journal articles and preprints "
+                  "in review.",
     )
     cv_show_preamble_sections = models.BooleanField(
         default=True,
-        help_text="Print EDUCATION and PROFESSIONAL APPOINTMENTS before Section I. "
-                  "The strict promotion-packet format omits both.",
+        help_text="Print Education and Appointments at the top of the CV. The "
+                  "dissertation is listed under its degree, so it is left out too when off.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -268,11 +270,11 @@ class Reference(models.Model):
         return " ".join(short_title_words)
 
     def get_category(self):
-        """Which Section I.B subsection this belongs in, from medium/refereed/status.
+        """Which Publications subsection this belongs in, from medium/refereed/status.
 
         Returns "" for anything with no subsection of its own — theses (printed
-        in Section I.A), technical reports (Section II.A), books, book chapters,
-        and rejected work other than a preprint.
+        under Education), technical reports (Technical Contributions), books,
+        book chapters, and rejected work other than a preprint.
         """
         if self.medium == 'preprint':
             # In review, a preprint stands in for the journal submission. One
@@ -296,9 +298,9 @@ class Reference(models.Model):
         """Whether this belongs on the CV under the default status filter.
 
         Everything with a subsection appears (rejected work has none, unless it
-        is a preprint), except that the subsections outside the official format
-        — conference papers in review and preprints not under review — are
-        listed only when 'show all references' is ticked on the profile.
+        is a preprint), except that conference papers in review and preprints
+        not under review are listed only when 'show all references' is ticked
+        on the profile.
         """
         category = self.get_category()
         if not category:
@@ -314,7 +316,7 @@ class Reference(models.Model):
         return ""
 
     def cv_sort_key(self):
-        """Sort key for Section I.B: full date when known, else the year."""
+        """Sort key for the publication list: full date when known, else the year."""
         if self.publication_date:
             return (self.publication_date.year, self.publication_date.month,
                     self.publication_date.day, self.title)
@@ -362,7 +364,7 @@ class Course(models.Model):
     course_format = models.CharField(
         max_length=20, choices=FORMAT_CHOICES, default='course',
         help_text="What was taught. Anything other than a course is named in the "
-                  "Knowledge Sharing table, e.g. 'Applied Category Theory (workshop)'.",
+                  "Teaching list, e.g. 'Applied Category Theory (workshop)'.",
     )
     course_code = models.CharField(max_length=20,blank=True, null=True, help_text="Course code (e.g., CS101, MATH 201)")
     title = models.CharField(max_length=200, help_text="Full course title")
@@ -375,21 +377,22 @@ class Course(models.Model):
     syllabus = models.FileField(upload_to='courses/syllabi/', blank=True, null=True, help_text="Course syllabus")
     is_graduate = models.BooleanField(default=False, help_text="Check if this is a graduate-level course")
     is_online = models.BooleanField(default=False, help_text="Check if this was an online course")
-    # --- Curriculum vitae (Section I.E, Knowledge Sharing) ---
+    # --- Curriculum vitae (Teaching) ---
     organization = models.CharField(
         max_length=200, blank=True,
-        help_text="Institution/Organization column. Defaults to the institution above.",
+        help_text="Where it was taught, as the CV names it. Defaults to the institution above.",
     )
     when_taught = models.CharField(
         max_length=100, blank=True,
-        help_text="'When Taught' column, e.g. 'May 2026'. Defaults to the semester and year.",
+        help_text="Date printed beside the entry, e.g. 'May 2026'. Defaults to the semester and year.",
     )
     curriculum_role = models.TextField(
-        blank=True, help_text="'Role in Curriculum Development' column.",
+        blank=True, help_text="Role, printed under the title, e.g. 'Instructor of Record; "
+                              "designed the course'. Defaults to the role above.",
     )
     attendee_count = models.CharField(
         max_length=50, blank=True,
-        help_text="'Approx. Number of Students/Attendees' column, e.g. '~30'.",
+        help_text="Approximate enrollment or attendance, e.g. '~30'.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -558,12 +561,11 @@ class Talk(models.Model):
     )
     curriculum_role = models.TextField(
         blank=True,
-        help_text="'Role in Curriculum Development' column, for tutorials and workshops "
-                  "listed under Knowledge Sharing.",
+        help_text="Role, for tutorials, which the CV lists under Teaching.",
     )
     attendee_count = models.CharField(
         max_length=50, blank=True,
-        help_text="Approximate attendance, e.g. '~30'. Used in the Knowledge Sharing table.",
+        help_text="Approximate attendance, e.g. '~30'. Used for tutorials under Teaching.",
     )
     cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -581,29 +583,27 @@ class Talk(models.Model):
         """Returns a more readable talk type name"""
         return self.get_talk_type_display()
 
-    # A tutorial lecture teaches, so it belongs in Knowledge Sharing. A workshop
-    # is a venue you are invited to speak at, not something you taught, so it is
-    # a conference presentation like any other.
+    # A tutorial lecture teaches, so it belongs under Teaching. A workshop is a
+    # venue you are invited to speak at, not something you taught, so it is a
+    # presentation like any other.
     KNOWLEDGE_SHARING_TYPES = ('tutorial',)
     CONFERENCE_TYPES = ('conference', 'workshop', 'keynote', 'panel', 'poster')
 
     def is_knowledge_sharing(self):
-        """Whether this belongs in Section I.E rather than Section I.B."""
+        """Whether this is listed under Teaching rather than Presentations."""
         return self.talk_type in self.KNOWLEDGE_SHARING_TYPES
 
     def get_category(self):
-        """Which Section I.B subsection this belongs in.
+        """Which Publications or Presentations subsection this belongs in.
 
-        Tutorials and workshops are knowledge sharing and are excluded here.
-        Anything that is not a conference presentation lands in 'without
-        proceedings'; a conference presentation is placed by whether it had
-        proceedings and, if so, whether the linked paper was refereed.
+        Tutorials are teaching and are excluded here. A conference presentation
+        with proceedings is cited among the papers, placed by whether the linked
+        paper was refereed. Every other talk, seminars and colloquia included,
+        is an invited talk if it was invited and a contributed one if not.
         """
         if self.is_knowledge_sharing():
             return ""
-        if self.talk_type not in self.CONFERENCE_TYPES:
-            return 'no_proc'
-        if self.proceedings:
+        if self.proceedings and self.talk_type in self.CONFERENCE_TYPES:
             refereed = self.reference.refereed if self.reference else False
             return 'proc_refereed' if refereed else 'proc_nonrefereed'
         return 'invited_conf' if self.invited else 'no_proc'
@@ -667,11 +667,13 @@ class Grant(models.Model):
     )
     task_title = models.CharField(max_length=300, blank=True, help_text="Task Title, for Center-style awards.")
     contributions = models.TextField(
-        blank=True, help_text="'Contributions' row of the Section III.A table. Supports [[ref:slug]].",
+        blank=True, help_text="Contributions, printed under the award in Funded Projects. "
+                              "Supports [[ref:slug]].",
     )
     report_series_note = models.TextField(
         blank=True,
-        help_text="Preamble for this award's report series in Section II.A (authorship, sponsor notes).",
+        help_text="Note opening this award's series under Technical Reports and Briefings "
+                  "(authorship, sponsor notes).",
     )
     cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
 
@@ -764,7 +766,7 @@ class Education(models.Model):
     thesis_url = models.URLField(blank=True, help_text="Link to the thesis or dissertation record.")
     is_dissertation = models.BooleanField(
         default=False,
-        help_text="Print this degree's thesis in Section I.A (Thesis/Dissertation).",
+        help_text="Print this degree's thesis under it in Education.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -822,18 +824,18 @@ class Service(models.Model):
     year = models.PositiveIntegerField(help_text="Year of service")
     end_year = models.PositiveBigIntegerField(blank=True,null=True,help_text="End year (if applicable)")
     location = models.CharField(max_length=200, blank=True, help_text="Location if relevant")
-    # --- Curriculum vitae (Section V, Outreach and Service) ---
+    # --- Curriculum vitae (Service) ---
     # Reviewing and editorial work lives on the Review model, not here.
     SERVICE_CATEGORIES = [
-        ('session_chair', 'Conference Session Chairs'),
-        ('special_activity', 'Special Activities'),
-        ('outside_professional', 'Outside Professional Activities/Consulting'),
-        ('civic', 'Civic Activities'),
+        ('session_chair', 'Conference Organization and Session Chairs'),
+        ('special_activity', 'Other Professional Service'),
+        ('outside_professional', 'Consulting and Outside Professional Activities'),
+        ('civic', 'Community Service'),
     ]
 
     category = models.CharField(
         max_length=30, choices=SERVICE_CATEGORIES, blank=True,
-        help_text="Section V subsection. Leave blank to derive it from the service type and role.",
+        help_text="Service subsection. Leave blank to derive it from the service type and role.",
     )
     detail = models.TextField(blank=True, help_text="Additional prose printed after the entry. Supports [[ref:slug]].")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -854,7 +856,7 @@ class Service(models.Model):
         return f"{role_display}, {self.title}, {self.organization}{location_str} ({self.year})"
 
     def get_category(self):
-        """Section V subsection, falling back to a guess from the service type and role."""
+        """Service subsection, falling back to a guess from the service type and role."""
         if self.category:
             return self.category
         if self.role in ('chair', 'co_chair'):
@@ -866,10 +868,10 @@ class Service(models.Model):
 class Review(models.Model):
     """Peer review and editorial work.
 
-    Sections V.A and V.B of the CV. Kept apart from Service because a review is
-    counted (how many manuscripts, for which venue, in which year) rather than
-    described, and because editorial appointments are a different kind of thing
-    from chairing a session or volunteering.
+    The first two Service subsections of the CV. Kept apart from Service
+    because a review is counted (how many manuscripts, for which venue, in which
+    year) rather than described, and because editorial appointments are a
+    different kind of thing from chairing a session or volunteering.
     """
     KIND_CHOICES = [
         ('journal_review', 'Journal peer review'),
@@ -882,7 +884,7 @@ class Review(models.Model):
         ('other', 'Other'),
     ]
 
-    # Which Section V subsection each kind is printed under.
+    # Which Service subsection each kind is printed under.
     EDITORIAL_KINDS = ('editorial_board', 'guest_editor', 'area_chair')
 
     venue = models.CharField(
@@ -914,7 +916,7 @@ class Review(models.Model):
         return self.kind in self.EDITORIAL_KINDS
 
     def get_category(self):
-        """Which Section V subsection this belongs in.
+        """Which Service subsection this belongs in.
 
         Editorial appointments and journal reviewing are journal work; the rest
         is conference work.
@@ -961,7 +963,7 @@ class Student(models.Model):
     start_date = models.DateField(help_text="Start date of mentorship")
     end_date = models.DateField(blank=True, null=True, help_text="End date (leave blank if ongoing)")
     current_position = models.CharField(max_length=300, blank=True, help_text="Current position or status (optional)")
-    # --- Curriculum vitae (Section III.B) ---
+    # --- Curriculum vitae (Student Mentoring) ---
     research_topic = models.CharField(
         max_length=300, blank=True,
         help_text="'Research topic: ...'. Defaults to the project title above.",
@@ -975,7 +977,7 @@ class Student(models.Model):
     )
     resulting_publications = models.ManyToManyField(
         'Reference', blank=True, related_name='mentored_students',
-        help_text="Publications resulting from this mentorship, cited as 'see I.B.3.2'.",
+        help_text="Publications resulting from this mentorship, cited by number, e.g. '[J3]'.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1008,7 +1010,7 @@ class Student(models.Model):
             return "" # Should not happen if start_date is required
 
 class Award(models.Model):
-    """Section I.D of the CV: professional research recognition awards."""
+    """Honors and Awards on the CV."""
     title = models.CharField(max_length=300, help_text="Name of the award, fellowship, or nomination")
     organization = models.CharField(max_length=300, blank=True, help_text="Awarding body, conference, or institution")
     year = models.PositiveIntegerField(blank=True, null=True)
@@ -1035,7 +1037,7 @@ class Award(models.Model):
 
 
 class DeliveredProduct(models.Model):
-    """Section I.C of the CV: key delivered products."""
+    """Delivered Products, under Technical Contributions on the CV."""
     name = models.CharField(max_length=200, help_text="Short name of the product, e.g. 'Lawvere'")
     summary = models.CharField(
         max_length=500, blank=True,
@@ -1069,7 +1071,7 @@ class DeliveredProduct(models.Model):
 
 
 class Proposal(models.Model):
-    """Section IV.B of the CV: research proposals to sponsors."""
+    """Proposals to sponsors, under Sponsored Research on the CV."""
     RESULT_CHOICES = [
         ('pending', 'Pending'),
         ('funded', 'Funded'),
@@ -1145,7 +1147,7 @@ class Proposal(models.Model):
 
 
 class TechReport(models.Model):
-    """Section II.A of the CV: research and technical reports."""
+    """Technical reports and briefings, under Technical Contributions on the CV."""
     REPORT_TYPE_CHOICES = [
         ('interim_report', 'Interim technical report'),
         ('briefing', 'Sponsor briefing'),
@@ -1183,7 +1185,7 @@ class TechReport(models.Model):
 
 
 class Innovation(models.Model):
-    """Section II.B: significant technical innovation on sponsored programs."""
+    """Technical innovations on sponsored programs, under Technical Contributions."""
     title = models.CharField(max_length=500, help_text="Title of the innovation or contribution")
     grants = models.ManyToManyField(
         'Grant', blank=True, related_name='innovations',

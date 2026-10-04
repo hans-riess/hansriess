@@ -115,9 +115,9 @@ jobs:
 
       - name: Install LaTeX
         # Only what academic-cv.sty actually loads: latex-base and
-        # latex-recommended cover geometry, array, fancyhdr, etoolbox, hyperref,
-        # xcolor and psnfss; fonts-recommended supplies the Times faces that
-        # mathptmx maps onto; plain-generic supplies ulem.
+        # latex-recommended cover geometry, fancyhdr, etoolbox, hyperref and
+        # psnfss; fonts-recommended supplies the Times faces that mathptmx maps
+        # onto; plain-generic supplies the font-name map kpathsea reads.
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
