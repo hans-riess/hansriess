@@ -11,9 +11,14 @@ PUBLICATION_CATEGORIES = [
     ('proc_nonrefereed', 'Conference Presentations with Proceedings (non-refereed)'),
     ('no_proc', 'Conference Presentations without Proceedings'),
     ('submitted', 'Submitted Journal Papers in Review'),
+    # Not in the official format, so printed only when the profile asks for
+    # every reference.
+    ('submitted_conf', 'Submitted Conference Papers in Review'),
+    ('preprints', 'Preprints'),
 ]
 
 PUBLICATION_CATEGORY_ORDER = [key for key, _ in PUBLICATION_CATEGORIES]
+EXTRA_PUBLICATION_CATEGORIES = ('submitted_conf', 'preprints')
 
 CREDIT_HELP = (
     "CRediT roles, comma separated, e.g. 'conceptualization, methodology, review, "
@@ -93,8 +98,9 @@ class Profile(models.Model):
     )
     cv_show_all_references = models.BooleanField(
         default=False,
-        help_text="List every publication regardless of status. When off, only accepted "
-                  "and published work appears, plus journal articles and preprints in review.",
+        help_text="Also list conference papers in review and preprints that are not under "
+                  "review, each in a subsection of its own. When off, only accepted and "
+                  "published work appears, plus journal articles and preprints in review.",
     )
     cv_show_preamble_sections = models.BooleanField(
         default=True,
@@ -220,7 +226,11 @@ class Reference(models.Model):
     )
     medium = models.CharField(max_length=40, choices=MEDIUM_CHOICES)
     refereed = models.BooleanField(default=False, help_text="Check if the venue is refereed")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='published')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='published',
+        help_text="For a preprint: 'In review' while it is submitted somewhere (put the "
+                  "venue in Journal), 'Published' if it is posted but not under review.",
+    )
     journal = models.CharField(max_length=200, blank=True)
     volume = models.CharField(max_length=50, blank=True)
     issue = models.CharField(max_length=50, blank=True)
@@ -268,28 +278,29 @@ class Reference(models.Model):
         if self.medium == 'journal_article':
             return 'submitted' if self.status == 'in_review' else 'journal'
         if self.medium == 'conference_proceedings':
+            if self.status == 'in_review':
+                return 'submitted_conf'
             return 'proc_refereed' if self.refereed else 'proc_nonrefereed'
         if self.medium == 'preprint':
-            # A preprint is only a CV entry while it is under review; once it is
-            # accepted or published it is listed under its final venue instead.
-            return 'submitted' if self.status == 'in_review' else ""
+            # In review, a preprint stands in for the journal submission. One
+            # that was accepted moves to its final venue (change its medium), so
+            # only a preprint posted with no submission behind it is a Preprint.
+            if self.status == 'in_review':
+                return 'submitted'
+            return 'preprints' if self.status == 'published' else ""
         return ""
 
     def show_on_cv(self, show_all=False):
         """Whether this belongs on the CV under the default status filter.
 
-        Accepted and published work always appears. Work in review appears only
-        for journal articles and preprints — a conference submission is not
-        listed until it is accepted. Rejected work never appears. Ticking
-        'show all references' on the profile overrides all of this.
+        Rejected work never appears. Everything else appears, except that the
+        subsections outside the official format — conference papers in review
+        and preprints not under review — are listed only when 'show all
+        references' is ticked on the profile.
         """
-        if show_all:
-            return self.status != 'rejected'
-        if self.status in ('accepted', 'published'):
-            return True
-        if self.status == 'in_review':
-            return self.medium in ('journal_article', 'preprint')
-        return False
+        if self.status == 'rejected':
+            return False
+        return show_all or self.get_category() not in EXTRA_PUBLICATION_CATEGORIES
 
     def get_status_note(self):
         """The status phrase that closes the citation, e.g. 'to appear'."""
