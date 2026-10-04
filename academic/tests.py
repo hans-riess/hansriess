@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import shutil
 import tempfile
@@ -405,6 +406,112 @@ class CvLayoutTests(TestCase):
         self.assertNotIn('xcolor', source)
         self.assertNotIn(r'\color', source)
         self.assertNotIn(r'\definecolor', source)
+
+
+class SiteDataTests(TestCase):
+    """/sitedata/data.json mirrors the public CV and leaks nothing it hides."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess, Ph.D.",
+                                              website="https://hansriess.com",
+                                              email="hans@example.com")
+        self.url = reverse('site_data')
+
+    def _data(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response['Content-Type'].startswith('application/json'))
+        return response.json()
+
+    def test_serves_json_with_self_links(self):
+        data = self._data()
+        self.assertEqual(data['profile']['name'], "Hans Riess")
+        self.assertEqual(data['about']['source'], "https://hansriess.com/sitedata/data.json")
+        self.assertEqual(data['about']['cv_pdf'], "https://hansriess.com/cv/")
+
+    def test_no_profile_is_a_404(self):
+        self.profile.delete()
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+
+    def test_numbers_match_the_cv(self):
+        for year in (2022, 2024):
+            Reference.objects.create(title="Paper %d" % year, authors="H. Riess", year=year,
+                                     medium='journal_article', journal="TAC")
+        Grant.objects.create(title="SEAMAN", funding_agency="DARPA", role='pi', amount=180687)
+        data = self._data()
+        tex = cv_builder.build_document(self.profile)
+        for entry in data['publications']:
+            self.assertIn(r'\cvcite{%s}{\textbf{H. Riess}, ``%s' % (entry['cv_number'],
+                                                                     entry['title']), tex)
+        grant = data['sponsored_research']['funded_projects'][0]
+        self.assertEqual((grant['cv_number'], grant['amount']), ("G1", 180687))
+
+    def test_cross_references_resolve_to_title_and_number(self):
+        Reference.objects.create(title="A paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', journal="TAC",
+                                 cv_ref_slug="a-paper")
+        self.profile.research_program = "See [[ref:a-paper]].\n\nSecond   paragraph."
+        self.profile.save()
+        program = self._data()['sponsored_research']['research_program']
+        self.assertEqual(program, "See \u201cA paper\u201d [J1].\n\nSecond paragraph.")
+
+    def test_hidden_references_stay_hidden(self):
+        Reference.objects.create(title="Conference submission", authors="H. Riess",
+                                 year=2027, medium='conference_proceedings',
+                                 status='in_review', journal="CDC")
+        Reference.objects.create(title="Rejected paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', status='rejected', journal="TAC")
+        self.assertNotIn('publications', self._data())
+
+    def test_a_rejected_preprint_never_names_the_venue(self):
+        self.profile.cv_show_all_references = True
+        self.profile.save()
+        Reference.objects.create(title="Lattice diffusion", authors="H. Riess", year=2024,
+                                 medium='preprint', status='rejected', journal="Proc. ICASSP",
+                                 arxiv_id="2401.00001")
+        response = self.client.get(self.url)
+        self.assertNotIn("ICASSP", response.content.decode())
+        entry = response.json()['publications'][0]
+        self.assertEqual((entry['status'], entry['arxiv_id']), ("preprint", "2401.00001"))
+
+    def test_protected_grants_keep_their_password_and_description_private(self):
+        Grant.objects.create(title="Open", funding_agency="NSF", role='pi', slug="open",
+                             description="<p>Public <b>overview</b>.</p>")
+        Grant.objects.create(title="Closed", funding_agency="DARPA", role='pi', slug="closed",
+                             description="Secret overview.", password_protected=True,
+                             password="hunter2")
+        body = self.client.get(self.url).content.decode()
+        self.assertNotIn("hunter2", body)
+        self.assertNotIn("Secret overview", body)
+        projects = {g['title']: g for g in
+                    self._data()['sponsored_research']['funded_projects']}
+        self.assertEqual(projects['Open']['description'], "Public overview.")
+        self.assertNotIn('description', projects['Closed'])
+
+    def test_a_talk_on_a_listed_paper_is_noted_on_the_paper(self):
+        paper = Reference.objects.create(
+            title="Quantale-enriched co-design", authors="H. Riess", year=2026,
+            medium='conference_proceedings', refereed=True, journal="Proc. CDC")
+        Talk.objects.create(title="Quantale-enriched co-design", venue="CDC",
+                            talk_type='conference', proceedings=True,
+                            date=datetime.date(2026, 12, 1), reference=paper)
+        data = self._data()
+        self.assertNotIn('presentations', data)
+        self.assertEqual(data['publications'][0]['presented_at'],
+                         [{'venue': "CDC", 'date': "2026-12-01"}])
+
+    def test_command_writes_the_same_data(self):
+        Reference.objects.create(title="A paper", authors="H. Riess", year=2024,
+                                 medium='journal_article', journal="TAC")
+        path = os.path.join(tempfile.mkdtemp(), 'data.json')
+        self.addCleanup(shutil.rmtree, os.path.dirname(path))
+        call_command('export_site_data', output=path, stdout=StringIO())
+        with open(path, encoding='utf-8') as exported:
+            written = json.load(exported)
+        served = self._data()
+        for data in (written, served):
+            data['about'].pop('generated_at')
+        self.assertEqual(written, served)
 
 
 class CvDownloadTests(TestCase):

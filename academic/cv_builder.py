@@ -302,6 +302,12 @@ def countdown(prefix, total):
     return ["%s%d" % (prefix, number) for number in range(total, 0, -1)]
 
 
+def numbered(prefix, objects):
+    """(tag, object) pairs for a series printed in the order given."""
+    objects = list(objects)
+    return list(zip(countdown(prefix, len(objects)), objects))
+
+
 def section(title, blocks):
     """A section heading over its blocks, or nothing if every block is empty."""
     body = [line for block in blocks for line in block]
@@ -437,12 +443,12 @@ def build_sponsored_research(profile):
 
 
 def _funded_projects_block(profile):
-    grants = list(Grant.objects.all())
+    grants = numbered('G', Grant.objects.all())
     if not grants:
         return []
 
     lines = [r'\cvsubsection{Funded Projects}']
-    for tag, grant in zip(countdown('G', len(grants)), grants):
+    for tag, grant in grants:
         sponsor = clean(grant.funding_agency)
         if grant.grant_number:
             sponsor = "%s, %s" % (sponsor, clean(grant.grant_number))
@@ -463,12 +469,12 @@ def _funded_projects_block(profile):
 
 
 def _proposals_block(profile):
-    proposals = list(Proposal.objects.all())
+    proposals = numbered('PR', Proposal.objects.all())
     if not proposals:
         return []
 
     lines = [r'\cvsubsection{Proposals}']
-    for tag, proposal in zip(countdown('PR', len(proposals)), proposals):
+    for tag, proposal in proposals:
         sponsor = clean(proposal.sponsor)
         if proposal.solicitation:
             sponsor = "%s, %s" % (sponsor, clean(proposal.solicitation))
@@ -617,7 +623,7 @@ PRESENTATION_GROUPS = [
 ]
 
 
-def _grouped_publications(profile):
+def grouped_publications(profile):
     """Reference and Talk rows by category, as (sort key, object) pairs.
 
     References are filtered by status unless the profile says to show all. A talk
@@ -645,26 +651,36 @@ def _grouped_publications(profile):
     return grouped
 
 
-def _numbered_groups(grouped, groups, profile):
-    """A subsection per non-empty group, entries numbered down within each prefix."""
+def numbered_entries(grouped, groups):
+    """(category, tag, object) for every listed entry, in print order.
+
+    Each group is named by its first category and numbered down within its
+    prefix. The site-data export numbers from this too, so the two agree.
+    """
     remaining = {}
     for categories, prefix in groups:
         remaining[prefix] = remaining.get(prefix, 0) + sum(len(grouped[c]) for c in categories)
 
-    lines = []
     for categories, prefix in groups:
         entries = [pair for category in categories for pair in grouped[category]]
-        if not entries:
-            continue
-        lines.append(r'\cvsubsection{%s}' % clean(PUBLICATION_CATEGORY_LABELS[categories[0]]))
         for _, obj in sorted(entries, key=lambda pair: pair[0], reverse=True):
-            tag = "%s%d" % (prefix, remaining[prefix])
+            yield categories[0], "%s%d" % (prefix, remaining[prefix]), obj
             remaining[prefix] -= 1
-            if isinstance(obj, Reference):
-                body = format_reference(obj, profile)
-            else:
-                body = format_talk(obj, profile)
-            lines.append(r'\cvcite{%s}{%s%s}' % (tag, label_for(obj), body))
+
+
+def _numbered_groups(grouped, groups, profile):
+    """A subsection per non-empty group, each entry carrying its number."""
+    lines = []
+    current = None
+    for category, tag, obj in numbered_entries(grouped, groups):
+        if category != current:
+            lines.append(r'\cvsubsection{%s}' % clean(PUBLICATION_CATEGORY_LABELS[category]))
+            current = category
+        if isinstance(obj, Reference):
+            body = format_reference(obj, profile)
+        else:
+            body = format_talk(obj, profile)
+        lines.append(r'\cvcite{%s}{%s%s}' % (tag, label_for(obj), body))
     return lines
 
 
@@ -680,7 +696,7 @@ def _marker_key(grouped, groups):
 
 
 def build_publications(profile):
-    grouped = _grouped_publications(profile)
+    grouped = grouped_publications(profile)
     body = _numbered_groups(grouped, PUBLICATION_GROUPS, profile)
     if not body:
         return []
@@ -689,7 +705,7 @@ def build_publications(profile):
 
 
 def build_presentations(profile):
-    grouped = _grouped_publications(profile)
+    grouped = grouped_publications(profile)
     return section('Presentations', [_numbered_groups(grouped, PRESENTATION_GROUPS, profile)])
 
 
@@ -712,12 +728,12 @@ def _labelled_paragraphs(caption, value):
 
 
 def _delivered_products_block():
-    products = list(DeliveredProduct.objects.all())
+    products = numbered('D', DeliveredProduct.objects.all())
     if not products:
         return []
 
     lines = [r'\cvsubsection{Delivered Products}']
-    for tag, product in zip(countdown('D', len(products)), products):
+    for tag, product in products:
         heading = r'%s\textbf{%s}' % (label_for(product), clean(product.name))
         if product.summary:
             heading += " — %s" % clean(product.summary)
@@ -734,12 +750,12 @@ def _delivered_products_block():
 
 
 def _innovations_block():
-    innovations = list(Innovation.objects.all())
+    innovations = numbered('I', Innovation.objects.all())
     if not innovations:
         return []
 
     lines = [r'\cvsubsection{Technical Innovations on Sponsored Programs}']
-    for tag, innovation in zip(countdown('I', len(innovations)), innovations):
+    for tag, innovation in innovations:
         details = []
         sponsors = innovation.get_sponsors_line()
         if sponsors:
@@ -751,20 +767,29 @@ def _innovations_block():
     return lines
 
 
-def _reports_block():
-    """Reports delivered to sponsors, grouped by award, numbered as one series."""
+def report_series():
+    """[(grant, [(tag, report), ...]), ...] for each award with reports.
+
+    Reports are grouped by award but numbered as one series across them.
+    """
     grants = [(grant, list(grant.tech_reports.all())) for grant in Grant.objects.all()]
     grants = [(grant, reports) for grant, reports in grants if reports]
-    if not grants:
+    tags = iter(countdown('R', sum(len(reports) for _, reports in grants)))
+    return [(grant, [(next(tags), report) for report in reports]) for grant, reports in grants]
+
+
+def _reports_block():
+    """Reports delivered to sponsors, grouped by award, numbered as one series."""
+    series = report_series()
+    if not series:
         return []
 
-    tags = iter(countdown('R', sum(len(reports) for _, reports in grants)))
     lines = [r'\cvsubsection{Technical Reports and Briefings}']
-    for grant, reports in grants:
+    for grant, reports in series:
         heading = "%s technical report series." % (grant.short_title or grant.title)
         preamble = " ".join(paragraphs(grant.report_series_note))
         lines.append(r'\cvrunin{%s}{%s}' % (clean(heading), preamble))
-        for report in reports:
+        for tag, report in reports:
             bits = [r'\textbf{%s}.' % clean(report.title.rstrip('.'))]
             detail = [clean(report.get_report_type_display())]
             if report.date:
@@ -778,7 +803,7 @@ def _reports_block():
             bits.append(" %s." % "; ".join(bit for bit in detail if bit))
             if report.description:
                 bits.append(" %s" % " ".join(paragraphs(report.description)))
-            lines.append(r'\cvcite{%s}{%s%s}' % (next(tags), label_for(report), "".join(bits)))
+            lines.append(r'\cvcite{%s}{%s%s}' % (tag, label_for(report), "".join(bits)))
     return lines
 
 

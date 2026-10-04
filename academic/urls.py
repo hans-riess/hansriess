@@ -8,6 +8,7 @@ urlpatterns = [
     path("demo/", views.demo_view, name="demo"),
     path("demo/<slug:demo_slug>/", views.demo_view, name="demo_slug"),
     path("generate_cv/", views.generate_cv_pdf, name="generate_cv_pdf"),
+    path("sitedata/data.json", views.site_data, name="site_data"),
     path('project/<slug:project_slug>/', views.project_view, name='project_view'),
     path('paper/<slug:paper_slug>/', views.paper_redirect, name='paper_redirect'),
     path('talk/<slug:talk_slug>/slides/', views.slide_redirect, name='slide_redirect'),

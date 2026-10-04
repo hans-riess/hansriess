@@ -56,6 +56,21 @@ python manage.py loaddata cv_sample
 python manage.py generate_cv --keep-tex   # leaves cv.tex and cv.log in temp_cv/
 ```
 
+## Site data for AI tools
+
+`/sitedata/data.json` serves the CV as structured JSON, built fresh on every
+request, for use as context when drafting applications with an AI tool. It lists
+what the public CV lists, in the same order and under the same numbers (`[J3]`,
+`[G1]`, ...), with ISO dates, numeric amounts, and `[[ref:slug]]` resolved to the
+title and number of the entry it points at. Bio, contact details, links and paper
+abstracts come along; nothing the site hides does — references the CV filters
+out, the venue that rejected a preprint, and a password-protected grant's
+description and password all stay out. The export lives in
+`academic/site_data.py`.
+
+`python manage.py export_site_data -o data.json` writes the same JSON to a file
+(`-o -` prints it).
+
 ## Features
 Developed/planning many features to make it easier for researchers to interact with my work.
 
