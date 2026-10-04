@@ -70,41 +70,61 @@
 % --- HEADINGS ----------------------------------------------------------------
 % A page break can never fall between a heading and what follows it: every
 % heading ends in \nobreak, and the entries below open with glue only.
+%
+% Spacing carries the hierarchy, since entries open in bold just as subsection
+% headings do. A subsection heading has much more space above it than sits
+% between entries, and less below it, so it reads as the title of the group
+% under it rather than as one more entry.
+
+% True from the end of a heading until the first block below it, which then
+% sits at the heading's own spacing instead of adding its own.
+\newif\ifcv@afterheading
+
+% Start a block with #1 of space above it, unless it directly follows a heading.
+\newcommand{\cv@space}[1]{%
+    \par
+    \ifcv@afterheading\global\cv@afterheadingfalse\else\addvspace{#1}\fi
+}
+
 \newcommand{\cvsection}[1]{%
-    \par\addvspace{1.4\baselineskip}%
+    \par\global\cv@afterheadingfalse
+    \addvspace{1.5\baselineskip}%
     {\large\bfseries\scshape #1}\par\nobreak
     \vspace{1.5pt}\hrule height 0.4pt\nobreak
-    \vspace{0.35\baselineskip}%
+    \vspace{\baselineskip}%
+    \global\cv@afterheadingtrue
 }
 
 \newcommand{\cvsubsection}[1]{%
-    \par\addvspace{0.75\baselineskip}%
+    \cv@space{1.3\baselineskip}%
     {\bfseries #1}\par\nobreak
-    \vspace{0.05\baselineskip}%
+    \vspace{0.15\baselineskip}%
+    \global\cv@afterheadingtrue
 }
 
 % An italic run-in label opening a group of entries, e.g. a report series:
 % "SEAMAN technical report series. <note>".
 \newcommand{\cvrunin}[2]{%
-    \par\addvspace{0.5\baselineskip}%
+    \cv@space{0.5\baselineskip}%
     \begingroup
     \interlinepenalty=10000
     \noindent\textit{#1}\ifstrempty{#2}{}{ #2}\par
     \endgroup
     \nobreak
+    \global\cv@afterheadingtrue
 }
 
 % --- BODY TEXT ---------------------------------------------------------------
 % A free-standing paragraph: research interests, the research program
 % narrative. Left breakable, since these can legitimately run past a page.
 \newcommand{\cvparagraph}[1]{%
-    \par\addvspace{0.35\baselineskip}%
+    \cv@space{0.35\baselineskip}%
     \noindent #1\par
 }
 
 % A small note under a heading, e.g. the dagger key above the publications.
 \newcommand{\cvnote}[1]{%
-    \par\addvspace{0.3\baselineskip}%
+    \cv@space{0.3\baselineskip}%
     {\small\noindent #1\par}\nobreak
 }
 
@@ -141,7 +161,7 @@
 % the details follow below, aligned with the heading. The date column is as
 % wide as the date, up to \cvdatemax, after which the date wraps.
 \newcommand{\cventry}[4]{%
-    \par\addvspace{0.5\baselineskip}%
+    \cv@space{0.5\baselineskip}%
     \begingroup
     \interlinepenalty=10000
     \ifstrempty{#1}{}{\cv@tag{#1}\setlength{\leftskip}{\cvtagwidth}}%
@@ -165,7 +185,7 @@
 
 % A numbered citation, printed as "[J3]  <citation>" with a hanging indent.
 \newcommand{\cvcite}[2]{%
-    \par\addvspace{0.4\baselineskip}%
+    \cv@space{0.4\baselineskip}%
     \begingroup
     \interlinepenalty=10000
     \cv@tag{#1}%
@@ -176,7 +196,7 @@
 
 % An unnumbered list item with a small hanging indent (service, reviewing).
 \newcommand{\cvplain}[1]{%
-    \par\addvspace{0.3\baselineskip}%
+    \cv@space{0.3\baselineskip}%
     \begingroup
     \interlinepenalty=10000
     \setlength{\hangindent}{1em}%
