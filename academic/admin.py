@@ -1,15 +1,27 @@
 from django.contrib import admin
-from .models import (Award, Profile, Proposal, Reference, Course, DeliveredProduct,
-                     Experience, Innovation, Talk, Grant, Education, Service, Quote,
+from .models import (PUBLICATION_CATEGORIES, Award, Profile, Proposal, Reference, Course,
+                     DeliveredProduct, Experience, Innovation, Talk, Grant, Education, Service, Quote,
                      Figure, Student, ReferencePerson, Milestone, Review, TechReport, Demo)
 
 class ReferenceAdmin(admin.ModelAdmin):
-    list_display = ['get_short_title', 'year', 'medium', 'status', 'refereed']
+    list_display = ['get_short_title', 'year', 'medium', 'status', 'refereed', 'cv_subsection']
     list_filter = ['medium', 'status', 'refereed', 'year']
     search_fields = ['title', 'authors']
     ordering = ['-year', 'title']
 
     prepopulated_fields = {'slug': ('title',), 'cv_ref_slug': ('title',)}
+
+    @admin.display(description='CV subsection')
+    def cv_subsection(self, obj):
+        """Where Section I.B prints this, and why not when it is left out."""
+        category = obj.get_category()
+        if not category:
+            return "—"
+        label = dict(PUBLICATION_CATEGORIES)[category]
+        show_all = Profile.objects.values_list('cv_show_all_references', flat=True).first()
+        if not obj.show_on_cv(bool(show_all)):
+            return "%s (hidden: tick 'Show all references' on the profile)" % label
+        return label
 
     fieldsets = [
         (None, {

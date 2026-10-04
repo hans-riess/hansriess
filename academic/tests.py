@@ -49,6 +49,21 @@ class AdminFormTests(TestCase):
                 with self.subTest(model=model.__name__, inline=type(inline).__name__):
                     inline.get_formset(request)
 
+    def test_reference_list_says_where_each_paper_lands(self):
+        profile = Profile.objects.create(name="Hans Riess")
+        preprint = Reference.objects.create(title="P", authors="H. Riess", year=2024,
+                                            medium='preprint', status='published')
+        column = admin.site._registry[Reference].cv_subsection
+        self.assertEqual(column(preprint),
+                         "Preprints (hidden: tick 'Show all references' on the profile)")
+        profile.cv_show_all_references = True
+        profile.save()
+        self.assertEqual(column(preprint), "Preprints")
+        preprint.status = 'in_review'
+        self.assertEqual(column(preprint), "Submitted Journal Papers in Review")
+        preprint.medium = 'thesis'
+        self.assertEqual(column(preprint), "—")
+
     def test_every_admin_can_render_its_changelist(self):
         request = self._request()
         for model, model_admin in admin.site._registry.items():
