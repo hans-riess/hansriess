@@ -229,7 +229,8 @@ class Reference(models.Model):
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='published',
         help_text="For a preprint: 'In review' while it is submitted somewhere (put the "
-                  "venue in Journal), 'Published' if it is posted but not under review.",
+                  "venue in Journal); 'Published' or 'Rejected' if it is posted with no "
+                  "submission pending, which lists it under Preprints.",
     )
     journal = models.CharField(max_length=200, blank=True)
     volume = models.CharField(max_length=50, blank=True)
@@ -271,8 +272,16 @@ class Reference(models.Model):
 
         Returns "" for anything with no subsection of its own — theses (printed
         in Section I.A), technical reports (Section II.A), books, book chapters,
-        and rejected work.
+        and rejected work other than a preprint.
         """
+        if self.medium == 'preprint':
+            # In review, a preprint stands in for the journal submission. One
+            # that was accepted moves to its final venue (change its medium). A
+            # preprint with nothing pending — never submitted, or rejected and
+            # left on arXiv — is still public work, so it is a Preprint.
+            if self.status == 'in_review':
+                return 'submitted'
+            return 'preprints' if self.status in ('published', 'rejected') else ""
         if self.status == 'rejected':
             return ""
         if self.medium == 'journal_article':
@@ -281,26 +290,20 @@ class Reference(models.Model):
             if self.status == 'in_review':
                 return 'submitted_conf'
             return 'proc_refereed' if self.refereed else 'proc_nonrefereed'
-        if self.medium == 'preprint':
-            # In review, a preprint stands in for the journal submission. One
-            # that was accepted moves to its final venue (change its medium), so
-            # only a preprint posted with no submission behind it is a Preprint.
-            if self.status == 'in_review':
-                return 'submitted'
-            return 'preprints' if self.status == 'published' else ""
         return ""
 
     def show_on_cv(self, show_all=False):
         """Whether this belongs on the CV under the default status filter.
 
-        Rejected work never appears. Everything else appears, except that the
-        subsections outside the official format — conference papers in review
-        and preprints not under review — are listed only when 'show all
-        references' is ticked on the profile.
+        Everything with a subsection appears (rejected work has none, unless it
+        is a preprint), except that the subsections outside the official format
+        — conference papers in review and preprints not under review — are
+        listed only when 'show all references' is ticked on the profile.
         """
-        if self.status == 'rejected':
+        category = self.get_category()
+        if not category:
             return False
-        return show_all or self.get_category() not in EXTRA_PUBLICATION_CATEGORIES
+        return show_all or category not in EXTRA_PUBLICATION_CATEGORIES
 
     def get_status_note(self):
         """The status phrase that closes the citation, e.g. 'to appear'."""

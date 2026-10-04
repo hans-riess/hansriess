@@ -265,17 +265,21 @@
 \newcommand{\cvkeyrow}[2]{\textbf{#1:} & #2 \tabularnewline \hline}
 
 % Five-column Knowledge Sharing table (I.E), with a repeating header row.
+% Each heading is kept to one line. The official wording ("Role in Curriculum
+% Development", "Approx. Number of Students/Attendees") is about 120pt too wide
+% for the text block at this size, so two headings are shortened, and every
+% column is at least as wide as its heading.
 \newenvironment{cvteachtable}{%
     \par\vspace{0.5\baselineskip}%
     \noindent\begin{minipage}{\textwidth}%
     \footnotesize
-    \begin{tabular}{|L{1.15in}|L{0.72in}|L{1.15in}|L{1.35in}|L{1.08in}|}
+    \begin{tabular}{|L{1.33in}|L{0.76in}|L{1.35in}|L{1.12in}|L{1.03in}|}
     \hline
-    \textbf{Institution/ Organization} &
+    \textbf{Institution/Organization} &
     \textbf{When Taught} &
-    \textbf{Course Title (course code)} &
-    \textbf{Role in Curriculum Development} &
-    \textbf{Approx. Number of Students/Attendees}
+    \textbf{Course Title (Code)} &
+    \textbf{Curriculum Role} &
+    \textbf{Approx. Attendees}
     \tabularnewline \hline
 }{%
     \end{tabular}%

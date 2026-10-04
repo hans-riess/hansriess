@@ -49,6 +49,24 @@ class AdminFormTests(TestCase):
                 with self.subTest(model=model.__name__, inline=type(inline).__name__):
                     inline.get_formset(request)
 
+    def test_reference_list_says_where_each_paper_lands(self):
+        profile = Profile.objects.create(name="Hans Riess")
+        preprint = Reference.objects.create(title="P", authors="H. Riess", year=2024,
+                                            medium='preprint', status='published')
+        column = admin.site._registry[Reference].cv_subsection
+        self.assertEqual(column(preprint),
+                         "Preprints (hidden: tick 'Show all references' on the profile)")
+        profile.cv_show_all_references = True
+        profile.save()
+        self.assertEqual(column(preprint), "Preprints")
+        # A rejected submission left on arXiv is still a Preprint.
+        preprint.status = 'rejected'
+        self.assertEqual(column(preprint), "Preprints")
+        preprint.status = 'in_review'
+        self.assertEqual(column(preprint), "Submitted Journal Papers in Review")
+        preprint.medium = 'thesis'
+        self.assertEqual(column(preprint), "—")
+
     def test_every_admin_can_render_its_changelist(self):
         request = self._request()
         for model, model_admin in admin.site._registry.items():
@@ -74,7 +92,7 @@ class ReferenceClassificationTests(TestCase):
             (dict(medium='preprint', status='published'), 'preprints'),
             (dict(medium='thesis', status='published'), ''),
             (dict(medium='journal_article', status='rejected'), ''),
-            (dict(medium='preprint', status='rejected'), ''),
+            (dict(medium='preprint', status='rejected'), 'preprints'),
         ]
         for kwargs, expected in cases:
             with self.subTest(**kwargs):
@@ -82,8 +100,9 @@ class ReferenceClassificationTests(TestCase):
 
     def test_status_filter(self):
         # Accepted and published always show; in review only for journals and
-        # preprints. Conference submissions and standalone preprints need "show
-        # all"; rejected never shows, even with it.
+        # preprints. Conference submissions and standalone preprints — including
+        # one whose submission was rejected — need "show all"; any other
+        # rejected work never shows, even with it.
         cases = [
             (dict(medium='journal_article', status='published'), True, True),
             (dict(medium='journal_article', status='accepted'), True, True),
@@ -92,7 +111,8 @@ class ReferenceClassificationTests(TestCase):
             (dict(medium='conference_proceedings', status='in_review'), False, True),
             (dict(medium='preprint', status='published'), False, True),
             (dict(medium='journal_article', status='rejected'), False, False),
-            (dict(medium='preprint', status='rejected'), False, False),
+            (dict(medium='preprint', status='rejected'), False, True),
+            (dict(medium='conference_proceedings', status='rejected'), False, False),
         ]
         for kwargs, default, show_all in cases:
             with self.subTest(**kwargs):
@@ -221,7 +241,8 @@ class SectionBuilderTests(TestCase):
             journal="Proc. CDC", arxiv_id="2701.00001")
         Reference.objects.create(
             title="Lattice diffusion", authors="H. Riess", year=2024,
-            medium='preprint', status='published', arxiv_id="2401.00001")
+            medium='preprint', status='rejected', journal="Proc. ICASSP",
+            arxiv_id="2401.00001")
 
         tex = "\n".join(cv_builder.build_section_i(self.profile))
         self.assertNotIn("Sheaf coordination", tex)
@@ -237,6 +258,8 @@ class SectionBuilderTests(TestCase):
         preprints = tex[tex.index("Preprints"):]
         self.assertIn("Lattice diffusion", preprints)
         self.assertIn("arXiv:2401.00001, 2024.", preprints)
+        # The venue that turned it down is never named.
+        self.assertNotIn("ICASSP", tex)
 
     def test_empty_sections_are_skipped(self):
         self.assertEqual(cv_builder.build_section_ii(), [])
