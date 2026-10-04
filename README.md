@@ -25,6 +25,13 @@ through the admin. The Georgia Tech fields — publication categories, CRediT
 roles, proposal details, and so on — are grouped into a "Georgia Tech CV"
 fieldset on each model.
 
+Work in review is entered with Status *In review* and the target venue in
+Journal; it is cited by its arXiv ID and closes with "Submitted to *venue*".
+Journal articles and preprints in review appear by default. Conference papers in
+review, and preprints that are posted but not under review (Status *Published*),
+get subsections of their own after the official six, printed only when "show all
+references" is ticked on the profile.
+
 Prose fields may contain `[[ref:some-slug]]`, which renders as a live
 cross-reference such as `I.B.3.4` to whichever entry carries that `cv_ref_slug`.
 

@@ -68,10 +68,13 @@ class ReferenceClassificationTests(TestCase):
             (dict(medium='journal_article', status='in_review'), 'submitted'),
             (dict(medium='conference_proceedings', refereed=True), 'proc_refereed'),
             (dict(medium='conference_proceedings', refereed=False), 'proc_nonrefereed'),
+            (dict(medium='conference_proceedings', status='accepted', refereed=True), 'proc_refereed'),
+            (dict(medium='conference_proceedings', status='in_review', refereed=True), 'submitted_conf'),
             (dict(medium='preprint', status='in_review'), 'submitted'),
-            (dict(medium='preprint', status='published'), ''),
+            (dict(medium='preprint', status='published'), 'preprints'),
             (dict(medium='thesis', status='published'), ''),
             (dict(medium='journal_article', status='rejected'), ''),
+            (dict(medium='preprint', status='rejected'), ''),
         ]
         for kwargs, expected in cases:
             with self.subTest(**kwargs):
@@ -79,13 +82,17 @@ class ReferenceClassificationTests(TestCase):
 
     def test_status_filter(self):
         # Accepted and published always show; in review only for journals and
-        # preprints; rejected never, even with "show all".
+        # preprints. Conference submissions and standalone preprints need "show
+        # all"; rejected never shows, even with it.
         cases = [
             (dict(medium='journal_article', status='published'), True, True),
             (dict(medium='journal_article', status='accepted'), True, True),
             (dict(medium='journal_article', status='in_review'), True, True),
+            (dict(medium='preprint', status='in_review'), True, True),
             (dict(medium='conference_proceedings', status='in_review'), False, True),
+            (dict(medium='preprint', status='published'), False, True),
             (dict(medium='journal_article', status='rejected'), False, False),
+            (dict(medium='preprint', status='rejected'), False, False),
         ]
         for kwargs, default, show_all in cases:
             with self.subTest(**kwargs):
@@ -206,6 +213,30 @@ class SectionBuilderTests(TestCase):
 
         tex = "\n".join(cv_builder.build_section_i(self.profile))
         self.assertEqual(tex.count("Quantale-enriched co-design"), 1)
+
+    def test_conference_submissions_and_preprints_need_show_all(self):
+        Reference.objects.create(
+            title="Sheaf coordination", authors="H. Riess", year=2027,
+            medium='conference_proceedings', refereed=True, status='in_review',
+            journal="Proc. CDC", arxiv_id="2701.00001")
+        Reference.objects.create(
+            title="Lattice diffusion", authors="H. Riess", year=2024,
+            medium='preprint', status='published', arxiv_id="2401.00001")
+
+        tex = "\n".join(cv_builder.build_section_i(self.profile))
+        self.assertNotIn("Sheaf coordination", tex)
+        self.assertNotIn("Lattice diffusion", tex)
+
+        self.profile.cv_show_all_references = True
+        tex = "\n".join(cv_builder.build_section_i(self.profile))
+        # A submission is not listed among the accepted proceedings.
+        self.assertNotIn("with Proceedings", tex)
+        submitted = tex[tex.index("Submitted Conference Papers in Review"):tex.index("Preprints")]
+        self.assertIn("Sheaf coordination", submitted)
+        self.assertIn(r"Submitted to \textit{Proc. CDC}", submitted)
+        preprints = tex[tex.index("Preprints"):]
+        self.assertIn("Lattice diffusion", preprints)
+        self.assertIn("arXiv:2401.00001, 2024.", preprints)
 
     def test_empty_sections_are_skipped(self):
         self.assertEqual(cv_builder.build_section_ii(), [])
