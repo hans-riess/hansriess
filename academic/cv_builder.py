@@ -1,13 +1,23 @@
 """Builds the LaTeX source for the CV.
 
-The document follows the five-part structure of a research-faculty promotion
-CV:
+The document follows the usual shape of an academic job-market CV, with
+sponsored research and teaching ahead of the publication list:
 
-    I.   Mastery of a Complex Field
-    II.  Technical Contributions and Innovation
-    III. Project Leadership and Supervision
-    IV.  Sponsored Program Development
-    V.   Outreach and Service
+    Research Interests
+    Education
+    Appointments
+    Sponsored Research          funded projects [G], proposals [PR]
+    Teaching and Mentoring
+    Publications                [J], [C], [S], [P]
+    Presentations               [T]
+    Technical Contributions     delivered products [D], innovations [I],
+                                technical reports [R]
+    Honors and Awards
+    Service
+
+Entries that can be cross-referenced are numbered within their series. Numbers
+count down, so the last entry printed in a series is 1 and an entry keeps its
+number as new ones are added above it.
 
 Every ``build_*`` function returns a list of LaTeX lines and returns an empty
 list when it has no data, so sections that have not been filled in yet are
@@ -26,16 +36,12 @@ from .models import (Award, Course, DeliveredProduct, Education, Experience,
 
 PUBLICATION_CATEGORY_LABELS = dict(PUBLICATION_CATEGORIES)
 
-# Section V subsections, in the order the official CV prints them.
+# Service subsections, in print order. The first two come from Review; the
+# rest are the Service categories, under the labels the admin shows.
 SERVICE_ORDER = [
-    # A and B come from Review; the rest come from Service.
-    ('journal_review', 'Reviewer and Editorial Work for Technical Journals'),
-    ('conference_review', 'Reviewer Work for Conferences'),
-    ('session_chair', 'Conference Session Chairs'),
-    ('special_activity', 'Special Activities'),
-    ('outside_professional', 'Outside Professional Activities/Consulting'),
-    ('civic', 'Civic Activities'),
-]
+    ('journal_review', 'Editorial Service and Journal Reviewing'),
+    ('conference_review', 'Conference Reviewing and Program Committees'),
+] + Service.SERVICE_CATEGORIES
 
 # LaTeX specials, longest-first so that backslashes are not re-escaped.
 _LATEX_ESCAPES = [
@@ -130,7 +136,7 @@ def url_text(url):
 
 
 def link(url):
-    """A clickable URL printed as its own text, as the official CV does."""
+    """A clickable URL printed as its own text, so it survives printing."""
     if not url:
         return ""
     return r'\href{%s}{%s}' % (url_target(url), url_text(url))
@@ -180,21 +186,21 @@ def format_authors(authors, surname):
 
 
 def credit_sentence(roles):
-    """The italic CRediT sentence that closes most Section I.B entries."""
+    """The italic CRediT sentence that closes most publication entries."""
     if not roles:
         return ""
     return r' \textit{Contributed %s.}' % clean(roles.strip().rstrip('.'))
 
 
 def quoted(title):
-    """A title in the curly double quotes the official CV uses."""
+    """A title in curly double quotes, closed with the IEEE comma."""
     return "``%s,''" % clean(title.rstrip('.'))
 
 
-# --- Section I.B citations ---------------------------------------------------
+# --- Citations ---------------------------------------------------------------
 
 def format_reference(ref, profile):
-    """An IEEE-style citation for a Reference, in the official CV's dialect."""
+    """An IEEE-style citation for a Reference."""
     parts = [marker_prefix(ref)]
 
     authors = format_authors(ref.authors, profile.surname())
@@ -255,7 +261,7 @@ def _italicise_submitted(note):
 
 
 def format_talk(talk, profile):
-    """A presentation entry, in the style of Section I.B.2 and I.B.5."""
+    """A presentation entry, cited like a paper with the candidate as speaker."""
     parts = [marker_prefix(talk)]
 
     name = r'\textbf{%s}' % clean(_initialled_name(profile))
@@ -289,125 +295,330 @@ def _initialled_name(profile):
     return "%s %s" % (initials, parts[-1])
 
 
-# --- Header and preamble -----------------------------------------------------
+# --- Shared pieces -----------------------------------------------------------
+
+def countdown(prefix, total):
+    """Tags for a series printed top to bottom: J5, J4, ..., J1."""
+    return ["%s%d" % (prefix, number) for number in range(total, 0, -1)]
+
+
+def section(title, blocks):
+    """A section heading over its blocks, or nothing if every block is empty."""
+    body = [line for block in blocks for line in block]
+    if not body:
+        return []
+    return [r'\cvsection{%s}' % title] + body
+
+
+def sentence(text):
+    """Close a fragment with exactly one full stop."""
+    text = (text or "").strip()
+    if not text:
+        return ""
+    return text if text.endswith(('.', '?', '!')) else text + "."
+
+
+def month_range(start, end, open_ended="Present"):
+    """'Aug 2025 – Aug 2026', or '' when neither end is known."""
+    if not start and not end:
+        return ""
+    first = start.strftime('%b %Y') if start else ""
+    last = end.strftime('%b %Y') if end else open_ended
+    return "%s – %s" % (first, last)
+
+
+def _people(names):
+    """One person per line in a text field -> 'A; B'."""
+    return "; ".join(clean(line.strip()) for line in (names or "").splitlines() if line.strip())
+
+
+# --- Header ------------------------------------------------------------------
 
 def build_header(profile):
-    lines = [r'\begin{cvheader}', r'\cvheadertitle{Curriculum Vitae}']
-    lines.append(r'\cvheadername{%s}' % clean(profile.name))
+    lines = [r'\begin{cvheader}', r'\cvname{%s}' % clean(profile.plain_name())]
     for value in (profile.long_title or profile.title, profile.department,
                   profile.long_institution or profile.institution):
         if value:
             lines.append(r'\cvheaderline{%s}' % clean(value))
+    contact = _contact_line(profile)
+    if contact:
+        lines.append(r'\cvcontact{%s}' % contact)
     lines.append(r'\end{cvheader}')
-
-    if profile.fields_of_interest:
-        lines.append(r'\cvminihead{Current Fields of Interest:}')
-        lines.append(r'\cvline{%s}' % clean(' '.join(profile.fields_of_interest.split())))
-
-    lines.extend(build_preamble_sections(profile))
-    lines.extend(build_key(profile))
     return lines
 
 
-def build_preamble_sections(profile):
-    """EDUCATION and PROFESSIONAL APPOINTMENTS.
+def _contact_line(profile):
+    bits = []
+    if profile.email:
+        bits.append(r'\href{mailto:%s}{%s}' % (url_target(profile.email),
+                                               escape_latex(profile.email)))
+    if profile.phone:
+        bits.append(clean(profile.phone))
+    if profile.website:
+        bits.append(r'\href{%s}{%s}' % (url_target(profile.website),
+                                        escape_latex(profile.display_website.rstrip('/'))))
+    return r'\cvsep{}'.join(bits)
 
-    The strict promotion-packet format has neither, but dropping them would lose the
-    only record of Hans's degrees and positions on the public CV, so they are
-    printed above Section I unless the profile turns them off.
-    """
+
+def build_interests(profile):
+    if not profile.fields_of_interest:
+        return []
+    return [r'\cvsection{Research Interests}',
+            r'\cvparagraph{%s}' % clean(' '.join(profile.fields_of_interest.split()))]
+
+
+# --- Education and appointments ----------------------------------------------
+
+def build_education(profile):
+    """Degrees, newest first, each with its dissertation if it has one."""
     if not profile.cv_show_preamble_sections:
         return []
-
-    lines = []
     educations = Education.objects.order_by('-graduation_year')
-    if educations.exists():
-        lines.append(r'\cvminihead{Education}')
-        for item in educations:
-            degree = clean(item.degree_type)
-            if item.field_of_study:
-                degree = "%s, %s" % (degree, clean(item.field_of_study))
-            where = [clean(item.institution)]
-            if item.location:
-                where.append(clean(item.location))
-            if item.honors:
-                where.append(clean(item.honors))
-            lines.append(r'\cvpreentry{%s}{%s}{%s}' % (
-                degree, ", ".join(where), item.graduation_year))
+    if not educations.exists():
+        return []
 
+    lines = [r'\cvsection{Education}']
+    for item in educations:
+        degree = clean(item.degree_type)
+        if item.field_of_study:
+            degree = "%s, %s" % (degree, clean(item.field_of_study))
+        where = [clean(item.institution)]
+        if item.location:
+            where.append(clean(item.location))
+        if item.honors:
+            where.append(clean(item.honors))
+        details = [", ".join(where)]
+        if item.is_dissertation and item.thesis_title:
+            details.append(_dissertation_line(item))
+        lines.append(r'\cventry{}{\textbf{%s}}{%s}{%s}' % (
+            degree, item.graduation_year, r'\cvpar '.join(details)))
+    return lines
+
+
+def _dissertation_line(item):
+    kind = "Dissertation" if re.search(r'ph\.?\s*d|doctor', item.degree_type or "",
+                                       flags=re.IGNORECASE) else "Thesis"
+    bits = ["%s: ``%s.''" % (kind, clean(item.thesis_title.rstrip('.')))]
+    if item.advisor:
+        bits.append("Advisor: %s." % clean(item.advisor.rstrip('.')))
+    if item.thesis_url:
+        bits.append(link(item.thesis_url))
+    return " ".join(bits)
+
+
+def build_appointments(profile):
+    if not profile.cv_show_preamble_sections:
+        return []
     experiences = Experience.objects.order_by('-start_date')
-    if experiences.exists():
-        lines.append(r'\cvminihead{Professional Appointments}')
-        for item in experiences:
-            start = item.start_date.strftime('%b %Y') if item.start_date else ""
-            end = item.end_date.strftime('%b %Y') if item.end_date else "Present"
-            where = [clean(item.institution)]
-            if item.department:
-                where.insert(0, clean(item.department))
-            if item.location:
-                where.append(clean(item.location))
-            lines.append(r'\cvpreentry{%s}{%s}{%s}' % (
-                clean(item.title), ", ".join(where), "%s – %s" % (start, end)))
+    if not experiences.exists():
+        return []
 
+    lines = [r'\cvsection{Appointments}']
+    for item in experiences:
+        where = [clean(item.institution)]
+        if item.department:
+            where.insert(0, clean(item.department))
+        if item.location:
+            where.append(clean(item.location))
+        lines.append(r'\cventry{}{\textbf{%s}}{%s}{%s}' % (
+            clean(item.title), month_range(item.start_date, item.end_date),
+            ", ".join(where)))
     return lines
 
 
-def build_key(profile):
-    """The KEY block explaining the dagger and double-dagger markers."""
-    return [
-        r'\cvminihead{Key}',
-        r'\cvline{\dag{} Authors listed alphabetically.}',
-        r'\cvline{\ddag{} Shared first authorship.}',
-    ]
+# --- Sponsored research ------------------------------------------------------
+
+def build_sponsored_research(profile):
+    return section('Sponsored Research', [
+        _funded_projects_block(profile),
+        _proposals_block(profile),
+        _research_program_block(profile),
+    ])
 
 
-# --- Section I ---------------------------------------------------------------
-
-def build_section_i(profile):
-    blocks = [
-        _thesis_block(profile),
-        _publications_block(profile),
-        _delivered_products_block(),
-        _awards_block(profile),
-        _knowledge_sharing_block(profile),
-    ]
-    body = [line for block in blocks for line in block]
-    if not body:
-        return []
-    return [r'\cvsection{Mastery of a Complex Field}'] + body
-
-
-def _thesis_block(profile):
-    theses = Education.objects.filter(is_dissertation=True).order_by('-graduation_year')
-    theses = [t for t in theses if t.thesis_title]
-    if not theses:
+def _funded_projects_block(profile):
+    grants = list(Grant.objects.all())
+    if not grants:
         return []
 
-    lines = [r'\cvsubsection{Thesis/Dissertation}']
-    for item in theses:
-        entry = []
-        entry.append("%s. ``%s.''" % (clean(_surname_first(profile)), clean(item.thesis_title.rstrip('.'))))
-        degree = item.degree_type or ""
-        if 'dissertation' not in degree.lower() and 'thesis' not in degree.lower():
-            degree = ("%s Dissertation" % degree).strip()
-        entry.append(" %s, %s, %s." % (clean(degree), clean(item.institution),
-                                       item.graduation_year))
-        if item.thesis_url:
-            entry.append(" %s" % link(item.thesis_url))
-        lines.append(r'\cvplainentry{%s}' % "".join(entry))
+    lines = [r'\cvsubsection{Funded Projects}']
+    for tag, grant in zip(countdown('G', len(grants)), grants):
+        sponsor = clean(grant.funding_agency)
+        if grant.grant_number:
+            sponsor = "%s, %s" % (sponsor, clean(grant.grant_number))
+        facts = [sentence(sponsor)]
+        # The P.I. of record defaults to the candidate, which the role already says.
+        if grant.pi_name:
+            facts.append("PI: %s." % _people(grant.pi_name))
+        facts.append(sentence("Role: %s" % clean(grant.get_cv_role())))
+        if grant.task_title:
+            facts.append(sentence("Task: %s" % clean(grant.task_title)))
+        if grant.amount is not None:
+            facts.append("Total award: %s." % clean(grant.get_cv_amount()))
+        details = [" ".join(facts)] + paragraphs(grant.contributions)
+        lines.append(r'\cventry{%s}{%s\textbf{%s}}{%s}{%s}' % (
+            tag, label_for(grant), clean(grant.title),
+            clean(grant.get_period_of_performance()), r'\cvpar '.join(details)))
     return lines
 
 
-def _surname_first(profile):
-    """"Hans Riess" -> "Riess, Hans", the form the thesis entry uses."""
-    parts = profile.name_parts()
-    if len(parts) < 2:
-        return profile.plain_name()
-    return "%s, %s" % (parts[-1], " ".join(parts[:-1]))
+def _proposals_block(profile):
+    proposals = list(Proposal.objects.all())
+    if not proposals:
+        return []
+
+    lines = [r'\cvsubsection{Proposals}']
+    for tag, proposal in zip(countdown('PR', len(proposals)), proposals):
+        sponsor = clean(proposal.sponsor)
+        if proposal.solicitation:
+            sponsor = "%s, %s" % (sponsor, clean(proposal.solicitation))
+        facts = [sentence(sponsor)]
+        if proposal.pi_name:
+            facts.append("PI: %s." % _people(proposal.pi_name))
+        if proposal.candidate_role:
+            facts.append(sentence("Role: %s" % clean(proposal.candidate_role)))
+        if proposal.amount_requested is not None:
+            facts.append("Amount requested: %s." % clean(proposal.get_cv_amount()))
+        period = month_range(proposal.start_date, proposal.end_date)
+        if period:
+            facts.append("Proposed period: %s." % period)
+        submitted = _submission_text(proposal)
+        if submitted:
+            facts.append(sentence(submitted))
+        facts.append(sentence("Status: %s" % clean(proposal.get_result())))
+        details = [" ".join(facts)] + paragraphs(proposal.contribution)
+        lines.append(r'\cventry{%s}{%s\textbf{%s}}{%s}{%s}' % (
+            tag, label_for(proposal), clean(proposal.title),
+            _submission_month(proposal), r'\cvpar '.join(details)))
+    return lines
 
 
-def _publications_block(profile):
-    """Section I.B, merging Reference and Talk rows into six subsections.
+def _submission_text(proposal):
+    bits = []
+    if proposal.date_abstract_submitted:
+        bits.append("Abstract submitted %s"
+                    % proposal.date_abstract_submitted.strftime('%B %-d, %Y'))
+    if proposal.full_proposal_note:
+        bits.append("full proposal %s" % clean(proposal.full_proposal_note))
+    elif proposal.date_full_submitted:
+        bits.append("full proposal submitted %s"
+                    % proposal.date_full_submitted.strftime('%B %-d, %Y'))
+    text = "; ".join(bits)
+    return text[:1].upper() + text[1:]
+
+
+def _submission_month(proposal):
+    """The date column: when the proposal last went to the sponsor."""
+    when = proposal.date_full_submitted or proposal.date_abstract_submitted
+    return when.strftime('%b %Y') if when else ""
+
+
+def _research_program_block(profile):
+    blocks = paragraphs(profile.research_program)
+    if not blocks:
+        return []
+    lines = [r'\cvsubsection{Research Program Development}']
+    lines.extend(r'\cvparagraph{%s}' % block for block in blocks)
+    return lines
+
+
+# --- Teaching and mentoring --------------------------------------------------
+
+# Where in the year each semester ends, so that courses sort chronologically.
+SEMESTER_MONTHS = {'winter': 1, 'spring': 5, 'summer': 8, 'fall': 12}
+
+
+def build_teaching_and_mentoring(profile):
+    teaching, mentoring = _teaching_block(), _mentoring_block()
+    if teaching and mentoring:
+        return ([r'\cvsection{Teaching and Mentoring}', r'\cvsubsection{Teaching}']
+                + teaching
+                + [r'\cvsubsection{Student Mentoring}'] + mentoring)
+    if teaching:
+        return [r'\cvsection{Teaching}'] + teaching
+    if mentoring:
+        return [r'\cvsection{Student Mentoring}'] + mentoring
+    return []
+
+
+def _teaching_block():
+    """Courses and workshops taught, plus tutorial lectures, newest first."""
+    rows = []
+    for course in Course.objects.all():
+        when = None
+        if course.year:
+            when = datetime.date(course.year, SEMESTER_MONTHS.get(course.semester, 12), 1)
+        count = ""
+        if course.attendee_count:
+            noun = "Enrollment" if course.course_format == 'course' else "Attendance"
+            count = "%s: %s." % (noun, clean(course.attendee_count))
+        rows.append((when,
+                     r'\textbf{%s}, %s' % (clean(course.get_cv_title()),
+                                           clean(course.get_cv_organization())),
+                     clean(course.get_cv_when_taught()),
+                     " ".join(bit for bit in (sentence(clean(course.get_cv_role())), count) if bit)))
+
+    for talk in Talk.objects.all():
+        if not talk.is_knowledge_sharing():
+            continue
+        role = clean(talk.curriculum_role) or clean(talk.get_talk_type_display())
+        count = "Attendance: %s." % clean(talk.attendee_count) if talk.attendee_count else ""
+        rows.append((talk.date,
+                     r'\textbf{%s (tutorial)}, %s' % (clean(talk.title), clean(talk.venue)),
+                     talk.date.strftime('%B %Y') if talk.date else "",
+                     " ".join(bit for bit in (sentence(role), count) if bit)))
+
+    rows.sort(key=lambda row: row[0] or datetime.date.min, reverse=True)
+    return [r'\cventry{}{%s}{%s}{%s}' % row[1:] for row in rows]
+
+
+def _mentoring_block():
+    lines = []
+    for student in Student.objects.order_by('-start_date'):
+        heading = r"\textbf{%s}, %s student, %s" % (clean(student.name),
+                                                    clean(student.get_level_display()),
+                                                    clean(student.institution))
+        bits = []
+        if student.appointment_note:
+            bits.append(sentence(clean(student.appointment_note)))
+        topic = student.research_topic or student.project_title
+        if topic:
+            bits.append("Research topic: %s." % clean(topic.rstrip('.')))
+        refs = [p.cv_ref_slug for p in student.resulting_publications.all() if p.cv_ref_slug]
+        if refs:
+            joined = ", ".join(r'\ref{cv:%s}' % slug for slug in refs)
+            bits.append("Resulting publication%s: %s." % ("s" if len(refs) > 1 else "", joined))
+        if student.advisor_of_record:
+            bits.append("Advisor of record: %s." % clean(student.advisor_of_record.rstrip('.')))
+        if student.host_lab:
+            bits.append("Host lab: %s." % clean(student.host_lab.rstrip('.')))
+        if student.current_position:
+            bits.append("Current position: %s." % clean(student.current_position.rstrip('.')))
+        lines.append(r'\cventry{}{%s}{%s}{%s}' % (heading, student.get_date_range(),
+                                                 " ".join(bits)))
+    return lines
+
+
+# --- Publications and presentations ------------------------------------------
+
+# Which categories print together, and the prefix they are numbered under.
+# Headings come from PUBLICATION_CATEGORIES. Groups sharing a prefix form one
+# series, so refereed and non-refereed proceedings run C5 ... C1 between them.
+PUBLICATION_GROUPS = [
+    (('journal',), 'J'),
+    (('proc_refereed',), 'C'),
+    (('proc_nonrefereed',), 'C'),
+    (('submitted', 'submitted_conf'), 'S'),
+    (('preprints',), 'P'),
+]
+PRESENTATION_GROUPS = [
+    (('invited_conf',), 'T'),
+    (('no_proc',), 'T'),
+]
+
+
+def _grouped_publications(profile):
+    """Reference and Talk rows by category, as (sort key, object) pairs.
 
     References are filtered by status unless the profile says to show all. A talk
     that links a reference which is itself listed here is dropped, so a paper and
@@ -431,130 +642,130 @@ def _publications_block(profile):
         category = talk.get_category()
         if category in grouped:
             grouped[category].append((talk.cv_sort_key(), talk))
+    return grouped
 
-    if not any(grouped.values()):
-        return []
 
-    lines = [r'\cvsubsection{Publications, Presentations, Posters}']
-    for key in PUBLICATION_CATEGORY_ORDER:
-        entries = grouped[key]
+def _numbered_groups(grouped, groups, profile):
+    """A subsection per non-empty group, entries numbered down within each prefix."""
+    remaining = {}
+    for categories, prefix in groups:
+        remaining[prefix] = remaining.get(prefix, 0) + sum(len(grouped[c]) for c in categories)
+
+    lines = []
+    for categories, prefix in groups:
+        entries = [pair for category in categories for pair in grouped[category]]
         if not entries:
             continue
-        lines.append(r'\cvsubsubsection{%s}' % clean(PUBLICATION_CATEGORY_LABELS[key]))
+        lines.append(r'\cvsubsection{%s}' % clean(PUBLICATION_CATEGORY_LABELS[categories[0]]))
         for _, obj in sorted(entries, key=lambda pair: pair[0], reverse=True):
+            tag = "%s%d" % (prefix, remaining[prefix])
+            remaining[prefix] -= 1
             if isinstance(obj, Reference):
                 body = format_reference(obj, profile)
             else:
                 body = format_talk(obj, profile)
-            lines.append(r'\cventryitem{%s%s}' % (label_for(obj), body))
+            lines.append(r'\cvcite{%s}{%s%s}' % (tag, label_for(obj), body))
     return lines
+
+
+def _marker_key(grouped, groups):
+    """The dagger key, naming only the markers that are actually used."""
+    listed = [obj for categories, _ in groups for c in categories for _, obj in grouped[c]]
+    notes = []
+    if any(getattr(obj, 'alphabetical_order', False) for obj in listed):
+        notes.append(r'\dag{} Authors listed alphabetically.')
+    if any(getattr(obj, 'shared_first_author', False) for obj in listed):
+        notes.append(r'\ddag{} Shared first authorship.')
+    return [r'\cvnote{%s}' % r'\qquad '.join(notes)] if notes else []
+
+
+def build_publications(profile):
+    grouped = _grouped_publications(profile)
+    body = _numbered_groups(grouped, PUBLICATION_GROUPS, profile)
+    if not body:
+        return []
+    return ([r'\cvsection{Publications}'] + _marker_key(grouped, PUBLICATION_GROUPS)
+            + body)
+
+
+def build_presentations(profile):
+    grouped = _grouped_publications(profile)
+    return section('Presentations', [_numbered_groups(grouped, PRESENTATION_GROUPS, profile)])
+
+
+# --- Technical contributions -------------------------------------------------
+
+def build_technical_contributions():
+    return section('Technical Contributions', [
+        _delivered_products_block(),
+        _innovations_block(),
+        _reports_block(),
+    ])
+
+
+def _labelled_paragraphs(caption, value):
+    """Paragraphs of a prose field, the first one opening with an italic label."""
+    blocks = paragraphs(value)
+    if not blocks:
+        return []
+    return [r'\cvlabelled{%s}{%s}' % (clean(caption), blocks[0])] + blocks[1:]
 
 
 def _delivered_products_block():
-    products = DeliveredProduct.objects.all()
-    if not products.exists():
+    products = list(DeliveredProduct.objects.all())
+    if not products:
         return []
 
-    lines = [r'\cvsubsection{Key Delivered Products}']
-    for product in products:
-        lines.append(r'\cvsubsubsection{%s}' % clean(product.get_cv_heading()))
-        if product.cv_ref_slug:
-            lines.append(label_for(product))
-        sponsor_bits = []
+    lines = [r'\cvsubsection{Delivered Products}']
+    for tag, product in zip(countdown('D', len(products)), products):
+        heading = r'%s\textbf{%s}' % (label_for(product), clean(product.name))
+        if product.summary:
+            heading += " — %s" % clean(product.summary)
+        details = []
         if product.sponsor:
-            sponsor_bits.append(clean(product.sponsor))
-        if product.date_range:
-            sponsor_bits.append("Date range for work performed by the candidate: %s"
-                                % clean(product.date_range))
-        if sponsor_bits:
-            lines.append(r'\cventryitem{\cvlabelled{Sponsor/to whom delivered}{%s}}'
-                         % ". ".join(sponsor_bits))
-        for caption, value in (("Product description", product.description),
-                               ("Current maturity", product.maturity),
-                               ("Candidate's technical contribution", product.technical_contribution)):
-            if value:
-                lines.append(r'\cventryitem{\cvlabelled{%s}{%s}}'
-                             % (clean(caption), " ".join(paragraphs(value))))
+            details.append(r'\cvlabelled{Delivered to}{%s}' % sentence(clean(product.sponsor)))
+        for caption, value in (("Description", product.description),
+                               ("Maturity", product.maturity),
+                               ("Contribution", product.technical_contribution)):
+            details.extend(_labelled_paragraphs(caption, value))
+        lines.append(r'\cventry{%s}{%s}{%s}{%s}' % (
+            tag, heading, clean(product.date_range), r'\cvpar '.join(details)))
     return lines
 
 
-def _awards_block(profile):
-    awards = Award.objects.all()
-    if not awards.exists():
+def _innovations_block():
+    innovations = list(Innovation.objects.all())
+    if not innovations:
         return []
 
-    lines = [r'\cvsubsection{Professional Research Recognition Awards}']
-    for award in awards:
-        entry = []
-        entry.append(r'\textbf{%s}' % clean(award.title))
-        tail = [bit for bit in (clean(award.organization), clean(award.get_cv_date())) if bit]
-        if tail:
-            entry.append(", " + ", ".join(tail))
-        entry.append(".")
-        if award.detail:
-            entry.append(r' \textit{(%s)}' % clean(award.detail.strip().rstrip('.')))
-        lines.append(r'\cvplainentry{%s}' % "".join(entry))
+    lines = [r'\cvsubsection{Technical Innovations on Sponsored Programs}']
+    for tag, innovation in zip(countdown('I', len(innovations)), innovations):
+        details = []
+        sponsors = innovation.get_sponsors_line()
+        if sponsors:
+            details.append(r'\cvlabelled{Programs}{%s}' % sentence(clean(sponsors)))
+        details.extend(_labelled_paragraphs("Description", innovation.description))
+        details.extend(_labelled_paragraphs("Contributions", innovation.technical_contributions))
+        lines.append(r'\cventry{%s}{%s\textbf{%s}}{}{%s}' % (
+            tag, label_for(innovation), clean(innovation.title), r'\cvpar '.join(details)))
     return lines
-
-
-def _knowledge_sharing_block(profile):
-    """Section I.E, from courses and workshops taught plus tutorial lectures."""
-    rows = []
-    for course in Course.objects.all():
-        when = datetime.date(course.year, 12, 31) if course.year else None
-        rows.append((when, [
-            clean(course.get_cv_organization()),
-            clean(course.get_cv_when_taught()),
-            clean(course.get_cv_title()),
-            clean(course.get_cv_role()),
-            clean(course.attendee_count),
-        ]))
-
-    for talk in Talk.objects.all():
-        if not talk.is_knowledge_sharing():
-            continue
-        rows.append((talk.date, [
-            clean(talk.venue),
-            talk.date.strftime('%B %Y') if talk.date else "",
-            "%s (tutorial)" % clean(talk.title),
-            clean(talk.curriculum_role) or clean(talk.get_talk_type_display()),
-            clean(talk.attendee_count),
-        ]))
-
-    if not rows:
-        return []
-
-    rows.sort(key=lambda row: row[0] or datetime.date.min, reverse=True)
-    lines = [r'\cvsubsection{Knowledge Sharing}', r'\begin{cvteachtable}']
-    for _, cells in rows:
-        lines.append(r'\cvteachrow{%s}{%s}{%s}{%s}{%s}' % tuple(cells))
-    lines.append(r'\end{cvteachtable}')
-    return lines
-
-
-# --- Section II --------------------------------------------------------------
-
-def build_section_ii():
-    blocks = [_reports_block(), _innovations_block()]
-    body = [line for block in blocks for line in block]
-    if not body:
-        return []
-    return [r'\cvsection{Technical Contributions and Innovation}'] + body
 
 
 def _reports_block():
-    """Section II.A: one numbered report series per award that has reports."""
-    grants = [g for g in Grant.objects.all() if g.tech_reports.exists()]
+    """Reports delivered to sponsors, grouped by award, numbered as one series."""
+    grants = [(grant, list(grant.tech_reports.all())) for grant in Grant.objects.all()]
+    grants = [(grant, reports) for grant, reports in grants if reports]
     if not grants:
         return []
 
-    lines = [r'\cvsubsection{Research/Technical Reports}']
-    for grant in grants:
-        heading = "%s — Technical Report Series." % (grant.short_title or grant.title)
+    tags = iter(countdown('R', sum(len(reports) for _, reports in grants)))
+    lines = [r'\cvsubsection{Technical Reports and Briefings}']
+    for grant, reports in grants:
+        heading = "%s technical report series." % (grant.short_title or grant.title)
         preamble = " ".join(paragraphs(grant.report_series_note))
-        lines.append(r'\cvsubsubrun{%s}{%s}' % (clean(heading), preamble))
-        for report in grant.tech_reports.all():
-            bits = [r'\textbf{%s}.' % clean(report.title)]
+        lines.append(r'\cvrunin{%s}{%s}' % (clean(heading), preamble))
+        for report in reports:
+            bits = [r'\textbf{%s}.' % clean(report.title.rstrip('.'))]
             detail = [clean(report.get_report_type_display())]
             if report.date:
                 detail.append(report.date.strftime('%B %Y'))
@@ -567,205 +778,53 @@ def _reports_block():
             bits.append(" %s." % "; ".join(bit for bit in detail if bit))
             if report.description:
                 bits.append(" %s" % " ".join(paragraphs(report.description)))
-            lines.append(r'\cventryitem{%s%s}' % (label_for(report), "".join(bits)))
+            lines.append(r'\cvcite{%s}{%s%s}' % (next(tags), label_for(report), "".join(bits)))
     return lines
 
 
-def _innovations_block():
-    innovations = Innovation.objects.all()
-    if not innovations.exists():
+# --- Honors and awards -------------------------------------------------------
+
+def build_awards():
+    awards = Award.objects.all()
+    if not awards.exists():
         return []
 
-    lines = [r'\cvsubsection{Significant Technical Innovation and/or Contributions on Sponsored Programs}']
-    for innovation in innovations:
-        lines.append(r'\cvsubsubrun{%s}{}' % clean(innovation.title))
-        if innovation.cv_ref_slug:
-            lines.append(label_for(innovation))
-        sponsors = innovation.get_sponsors_line()
-        if sponsors:
-            lines.append(r'\cvbody{\cvlabelled{Sponsors/Projects/Dates}{%s}}'
-                         % clean(sponsors))
-        for caption, value in (("Description", innovation.description),
-                               ("Candidate's specific technical contributions",
-                                innovation.technical_contributions)):
-            for index, block in enumerate(paragraphs(value)):
-                if index == 0:
-                    lines.append(r'\cvbody{\cvlabelled{%s}{%s}}' % (clean(caption), block))
-                else:
-                    lines.append(r'\cvbody{%s}' % block)
+    lines = [r'\cvsection{Honors and Awards}']
+    for award in awards:
+        heading = r'\textbf{%s}' % clean(award.title)
+        if award.organization:
+            heading += ", %s" % clean(award.organization)
+        lines.append(r'\cventry{}{%s}{%s}{%s}' % (
+            heading, clean(award.get_cv_date()),
+            " ".join(sentence(block) for block in paragraphs(award.detail))))
     return lines
 
 
-# --- Section III -------------------------------------------------------------
+# --- Service -----------------------------------------------------------------
 
-def build_section_iii(profile):
-    blocks = [_funded_research_block(profile), _student_guidance_block()]
-    body = [line for block in blocks for line in block]
-    if not body:
-        return []
-    return [r'\cvsection{Project Leadership and Supervision}'] + body
-
-
-def _funded_research_block(profile):
-    grants = Grant.objects.all()
-    if not grants.exists():
-        return []
-
-    lines = [
-        r'\cvsubsection{Leadership in Funded Research}',
-        r'\cvsubsubsection{Externally Sponsored Programs for which the Candidate Served in a Leadership Role}',
-    ]
-    for grant in grants:
-        lines.append(r'\cvitemhead{%s%s}' % (label_for(grant), clean(grant.title)))
-        lines.append(r'\begin{cvkeytable}')
-        rows = [
-            ("Title", clean(grant.title)),
-            ("Contract Number", clean(grant.grant_number)),
-            ("Sponsor", clean(grant.funding_agency)),
-            ("P.I.", _pi_cell(grant, profile)),
-            ("Candidate's Role", clean(grant.get_cv_role())),
-            ("Task Title", clean(grant.task_title)),
-            ("Amount Funded for Project", clean(grant.get_cv_amount())),
-            ("Period of Performance", clean(grant.get_period_of_performance())),
-            ("Contributions", r' \par '.join(paragraphs(grant.contributions))),
-        ]
-        lines.extend(_key_rows(rows))
-        lines.append(r'\end{cvkeytable}')
-    return lines
-
-
-def _proposals_block(profile):
-    proposals = Proposal.objects.all()
-    if not proposals.exists():
-        return []
-
-    lines = [
-        r'\cvsubsection{Research Proposals}',
-        r'\cvsubsubsection{External Proposals to Sponsors}',
-    ]
-    for proposal in proposals:
-        lines.append(r'\cvitemhead{%s%s}' % (label_for(proposal), clean(proposal.title)))
-        lines.append(r'\begin{cvkeytable}')
-        rows = [
-            ("Title", clean(proposal.title)),
-            ("Sponsor", clean(proposal.sponsor)),
-            ("Solicitation", clean(proposal.solicitation)),
-            ("PI", _pi_cell(proposal, profile)),
-            ("Candidate's Role", clean(proposal.candidate_role)),
-            ("Date Submitted", _submission_cell(proposal)),
-            ("Amount Requested", clean(proposal.get_cv_amount())),
-            ("Result", clean(proposal.get_result())),
-            ("Period of Performance", clean(proposal.get_period_of_performance())),
-            ("Contribution to Proposal", r' \par '.join(paragraphs(proposal.contribution))),
-        ]
-        lines.extend(_key_rows(rows))
-        lines.append(r'\end{cvkeytable}')
-    return lines
-
-
-def _key_rows(rows):
-    """Emit only the rows that have a value, so tables stay tight."""
-    return [r'\cvkeyrow{%s}{%s}' % (clean(label), value) for label, value in rows if value]
-
-
-def _pi_cell(grant, profile):
-    if grant.pi_name:
-        return r' \par '.join(clean(line) for line in grant.pi_name.splitlines() if line.strip())
-    return clean(profile.plain_name())
-
-
-def _submission_cell(proposal):
-    bits = []
-    if proposal.date_abstract_submitted:
-        bits.append("Abstract: %s" % proposal.date_abstract_submitted.strftime('%B %-d, %Y'))
-    if proposal.full_proposal_note:
-        bits.append("Full Proposal: %s" % clean(proposal.full_proposal_note))
-    elif proposal.date_full_submitted:
-        bits.append("Full Proposal: %s" % proposal.date_full_submitted.strftime('%B %-d, %Y'))
-    return r' \par '.join(bits)
-
-
-def _student_guidance_block():
-    students = Student.objects.order_by('-start_date')
-    if not students.exists():
-        return []
-
-    lines = [
-        r'\cvsubsection{Individual Student Guidance/Development}',
-        r'\cvsubsubsection{Graduate Research Assistants, Student Assistants, and/or Co-op Students '
-        r'Trained/Supervised}',
-    ]
-    for student in students:
-        bits = [r"\textbf{%s}, %s student, %s." % (clean(student.name),
-                                                    clean(student.get_level_display()),
-                                                    clean(student.institution))]
-        appointment = [clean(student.appointment_note)] if student.appointment_note else []
-        appointment.append(student.get_date_range())
-        bits.append(" %s." % ", ".join(part for part in appointment if part))
-
-        topic = student.research_topic or student.project_title
-        if topic:
-            bits.append(" Research topic: %s." % clean(topic.rstrip('.')))
-        publications = list(student.resulting_publications.all())
-        refs = [p.cv_ref_slug for p in publications if p.cv_ref_slug]
-        if refs:
-            joined = ", ".join(r'\ref{cv:%s}' % slug for slug in refs)
-            bits.append(" Resulting publication: see %s." % joined)
-        if student.advisor_of_record:
-            bits.append(" Advisor of record: %s." % clean(student.advisor_of_record.rstrip('.')))
-        if student.host_lab:
-            bits.append(" Host lab: %s." % clean(student.host_lab.rstrip('.')))
-        if student.current_position:
-            bits.append(" Current position: %s." % clean(student.current_position.rstrip('.')))
-        lines.append(r'\cventryitem{%s}' % "".join(bits))
-    return lines
-
-
-# --- Section IV --------------------------------------------------------------
-
-def build_section_iv(profile):
-    blocks = [_research_program_block(profile), _proposals_block(profile)]
-    body = [line for block in blocks for line in block]
-    if not body:
-        return []
-    return [r'\cvsection{Sponsored Program Development}'] + body
-
-
-def _research_program_block(profile):
-    blocks = paragraphs(profile.research_program)
-    if not blocks:
-        return []
-    lines = [r'\cvsubsection{Research Program Development}']
-    lines.extend(r'\cvnarrative{%s}' % block for block in blocks)
-    return lines
-
-
-# --- Section V ---------------------------------------------------------------
-
-def build_section_v(profile):
-    """Section V, from Review (subsections A and B) and Service (C onwards)."""
+def build_service(profile):
+    """Reviewing and editorial work (from Review), then everything else (Service)."""
     grouped = {key: [] for key, _ in SERVICE_ORDER}
 
     for review in Review.objects.all():
         category = review.get_category()
         if category in grouped:
-            grouped[category].append((review, _review_entry(review, profile)))
+            grouped[category].append(_review_entry(review, profile))
     for service in Service.objects.order_by('-year', 'title'):
         category = service.get_category()
         if category in grouped:
-            grouped[category].append((service, _service_entry(service, profile)))
+            grouped[category].append(_service_entry(service, profile))
 
     if not any(grouped.values()):
         return []
 
-    lines = [r'\cvsection{Outreach and Service}']
+    lines = [r'\cvsection{Service}']
     for key, heading in SERVICE_ORDER:
         entries = grouped[key]
         if not entries:
             continue
         lines.append(r'\cvsubsection{%s}' % clean(heading))
-        for _, body in entries:
-            lines.append(r'\cvplainentry{%s}' % body)
+        lines.extend(r'\cvplain{%s}' % body for body in entries)
     return lines
 
 
@@ -821,11 +880,17 @@ def build_document(profile):
         r'\cvfootername{%s}' % clean(profile.plain_name()),
         r'\begin{document}',
     ]
-    lines.extend(build_header(profile))
-    lines.extend(build_section_i(profile))
-    lines.extend(build_section_ii())
-    lines.extend(build_section_iii(profile))
-    lines.extend(build_section_iv(profile))
-    lines.extend(build_section_v(profile))
+    for part in (build_header(profile),
+                 build_interests(profile),
+                 build_education(profile),
+                 build_appointments(profile),
+                 build_sponsored_research(profile),
+                 build_teaching_and_mentoring(profile),
+                 build_publications(profile),
+                 build_presentations(profile),
+                 build_technical_contributions(),
+                 build_awards(),
+                 build_service(profile)):
+        lines.extend(part)
     lines.append(r'\end{document}')
     return "\n".join(line for line in lines if line)

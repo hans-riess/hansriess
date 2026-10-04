@@ -14,27 +14,38 @@ Both jobs need PostgreSQL: some early migrations are not SQLite compatible.
 
 ## CV generation
 
-`python manage.py generate_cv` renders the CV from the database in the official
-Georgia Tech research-faculty format (Sections I–V) and attaches the PDF to the
-profile, which `/cv/` redirects to. The LaTeX body is assembled in
-`academic/cv_builder.py`; typesetting lives in `academic/tex/academic-cv.sty`.
-Requires `pdflatex` (see `texlive.packages`).
+`python manage.py generate_cv` renders the CV from the database as a plain,
+black-on-white academic job-market CV and attaches the PDF to the profile, which
+`/cv/` redirects to. The LaTeX body is assembled in `academic/cv_builder.py`;
+typesetting lives in `academic/tex/academic-cv.sty`. Requires `pdflatex` (see
+`texlive.packages`).
+
+Sponsored research and teaching come ahead of the publication list:
+
+> Research Interests · Education · Appointments · **Sponsored Research** ·
+> **Teaching and Mentoring** · Publications · Presentations · Technical
+> Contributions · Honors and Awards · Service
 
 Sections with no data are skipped, so the document fills in as content is added
-through the admin. The Georgia Tech fields — publication categories, CRediT
-roles, proposal details, and so on — are grouped into a "Georgia Tech CV"
-fieldset on each model.
+through the admin.
+
+Entries that can be cross-referenced are numbered within a series — `[G]`
+funded projects, `[PR]` proposals, `[J]` journal articles, `[C]` conference
+proceedings, `[S]` papers under review, `[P]` preprints, `[T]` talks, `[D]`
+delivered products, `[I]` technical innovations, `[R]` technical reports.
+Numbers count down, so the last entry of a series is 1 and an entry keeps its
+number as new ones are added above it.
 
 Work in review is entered with Status *In review* and the target venue in
 Journal; it is cited by its arXiv ID and closes with "Submitted to *venue*".
-Journal articles and preprints in review appear by default. Conference papers in
-review, and preprints with no submission pending (Status *Published*, or
-*Rejected* for one that was turned down and left on arXiv), get subsections of
-their own after the official six, printed only when "show all references" is
-ticked on the profile.
+Journal articles and preprints in review appear by default, under Papers Under
+Review. Conference papers in review join them there, and preprints with no
+submission pending (Status *Published*, or *Rejected* for one that was turned
+down and left on arXiv) get a Preprints subsection, but both only when "show all
+references" is ticked on the profile.
 
 Prose fields may contain `[[ref:some-slug]]`, which renders as a live
-cross-reference such as `I.B.3.4` to whichever entry carries that `cv_ref_slug`.
+cross-reference such as `[J3]` to whichever entry carries that `cv_ref_slug`.
 
 To check a change to the layout without touching the real database, load the
 sample data — representative rows for every section, **not** a copy of the live

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = ('Generates the CV as a PDF in the official Georgia Tech format from '
+    help = ('Generates the CV as a PDF in academic job-market format from '
             'database content and handles storage for development and production.')
 
     def add_arguments(self, parser):
