@@ -515,7 +515,7 @@ class SiteDataTests(TestCase):
 
 
 class CvDownloadTests(TestCase):
-    """/cv/ rebuilds on demand, busts caches, and honours the custom override."""
+    """/cv/ rebuilds on demand, is served from this site, and honours the custom override."""
 
     def setUp(self):
         self.profile = Profile.objects.create(name="Hans Riess")
@@ -526,18 +526,23 @@ class CvDownloadTests(TestCase):
         self.profile.refresh_from_db()
         self.profile.cv.save('cv.pdf', ContentFile(b'%PDF-1.4 generated'), save=True)
 
-    def test_regenerates_before_redirecting(self):
+    def _body(self, response):
+        return b''.join(response.streaming_content)
+
+    def test_regenerates_before_serving(self):
         with mock.patch('academic.views.call_command', side_effect=self._fake_build) as build:
             response = self.client.get(self.url)
         build.assert_called_once_with('generate_cv')
-        self.assertEqual(response.status_code, 302)
-        self.profile.refresh_from_db()
-        self.assertTrue(self.profile.cv)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self._body(response), b'%PDF-1.4 generated')
 
-    def test_redirect_is_cache_busted_and_not_cacheable(self):
+    def test_served_inline_from_this_site_and_not_cacheable(self):
+        """No redirect to the storage URL: the visitor stays on /cv/."""
         with mock.patch('academic.views.call_command', side_effect=self._fake_build):
             response = self.client.get(self.url)
-        self.assertIn('?v=', response['Location'])
+        self.assertNotIn('Location', response)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertTrue(response['Content-Disposition'].startswith('inline'))
         self.assertIn('no-store', response['Cache-Control'])
 
     def test_a_build_failure_still_serves_the_stored_copy(self):
@@ -547,7 +552,8 @@ class CvDownloadTests(TestCase):
             # expected traceback out of the test output.
             with self.assertLogs('academic.views', level='ERROR'):
                 response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self._body(response), b'%PDF-1.4 stale')
 
     def test_custom_cv_is_served_and_never_regenerated_over(self):
         self.profile.custom_cv.save('mine.pdf', ContentFile(b'%PDF-1.4 custom'), save=True)
@@ -556,8 +562,8 @@ class CvDownloadTests(TestCase):
         with mock.patch('academic.views.call_command') as build:
             response = self.client.get(self.url)
         build.assert_not_called()
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('mine', response['Location'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self._body(response), b'%PDF-1.4 custom')
 
     def test_no_cv_at_all_is_a_404(self):
         self.profile.use_custom_cv = True
@@ -666,6 +672,10 @@ class SheafDemoTests(TestCase):
         response = self.client.get(reverse('index'))
         self.assertContains(response, 'id="sheaf-demo-open"')
         self.assertContains(response, 'href="#sheaf-demo"')
+
+    def test_cv_button_opens_in_a_new_tab(self):
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'target="_blank" rel="noopener">CV</a>')
 
     def test_demo_assets_carry_a_cache_buster(self):
         """S3 serves these with max-age=86400 and does not hash filenames, so an

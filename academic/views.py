@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from academic.models import Profile, Reference, Talk, Grant, Course, Service, Education, Experience,Quote,Figure, Demo
-from django.http import HttpResponse, Http404, JsonResponse
+from django.http import FileResponse, HttpResponse, Http404, JsonResponse
 from django.core.management import call_command
 from django.conf import settings
 from academic.site_data import build_site_data
@@ -132,7 +132,7 @@ def generate_cv_pdf(request):
 
 def cv_redirect(request):
     """
-    Redirects /cv/ to the profile's current CV, giving it a stable, shareable
+    Serves the profile's current CV at /cv/, giving it a stable, shareable
     URL (hansriess.com/cv) independent of the underlying storage URL.
 
     The CV is rebuilt from the database on the way through, so the download is
@@ -156,26 +156,16 @@ def cv_redirect(request):
     if not cv_file:
         raise Http404("CV not found.")
 
-    # The stored file keeps the same name every time it is rebuilt, so its URL
-    # is stable and both browsers and any CDN in front of storage will happily
-    # serve a stale copy. Bust that with the file's own modification time, and
-    # tell the client not to cache the redirect itself.
-    response = redirect(_cache_busted_url(cv_file))
+    # Stream the PDF through this site rather than redirecting to storage, so
+    # visitors stay on hansriess.com/cv/ instead of landing on a long S3 URL.
+    # It is served inline so the browser opens it in its PDF viewer, and marked
+    # uncacheable so a rebuilt CV is never shadowed by a stale copy.
+    filename = f"{profile.name} CV.pdf" if profile.name else "CV.pdf"
+    response = FileResponse(cv_file.open('rb'), content_type='application/pdf',
+                            filename=filename)
     response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response['Pragma'] = 'no-cache'
     return response
-
-
-def _cache_busted_url(cv_file):
-    """The file's URL with a version stamp, so a rebuilt CV is not served stale."""
-    url = cv_file.url
-    try:
-        stamp = int(cv_file.storage.get_modified_time(cv_file.name).timestamp())
-    except Exception:
-        # Not every storage backend reports modification times.
-        logger.debug("Could not read the CV's modification time", exc_info=True)
-        return url
-    return f"{url}{'&' if '?' in url else '?'}v={stamp}"
 
 def site_data(request):
     """The CV as structured JSON, for people and AI tools; see academic/site_data.py.
