@@ -349,11 +349,11 @@ class Course(models.Model):
     ]
 
     # What was taught. Everything here is knowledge sharing; the distinction is
-    # only how the entry reads in the table.
+    # only how the entry reads in the table. A tutorial lecture is not listed:
+    # it is entered as a Talk and cited with the presentations.
     FORMAT_CHOICES = [
         ('course', 'Course'),
         ('workshop', 'Workshop'),
-        ('tutorial', 'Tutorial'),
         ('short_course', 'Short course'),
         ('summer_school', 'Summer school'),
         ('seminar_series', 'Seminar series'),
@@ -364,7 +364,8 @@ class Course(models.Model):
     course_format = models.CharField(
         max_length=20, choices=FORMAT_CHOICES, default='course',
         help_text="What was taught. Anything other than a course is named in the "
-                  "Teaching list, e.g. 'Applied Category Theory (workshop)'.",
+                  "Teaching list, e.g. 'Applied Category Theory (workshop)'. A "
+                  "tutorial lecture is not teaching: add it as a Talk of type Tutorial.",
     )
     course_code = models.CharField(max_length=20,blank=True, null=True, help_text="Course code (e.g., CS101, MATH 201)")
     title = models.CharField(max_length=200, help_text="Full course title")
@@ -559,14 +560,6 @@ class Talk(models.Model):
         blank=True,
         help_text="Bracketed note after the entry, e.g. 'Invited speaker among 10 others.'",
     )
-    curriculum_role = models.TextField(
-        blank=True,
-        help_text="Role, for tutorials, which the CV lists under Teaching.",
-    )
-    attendee_count = models.CharField(
-        max_length=50, blank=True,
-        help_text="Approximate attendance, e.g. '~30'. Used for tutorials under Teaching.",
-    )
     cv_ref_slug = models.SlugField(max_length=100, blank=True, null=True, unique=True, help_text=CV_REF_HELP)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -583,26 +576,19 @@ class Talk(models.Model):
         """Returns a more readable talk type name"""
         return self.get_talk_type_display()
 
-    # A tutorial lecture teaches, so it belongs under Teaching. A workshop is a
-    # venue you are invited to speak at, not something you taught, so it is a
-    # presentation like any other.
-    KNOWLEDGE_SHARING_TYPES = ('tutorial',)
+    # Talks that can appear in conference proceedings. Tutorials are not among
+    # them: a tutorial at a conference is a talk without proceedings, listed
+    # with the presentations rather than under Teaching.
     CONFERENCE_TYPES = ('conference', 'workshop', 'keynote', 'panel', 'poster')
-
-    def is_knowledge_sharing(self):
-        """Whether this is listed under Teaching rather than Presentations."""
-        return self.talk_type in self.KNOWLEDGE_SHARING_TYPES
 
     def get_category(self):
         """Which Publications or Presentations subsection this belongs in.
 
-        Tutorials are teaching and are excluded here. A conference presentation
-        with proceedings is cited among the papers, placed by whether the linked
-        paper was refereed. Every other talk, seminars and colloquia included,
-        is an invited talk if it was invited and a contributed one if not.
+        A conference presentation with proceedings is cited among the papers,
+        placed by whether the linked paper was refereed. Every other talk,
+        seminars, colloquia and tutorials included, is an invited talk if it was
+        invited and a contributed one if not.
         """
-        if self.is_knowledge_sharing():
-            return ""
         if self.proceedings and self.talk_type in self.CONFERENCE_TYPES:
             refereed = self.reference.refereed if self.reference else False
             return 'proc_refereed' if refereed else 'proc_nonrefereed'

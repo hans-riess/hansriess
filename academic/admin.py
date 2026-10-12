@@ -90,11 +90,6 @@ class TalkAdmin(admin.ModelAdmin):
                        'talk_type', 'invited', 'proceedings', 'reference',
                        'note', 'credit_roles', 'cv_ref_slug']
         }),
-        ('Teaching', {
-            'description': 'Used when the talk is a tutorial, which the CV lists under '
-                           'Teaching rather than with the presentations.',
-            'fields': ['curriculum_role', 'attendee_count']
-        }),
         ('Materials', {
             'fields': ['slides', 'poster', 'event_url', 'related_publications']
         })
