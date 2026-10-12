@@ -177,6 +177,14 @@ class CvBuilderTests(TestCase):
         # No data, so no numbered sections were emitted.
         self.assertNotIn(r'\cvsection', tex)
 
+    def test_first_page_says_when_it_was_built(self):
+        profile = Profile.objects.create(name="Hans Riess")
+        built = datetime.datetime(2026, 10, 12, 14, 5, tzinfo=datetime.timezone.utc)
+        tex = cv_builder.build_document(profile, generated_at=built)
+        # In the site's time zone, under the header so it lands on page 1.
+        self.assertIn(r'\cvupdated{Last updated October 12, 2026, 10:05 AM EDT.}', tex)
+        self.assertLess(tex.index(r'\end{cvheader}'), tex.index(r'\cvupdated'))
+
     def test_latex_specials_and_cross_references_survive_escaping(self):
         self.assertEqual(cv_builder.clean("100% of A&B"), r"100\% of A\&B")
         self.assertEqual(cv_builder.clean("see [[ref:my-paper]]"), r"see \ref{cv:my-paper}")
@@ -577,6 +585,37 @@ class CvDownloadTests(TestCase):
         self.profile.save()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 404)
+
+
+class GenerateCvCommandTests(TestCase):
+    """A failed build raises, so /cv/ can tell its stored copy is stale."""
+
+    def _run(self):
+        call_command('generate_cv', stdout=StringIO(), stderr=StringIO())
+
+    def test_no_profile_raises(self):
+        with self.assertRaises(CommandError):
+            self._run()
+
+    def test_a_latex_failure_raises_and_keeps_the_old_copy(self):
+        profile = Profile.objects.create(name="Hans Riess")
+        profile.cv.save('cv.pdf', ContentFile(b'%PDF-1.4 old'), save=True)
+        built_in = []
+
+        def fail(command, tex_path, temp_dir):
+            built_in.append(temp_dir)
+            return False
+
+        with mock.patch('academic.management.commands.generate_cv.Command._compile',
+                        autospec=True, side_effect=fail):
+            with self.assertRaises(CommandError):
+                self._run()
+        profile.refresh_from_db()
+        with profile.cv.open('rb') as stored:
+            self.assertEqual(stored.read(), b'%PDF-1.4 old')
+        # The build directory is private to the run and removed afterwards.
+        self.assertFalse(os.path.exists(built_in[0]))
+        profile.cv.delete(save=False)
 
 
 class CvButtonTests(TestCase):
