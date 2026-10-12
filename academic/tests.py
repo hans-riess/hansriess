@@ -129,18 +129,22 @@ class ReferenceClassificationTests(TestCase):
 
 
 class TalkClassificationTests(TestCase):
-    """A workshop is a venue, not something taught; only a tutorial teaches."""
+    """Every talk is a presentation, workshops and tutorials included."""
 
     def _talk(self, **kwargs):
         return Talk(title="T", venue="V", date=datetime.date(2026, 1, 1), **kwargs)
 
     def test_workshop_invitation_is_a_conference_presentation(self):
         talk = self._talk(talk_type='workshop', invited=True)
-        self.assertFalse(talk.is_knowledge_sharing())
         self.assertEqual(talk.get_category(), 'invited_conf')
 
-    def test_tutorial_is_knowledge_sharing(self):
-        self.assertTrue(self._talk(talk_type='tutorial').is_knowledge_sharing())
+    def test_a_tutorial_is_a_talk_without_proceedings(self):
+        # Even at a conference with proceedings, a tutorial is not cited as a paper.
+        self.assertEqual(self._talk(talk_type='tutorial').get_category(), 'no_proc')
+        self.assertEqual(self._talk(talk_type='tutorial', proceedings=True).get_category(),
+                         'no_proc')
+        self.assertEqual(self._talk(talk_type='tutorial', invited=True).get_category(),
+                         'invited_conf')
 
     def test_uninvited_talks_are_contributed(self):
         for talk_type in ('seminar', 'colloquium', 'guest_lecture', 'webinar', 'poster'):
@@ -215,16 +219,15 @@ class SectionBuilderTests(TestCase):
         self.assertNotIn("Reviewer", tex)
         self.assertIn("Other Professional Service", tex)
 
-    def test_teaching_merges_courses_and_tutorials(self):
+    def test_teaching_lists_courses_and_talks_are_presentations(self):
         Course.objects.create(title="Elementary Statistics", course_code="MATH 103",
                               institution="College of Charleston", semester='fall',
                               year=2024, attendee_count="~30")
         Course.objects.create(title="Applied Category Theory", course_format='workshop',
                               institution="ACC", semester='spring', year=2026)
+        # Neither a tutorial lecture nor a workshop invitation is teaching.
         Talk.objects.create(title="Applied sheaf theory", venue="ACC",
-                            talk_type='tutorial', date=datetime.date(2026, 5, 1),
-                            attendee_count="~30")
-        # A workshop invitation is a presentation, so it must not appear here.
+                            talk_type='tutorial', date=datetime.date(2026, 5, 1))
         Talk.objects.create(title="Lattice theory", venue="BIRS", talk_type='workshop',
                             invited=True, date=datetime.date(2023, 2, 1))
 
@@ -233,13 +236,15 @@ class SectionBuilderTests(TestCase):
         self.assertIn("Elementary Statistics (MATH 103)", teaching)
         self.assertIn("Enrollment: ", teaching)
         self.assertIn("Applied Category Theory (workshop)", teaching)
-        self.assertIn("Applied sheaf theory (tutorial)", teaching)
-        # The BIRS talk is a presentation, never a teaching entry.
+        self.assertNotIn("Applied sheaf theory", teaching)
         self.assertNotIn("BIRS", teaching)
+
         presentations = "\n".join(cv_builder.build_presentations(self.profile))
         self.assertIn("Invited Talks", presentations)
         self.assertIn("BIRS", presentations)
-        self.assertNotIn("Applied sheaf theory", presentations)
+        self.assertIn("Contributed Talks and Posters", presentations)
+        self.assertIn("Applied sheaf theory,'' tutorial presented at \\textit{ACC}",
+                      presentations)
 
     def test_teaching_is_newest_first_by_semester(self):
         Course.objects.create(title="Spring course", institution="X", semester='spring', year=2024)
@@ -323,6 +328,8 @@ class SectionBuilderTests(TestCase):
                              amount=180687, grant_number="HR0011-25-3-0235")
         tex = "\n".join(cv_builder.build_sponsored_research(self.profile))
         self.assertIn("Funded Projects", tex)
+        # The sponsor and award number get a line of their own.
+        self.assertIn(r"{DARPA, HR0011-25-3-0235.\newline Role: Principal Investigator.", tex)
         self.assertIn("$180,687", tex)
         self.assertIn("Role: Principal Investigator.", tex)
         # The candidate is PI of record by default, which the role already says.
@@ -334,7 +341,7 @@ class SectionBuilderTests(TestCase):
                                 date_abstract_submitted=datetime.date(2026, 6, 30))
         tex = "\n".join(cv_builder.build_sponsored_research(self.profile))
         self.assertIn(r"\cvsubsection{Proposals}", tex)
-        self.assertIn(r"\cventry{PR1}{\textbf{ARGUS}}{Jun 2026}", tex)
+        self.assertIn(r"\cventry{PR1}{\textbf{ARGUS}}{Jun 2026}{DARPA.\newline ", tex)
         self.assertIn(r"Amount requested: \$2,100,000.", tex)
 
     def test_dissertation_is_listed_under_its_degree(self):

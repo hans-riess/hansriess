@@ -279,19 +279,6 @@ def _teaching(resolve):
             ('enrollment' if course.course_format == 'course' else 'attendance'):
                 course.attendee_count,
         })))
-    for talk in Talk.objects.all():
-        if not talk.is_knowledge_sharing():
-            continue
-        rows.append((talk.date, compact({
-            'title': talk.title,
-            'format': talk.get_talk_type_display(),
-            'institution': talk.venue,
-            'location': talk.location,
-            'term': talk.date.strftime('%B %Y') if talk.date else None,
-            'date': iso(talk.date),
-            'role': talk.curriculum_role,
-            'attendance': talk.attendee_count,
-        })))
     rows.sort(key=lambda row: row[0] or datetime.date.min, reverse=True)
     return [entry for _, entry in rows]
 

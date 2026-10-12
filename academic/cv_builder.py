@@ -267,7 +267,8 @@ def format_talk(talk, profile):
     name = r'\textbf{%s}' % clean(_initialled_name(profile))
     parts.append("%s, %s" % (name, quoted(talk.title)))
 
-    verb = "poster presented at" if talk.talk_type == 'poster' else "presented at"
+    verb = {'poster': "poster presented at",
+            'tutorial': "tutorial presented at"}.get(talk.talk_type, "presented at")
     venue_bits = [r'\textit{%s}' % clean(talk.venue)] if talk.venue else []
     if talk.location:
         venue_bits.append(clean(talk.location))
@@ -452,7 +453,7 @@ def _funded_projects_block(profile):
         sponsor = clean(grant.funding_agency)
         if grant.grant_number:
             sponsor = "%s, %s" % (sponsor, clean(grant.grant_number))
-        facts = [sentence(sponsor)]
+        facts = []
         # The P.I. of record defaults to the candidate, which the role already says.
         if grant.pi_name:
             facts.append("PI: %s." % _people(grant.pi_name))
@@ -461,7 +462,7 @@ def _funded_projects_block(profile):
             facts.append(sentence("Task: %s" % clean(grant.task_title)))
         if grant.amount is not None:
             facts.append("Total award: %s." % clean(grant.get_cv_amount()))
-        details = [" ".join(facts)] + paragraphs(grant.contributions)
+        details = [_sponsor_and_facts(sponsor, facts)] + paragraphs(grant.contributions)
         lines.append(r'\cventry{%s}{%s\textbf{%s}}{%s}{%s}' % (
             tag, label_for(grant), clean(grant.title),
             clean(grant.get_period_of_performance()), r'\cvpar '.join(details)))
@@ -478,7 +479,7 @@ def _proposals_block(profile):
         sponsor = clean(proposal.sponsor)
         if proposal.solicitation:
             sponsor = "%s, %s" % (sponsor, clean(proposal.solicitation))
-        facts = [sentence(sponsor)]
+        facts = []
         if proposal.pi_name:
             facts.append("PI: %s." % _people(proposal.pi_name))
         if proposal.candidate_role:
@@ -492,11 +493,16 @@ def _proposals_block(profile):
         if submitted:
             facts.append(sentence(submitted))
         facts.append(sentence("Status: %s" % clean(proposal.get_result())))
-        details = [" ".join(facts)] + paragraphs(proposal.contribution)
+        details = [_sponsor_and_facts(sponsor, facts)] + paragraphs(proposal.contribution)
         lines.append(r'\cventry{%s}{%s\textbf{%s}}{%s}{%s}' % (
             tag, label_for(proposal), clean(proposal.title),
             _submission_month(proposal), r'\cvpar '.join(details)))
     return lines
+
+
+def _sponsor_and_facts(sponsor, facts):
+    """The sponsor and award number on a line of their own, the facts below."""
+    return r'\newline '.join(part for part in (sentence(sponsor), " ".join(facts)) if part)
 
 
 def _submission_text(proposal):
@@ -548,7 +554,10 @@ def build_teaching_and_mentoring(profile):
 
 
 def _teaching_block():
-    """Courses and workshops taught, plus tutorial lectures, newest first."""
+    """Courses and workshops taught, newest first.
+
+    Tutorial lectures are talks, cited with the presentations instead.
+    """
     rows = []
     for course in Course.objects.all():
         when = None
@@ -563,16 +572,6 @@ def _teaching_block():
                                            clean(course.get_cv_organization())),
                      clean(course.get_cv_when_taught()),
                      " ".join(bit for bit in (sentence(clean(course.get_cv_role())), count) if bit)))
-
-    for talk in Talk.objects.all():
-        if not talk.is_knowledge_sharing():
-            continue
-        role = clean(talk.curriculum_role) or clean(talk.get_talk_type_display())
-        count = "Attendance: %s." % clean(talk.attendee_count) if talk.attendee_count else ""
-        rows.append((talk.date,
-                     r'\textbf{%s (tutorial)}, %s' % (clean(talk.title), clean(talk.venue)),
-                     talk.date.strftime('%B %Y') if talk.date else "",
-                     " ".join(bit for bit in (sentence(role), count) if bit)))
 
     rows.sort(key=lambda row: row[0] or datetime.date.min, reverse=True)
     return [r'\cventry{}{%s}{%s}{%s}' % row[1:] for row in rows]

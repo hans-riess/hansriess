@@ -361,9 +361,7 @@
       "related_publications": [],
       "invited": true,
       "proceedings": false,
-      "reference": null,
-      "curriculum_role": "",
-      "attendee_count": ""
+      "reference": null
     }
   },
   {
@@ -388,9 +386,7 @@
       "related_publications": [],
       "invited": true,
       "proceedings": false,
-      "reference": null,
-      "curriculum_role": "",
-      "attendee_count": ""
+      "reference": null
     }
   },
   {
@@ -415,9 +411,7 @@
       "related_publications": [],
       "invited": false,
       "proceedings": false,
-      "reference": null,
-      "curriculum_role": "",
-      "attendee_count": ""
+      "reference": null
     }
   },
   {
@@ -442,9 +436,7 @@
       "related_publications": [],
       "invited": false,
       "proceedings": false,
-      "reference": null,
-      "curriculum_role": "",
-      "attendee_count": ""
+      "reference": null
     }
   },
   {
@@ -920,7 +912,7 @@
       "venue": "American Control Conference",
       "location": "Denver, CO",
       "talk_type": "tutorial",
-      "invited": true,
+      "invited": false,
       "proceedings": false,
       "date": "2026-05-01",
       "slides": "",
@@ -931,8 +923,6 @@
       "reference": null,
       "credit_roles": "",
       "note": "",
-      "curriculum_role": "Delivered the tutorial talk on applied sheaf theory",
-      "attendee_count": "~30",
       "cv_ref_slug": "acc-tutorial-2026",
       "created_at": "2026-08-12T00:00:00Z",
       "updated_at": "2026-08-12T00:00:00Z"
@@ -1033,8 +1023,6 @@
       "reference": null,
       "credit_roles": "",
       "note": "",
-      "curriculum_role": "",
-      "attendee_count": "",
       "cv_ref_slug": "birs-2023",
       "created_at": "2026-08-12T00:00:00Z",
       "updated_at": "2026-08-12T00:00:00Z"
