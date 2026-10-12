@@ -15,8 +15,11 @@ Both jobs need PostgreSQL: some early migrations are not SQLite compatible.
 ## CV generation
 
 `python manage.py generate_cv` renders the CV from the database as a plain,
-black-on-white academic job-market CV and attaches the PDF to the profile, which
-`/cv/` redirects to. The LaTeX body is assembled in `academic/cv_builder.py`;
+black-on-white academic job-market CV and attaches the PDF to the profile.
+`/cv/` (the CV button) runs it on every request and serves the result. A footnote
+on page 1 gives the build time ("Last updated ..."). If a download shows an old
+time, the rebuild failed and the stored copy was served instead; the failure is
+logged from `academic.views` with the LaTeX error lines. The LaTeX body is assembled in `academic/cv_builder.py`;
 typesetting lives in `academic/tex/academic-cv.sty`. Requires `pdflatex` (see
 `texlive.packages`).
 

@@ -68,6 +68,15 @@
 \newcommand{\cvcontact}[1]{\vspace{0.4ex}#1\par}
 \newcommand{\cvsep}{\enspace\textbullet\enspace}
 
+% An unmarked footnote, used once at the foot of the first page for the date
+% the CV was built ("Last updated ...").
+\newcommand{\cvupdated}[1]{%
+    \begingroup
+    \renewcommand{\@makefntext}[1]{\noindent##1}%
+    \footnotetext{#1}%
+    \endgroup
+}
+
 % --- HEADINGS ----------------------------------------------------------------
 % A page break can never fall between a heading and what follows it: every
 % heading ends in \nobreak, and the entries below open with glue only.

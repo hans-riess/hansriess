@@ -29,6 +29,8 @@ Typesetting lives in ``academic/tex/academic-cv.sty``.
 import datetime
 import re
 
+from django.utils import timezone
+
 from .models import (Award, Course, DeliveredProduct, Education, Experience,
                      Grant, PUBLICATION_CATEGORIES, PUBLICATION_CATEGORY_ORDER,
                      Innovation, Proposal, Reference, Review, Service, Student,
@@ -341,7 +343,7 @@ def _people(names):
 
 # --- Header ------------------------------------------------------------------
 
-def build_header(profile):
+def build_header(profile, generated_at=None):
     lines = [r'\begin{cvheader}', r'\cvname{%s}' % clean(profile.plain_name())]
     for value in (profile.long_title or profile.title, profile.department,
                   profile.long_institution or profile.institution):
@@ -351,7 +353,20 @@ def build_header(profile):
     if contact:
         lines.append(r'\cvcontact{%s}' % contact)
     lines.append(r'\end{cvheader}')
+    if generated_at:
+        lines.append(r'\cvupdated{Last updated %s.}' % last_updated(generated_at))
     return lines
+
+
+def last_updated(when):
+    """'October 12, 2026, 2:05 PM EDT', in the site's time zone.
+
+    The PDF is rebuilt on every download, so this is when it was built; a stale
+    date on a downloaded copy means the rebuild failed and an old copy was served.
+    """
+    local = timezone.localtime(when)
+    hour = local.strftime('%I').lstrip('0')
+    return local.strftime('%B %-d, %Y, ') + hour + local.strftime(':%M %p %Z')
 
 
 def _contact_line(profile):
@@ -896,15 +911,16 @@ def _service_years(service):
 
 # --- Document ----------------------------------------------------------------
 
-def build_document(profile):
-    """Assemble the complete LaTeX source for the CV."""
+def build_document(profile, generated_at=None):
+    """Assemble the complete LaTeX source for the CV, stamped with when it was built."""
+    generated_at = generated_at or timezone.now()
     lines = [
         r'\documentclass[11pt]{article}',
         r'\usepackage{academic-cv}',
         r'\cvfootername{%s}' % clean(profile.plain_name()),
         r'\begin{document}',
     ]
-    for part in (build_header(profile),
+    for part in (build_header(profile, generated_at),
                  build_interests(profile),
                  build_education(profile),
                  build_appointments(profile),

@@ -1,16 +1,14 @@
-import logging
 import os
 import shutil
 import subprocess
+import tempfile
 
 from django.conf import settings
 from django.core.files import File
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from academic.cv_builder import build_document
 from academic.models import Profile
-
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -28,55 +26,59 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        """Build the PDF and attach it to the profile.
+
+        Every failure raises CommandError, so a caller such as the /cv/ view
+        knows the stored copy is stale instead of serving it as if it were new.
+        """
         self.stdout.write("Starting CV generation...")
 
         profile = Profile.objects.first()
         if not profile:
-            self.stderr.write("No profile found in the database. Aborting.")
-            return
+            raise CommandError("No profile found in the database.")
 
         try:
             tex_source = build_document(profile)
         except Exception as e:
-            logger.exception("Failed to build the CV LaTeX source")
-            self.stderr.write(self.style.ERROR(f"Error building the CV source: {e}"))
-            return
-
-        temp_dir = os.path.join(settings.BASE_DIR, 'temp_cv')
-        os.makedirs(temp_dir, exist_ok=True)
+            raise CommandError(f"Error building the CV source: {e}") from e
 
         style_src = os.path.join(settings.BASE_DIR, 'academic', 'tex', 'academic-cv.sty')
-        if os.path.exists(style_src):
-            shutil.copy2(style_src, os.path.join(temp_dir, 'academic-cv.sty'))
-        else:
-            self.stderr.write(self.style.ERROR(f"Style file not found at {style_src}. Aborting."))
-            shutil.rmtree(temp_dir, ignore_errors=True)
-            return
+        if not os.path.exists(style_src):
+            raise CommandError(f"Style file not found at {style_src}.")
 
+        # Each build gets a directory of its own, so two requests to /cv/ at
+        # once cannot delete each other's files mid-compile. --keep-tex uses
+        # temp_cv/ so the output is easy to find.
+        if options['keep_tex']:
+            temp_dir = os.path.join(settings.BASE_DIR, 'temp_cv')
+            os.makedirs(temp_dir, exist_ok=True)
+        else:
+            temp_dir = tempfile.mkdtemp(prefix='cv-')
+
+        try:
+            self._build(profile, tex_source, style_src, temp_dir, options)
+        finally:
+            self._keep_or_clean(temp_dir, options['keep_tex'])
+
+    def _build(self, profile, tex_source, style_src, temp_dir, options):
+        shutil.copy2(style_src, os.path.join(temp_dir, 'academic-cv.sty'))
         tex_path = os.path.join(temp_dir, 'cv.tex')
         pdf_path = os.path.join(temp_dir, 'cv.pdf')
         try:
             with open(tex_path, 'w', encoding='utf-8') as f:
                 f.write(tex_source)
         except OSError as e:
-            self.stderr.write(self.style.ERROR(f"Error writing .tex file: {e}"))
-            shutil.rmtree(temp_dir, ignore_errors=True)
-            return
+            raise CommandError(f"Error writing .tex file: {e}") from e
 
         if not self._compile(tex_path, temp_dir):
-            self._keep_or_clean(temp_dir, options['keep_tex'])
-            return
-
+            raise CommandError("pdflatex failed; see the log lines above.")
         if not os.path.exists(pdf_path):
-            self.stderr.write(self.style.ERROR(f"PDF was not generated at {pdf_path}. Check cv.log."))
-            self._keep_or_clean(temp_dir, options['keep_tex'])
-            return
+            raise CommandError(f"PDF was not generated at {pdf_path}. Check cv.log.")
 
         self.stdout.write(self.style.SUCCESS(f"Successfully generated cv.pdf in {temp_dir}"))
 
         if options['no_save']:
             self.stdout.write("--no-save given; leaving the profile untouched.")
-            self._keep_or_clean(temp_dir, options['keep_tex'])
             return
 
         try:
@@ -86,17 +88,12 @@ class Command(BaseCommand):
                     profile.cv.delete(save=False)
                 profile.cv.save('cv.pdf', File(pdf), save=True)
         except Exception as e:
-            logger.exception("Failed to save the generated CV")
-            self.stderr.write(self.style.ERROR(f"Failed to save or upload CV: {e}"))
-            self._keep_or_clean(temp_dir, options['keep_tex'])
-            return
+            raise CommandError(f"Failed to save or upload CV: {e}") from e
 
         if settings.PRODUCTION:
             self.stdout.write(self.style.SUCCESS(f"Uploaded {profile.cv.name} to the profile."))
         else:
             self.stdout.write(self.style.SUCCESS(f"Saved new CV to {profile.cv.path}"))
-
-        self._keep_or_clean(temp_dir, options['keep_tex'])
 
     def _compile(self, tex_path, temp_dir):
         """Run pdflatex twice. The first pass populates cross-references, so it is
