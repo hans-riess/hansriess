@@ -245,7 +245,7 @@ class ReferencePersonAdmin(admin.ModelAdmin):
     ]
 
 class AwardAdmin(admin.ModelAdmin):
-    """Honors and Awards on the CV."""
+    """Fellowships and Awards on the CV."""
     list_display = ['title', 'organization', 'year', 'order']
     search_fields = ['title', 'organization']
     ordering = ['order', '-year', 'title']

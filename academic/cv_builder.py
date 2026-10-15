@@ -12,7 +12,7 @@ sponsored research and teaching ahead of the publication list:
     Presentations               [T]
     Technical Contributions     delivered products [D], innovations [I],
                                 technical reports [R]
-    Honors and Awards
+    Fellowships and Awards
     Service
 
 Entries that can be cross-referenced are numbered within their series. Numbers
@@ -821,14 +821,14 @@ def _reports_block():
     return lines
 
 
-# --- Honors and awards -------------------------------------------------------
+# --- Fellowships and awards --------------------------------------------------
 
 def build_awards():
     awards = Award.objects.all()
     if not awards.exists():
         return []
 
-    lines = [r'\cvsection{Honors and Awards}']
+    lines = [r'\cvsection{Fellowships and Awards}']
     for award in awards:
         heading = r'\textbf{%s}' % clean(award.title)
         if award.organization:
