@@ -996,7 +996,7 @@ class Student(models.Model):
             return "" # Should not happen if start_date is required
 
 class Award(models.Model):
-    """Honors and Awards on the CV."""
+    """Fellowships and Awards on the CV."""
     title = models.CharField(max_length=300, help_text="Name of the award, fellowship, or nomination")
     organization = models.CharField(max_length=300, blank=True, help_text="Awarding body, conference, or institution")
     year = models.PositiveIntegerField(blank=True, null=True)

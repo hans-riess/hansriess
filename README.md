@@ -27,7 +27,7 @@ Sponsored research and teaching come ahead of the publication list:
 
 > Research Interests · Education · Appointments · **Sponsored Research** ·
 > **Teaching and Mentoring** · Publications · Presentations · Technical
-> Contributions · Honors and Awards · Service
+> Contributions · Fellowships and Awards · Service
 
 Sections with no data are skipped, so the document fills in as content is added
 through the admin.
