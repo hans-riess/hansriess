@@ -42,10 +42,6 @@ class Command(BaseCommand):
         except Exception as e:
             raise CommandError(f"Error building the CV source: {e}") from e
 
-        style_src = os.path.join(settings.BASE_DIR, 'academic', 'tex', 'academic-cv.sty')
-        if not os.path.exists(style_src):
-            raise CommandError(f"Style file not found at {style_src}.")
-
         # Each build gets a directory of its own, so two requests to /cv/ at
         # once cannot delete each other's files mid-compile. --keep-tex uses
         # temp_cv/ so the output is easy to find.
@@ -56,12 +52,14 @@ class Command(BaseCommand):
             temp_dir = tempfile.mkdtemp(prefix='cv-')
 
         try:
-            self._build(profile, tex_source, style_src, temp_dir, options)
+            self._build(profile, tex_source, temp_dir, options)
         finally:
             self._keep_or_clean(temp_dir, options['keep_tex'])
 
-    def _build(self, profile, tex_source, style_src, temp_dir, options):
-        shutil.copy2(style_src, os.path.join(temp_dir, 'academic-cv.sty'))
+    def _build(self, profile, tex_source, temp_dir, options):
+        # The source carries the style file in its preamble (see
+        # cv_builder.inline_style), so cv.tex is all pdflatex needs -- the same
+        # file /cv/tex/ serves.
         tex_path = os.path.join(temp_dir, 'cv.tex')
         pdf_path = os.path.join(temp_dir, 'cv.pdf')
         try:

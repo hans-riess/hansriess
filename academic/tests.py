@@ -174,16 +174,33 @@ class CvBuilderTests(TestCase):
         tex = cv_builder.build_document(profile)
         self.assertIn(r'\begin{document}', tex)
         self.assertIn(r'\end{document}', tex)
-        # No data, so no numbered sections were emitted.
-        self.assertNotIn(r'\cvsection', tex)
+        # No data, so no sections were emitted. The preamble defines \cvsection,
+        # so look only at the body.
+        body = tex.split(r'\begin{document}', 1)[1]
+        self.assertNotIn(r'\cvsection', body)
 
     def test_first_page_says_when_it_was_built(self):
         profile = Profile.objects.create(name="Hans Riess")
         built = datetime.datetime(2026, 10, 12, 14, 5, tzinfo=datetime.timezone.utc)
-        tex = cv_builder.build_document(profile, generated_at=built)
+        body = cv_builder.build_document(profile, generated_at=built).split(r'\begin{document}', 1)[1]
         # In the site's time zone, under the header so it lands on page 1.
-        self.assertIn(r'\cvupdated{Last updated October 12, 2026, 10:05 AM EDT.}', tex)
-        self.assertLess(tex.index(r'\end{cvheader}'), tex.index(r'\cvupdated'))
+        self.assertIn(r'\cvupdated{Last updated October 12, 2026, 10:05 AM EDT.}', body)
+        self.assertLess(body.index(r'\end{cvheader}'), body.index(r'\cvupdated'))
+
+    def test_document_is_self_contained(self):
+        """The style file is pasted into the preamble, so cv.tex compiles alone."""
+        profile = Profile.objects.create(name="Hans Riess")
+        tex = cv_builder.build_document(profile)
+        self.assertNotIn(r'\usepackage{academic-cv}', tex)
+        self.assertIn(r'\newcommand{\cventry}', tex)
+        # Package-only lines would break or truncate a document preamble.
+        self.assertNotIn(r'\endinput', tex)
+        self.assertNotIn(r'\ProvidesPackage', tex)
+        # The style's @-macros are only legal between these, and before the body.
+        start, end = tex.index(r'\makeatletter'), tex.index(r'\makeatother')
+        self.assertLess(start, tex.index(r'\newif\ifcv@afterheading'))
+        self.assertLess(tex.index(r'\newcommand{\cvplain}'), end)
+        self.assertLess(end, tex.index(r'\begin{document}'))
 
     def test_latex_specials_and_cross_references_survive_escaping(self):
         self.assertEqual(cv_builder.clean("100% of A&B"), r"100\% of A\&B")
@@ -585,6 +602,39 @@ class CvDownloadTests(TestCase):
         self.profile.save()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 404)
+
+
+class CvTexTests(TestCase):
+    """/cv/tex/ shows the CV's LaTeX source as one file, in the browser."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess")
+        self.url = reverse('cv_tex')
+
+    def test_served_as_plain_text_and_not_cacheable(self):
+        response = self.client.get(self.url)
+        self.assertEqual(self.url, '/cv/tex/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/plain; charset=utf-8')
+        self.assertTrue(response['Content-Disposition'].startswith('inline'))
+        self.assertIn('no-store', response['Cache-Control'])
+
+    def test_is_the_self_contained_document(self):
+        body = self.client.get(self.url).content.decode('utf-8')
+        self.assertTrue(body.lstrip('% \n').startswith('Curriculum Vitae of Hans Riess'))
+        self.assertIn(r'\documentclass[11pt]{article}', body)
+        self.assertIn(r'\newcommand{\cventry}', body)
+        self.assertNotIn(r'\usepackage{academic-cv}', body)
+        self.assertTrue(body.rstrip().endswith(r'\end{document}'))
+
+    def test_no_source_when_a_custom_cv_is_served(self):
+        self.profile.use_custom_cv = True
+        self.profile.save()
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+
+    def test_no_profile_is_a_404(self):
+        self.profile.delete()
+        self.assertEqual(self.client.get(self.url).status_code, 404)
 
 
 class GenerateCvCommandTests(TestCase):

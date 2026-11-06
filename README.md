@@ -23,6 +23,13 @@ logged from `academic.views` with the LaTeX error lines. The LaTeX body is assem
 typesetting lives in `academic/tex/academic-cv.sty`. Requires `pdflatex` (see
 `texlive.packages`).
 
+`/cv/tex/` shows the LaTeX source of that PDF as plain text, built fresh on each
+request. It is a single self-contained file: the style file is pasted into its
+preamble, so `pdflatex cv.tex` run twice (the second pass resolves the `[J3]`-style
+cross-references) reproduces the CV with nothing else alongside it. The PDF is
+compiled from exactly this file. When a custom uploaded CV is being served
+instead, there is no source and `/cv/tex/` returns 404.
+
 Sponsored research and teaching come ahead of the publication list:
 
 > Research Interests · Education · Appointments · **Sponsored Research** ·

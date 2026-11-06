@@ -23,10 +23,13 @@ Every ``build_*`` function returns a list of LaTeX lines and returns an empty
 list when it has no data, so sections that have not been filled in yet are
 skipped rather than printed empty.
 
-Typesetting lives in ``academic/tex/academic-cv.sty``.
+Typesetting lives in ``academic/tex/academic-cv.sty``, which is pasted into
+the preamble of every document, so the ``.tex`` file compiles on its own: this
+is the file served at ``/cv/tex/``.
 """
 
 import datetime
+import os
 import re
 
 from django.utils import timezone
@@ -911,15 +914,48 @@ def _service_years(service):
 
 # --- Document ----------------------------------------------------------------
 
+STYLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tex', 'academic-cv.sty')
+
+
+def inline_style():
+    """The style file as preamble lines, so the document needs no ``.sty`` beside it.
+
+    Package-only lines are dropped (``\\endinput`` would stop the document being
+    read), and the body sits between ``\\makeatletter``/``\\makeatother`` because a
+    preamble, unlike a package, does not treat ``@`` as a letter.
+    """
+    with open(STYLE_PATH, encoding='utf-8') as sty:
+        source = sty.read().splitlines()
+    lines = [r'\makeatletter']
+    for line in source:
+        stripped = line.strip()
+        if stripped == r'\endinput':
+            break
+        if stripped.startswith((r'\NeedsTeXFormat', r'\ProvidesPackage')):
+            continue
+        lines.append(line)
+    while lines[-1].strip() == '':
+        lines.pop()
+    lines.append(r'\makeatother')
+    return lines
+
+
 def build_document(profile, generated_at=None):
-    """Assemble the complete LaTeX source for the CV, stamped with when it was built."""
+    """Assemble the complete, self-contained LaTeX source for the CV, stamped
+    with when it was built. Compile it with ``pdflatex`` twice (the second pass
+    resolves cross-references); nothing else is needed."""
     generated_at = generated_at or timezone.now()
-    lines = [
+    preamble = [
+        r'%% Curriculum Vitae of %s.' % profile.plain_name(),
+        r'% Self-contained: run pdflatex twice to resolve the cross-references.',
         r'\documentclass[11pt]{article}',
-        r'\usepackage{academic-cv}',
+        '',
+        *inline_style(),
+        '',
         r'\cvfootername{%s}' % clean(profile.plain_name()),
-        r'\begin{document}',
+        '',
     ]
+    lines = [r'\begin{document}']
     for part in (build_header(profile, generated_at),
                  build_interests(profile),
                  build_education(profile),
@@ -933,4 +969,4 @@ def build_document(profile, generated_at=None):
                  build_service(profile)):
         lines.extend(part)
     lines.append(r'\end{document}')
-    return "\n".join(line for line in lines if line)
+    return "\n".join(preamble + [line for line in lines if line]) + "\n"
