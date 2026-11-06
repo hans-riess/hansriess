@@ -3,6 +3,7 @@ from academic.models import Profile, Reference, Talk, Grant, Course, Service, Ed
 from django.http import FileResponse, HttpResponse, Http404, JsonResponse
 from django.core.management import call_command
 from django.conf import settings
+from academic.cv_builder import build_document
 from academic.site_data import build_site_data
 import logging
 import os
@@ -165,6 +166,22 @@ def cv_redirect(request):
                             filename=filename)
     response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response['Pragma'] = 'no-cache'
+    return response
+
+def cv_tex(request):
+    """The LaTeX source of the CV at /cv/, as one self-contained file.
+
+    The style file is inlined in the preamble, so running pdflatex twice on this
+    file alone reproduces the PDF. Built on every request, like the PDF. It is
+    shown as plain text so it opens in the browser; there is no source to show
+    when an uploaded custom CV is being served instead.
+    """
+    profile = Profile.objects.first()
+    if not profile or profile.use_custom_cv:
+        raise Http404("No LaTeX source for this CV.")
+    response = HttpResponse(build_document(profile), content_type='text/plain; charset=utf-8')
+    response['Content-Disposition'] = 'inline; filename="cv.tex"'
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
 def site_data(request):
