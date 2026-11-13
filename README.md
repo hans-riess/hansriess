@@ -113,3 +113,33 @@ Developed/planning many features to make it easier for researchers to interact w
 * Meeting booking system
   * not using a 3rd party API
   * directly use google calendar and Zoom APIs
+
+## Correcting CV entries through the API
+
+`/api/cv/` is a small JSON API for fixing CV entries without opening the admin:
+a typo in a venue, a note on a talk. It reads and updates existing rows only. It
+cannot create or delete rows, change uploaded files or relations, or read or set
+a grant's page password. The code and the full list of routes are in
+`academic/api.py`.
+
+It is off until the `CV_API_TOKEN` config var is set (with it unset every route
+answers 404). Generate a long random token, then set it on Heroku:
+
+```
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+heroku config:set CV_API_TOKEN=<token>
+```
+
+Requests send it as `Authorization: Bearer <token>`:
+
+```
+curl -H "Authorization: Bearer $CV_API_TOKEN" https://hansriess.com/api/cv/lookup/T12/
+curl -X PATCH -H "Authorization: Bearer $CV_API_TOKEN" -H "Content-Type: application/json" \
+     -d '{"note": "Invited by L. Lafforgue."}' "https://hansriess.com/api/cv/talk/42/?dry_run=1"
+```
+
+`lookup/<tag>/` maps a CV number to its row using the same numbering as the PDF.
+`?dry_run=1` validates a change and returns the diff without saving. Each saved
+change appears in the row's History in the admin, made by the user `cv-api`.
+To revoke access, unset the config var or change it.
+

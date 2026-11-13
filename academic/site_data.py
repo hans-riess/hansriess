@@ -74,29 +74,52 @@ class Resolver:
         return self.text(strip_tags(value)) if value else None
 
 
+def numbered_series(profile):
+    """Every numbered CV series, in print order, as the CV builder numbers it."""
+    grouped = cv_builder.grouped_publications(profile)
+    return {
+        'publications': list(cv_builder.numbered_entries(grouped, PUBLICATION_GROUPS)),
+        'presentations': list(cv_builder.numbered_entries(grouped, PRESENTATION_GROUPS)),
+        'grants': cv_builder.numbered('G', Grant.objects.all()),
+        'proposals': cv_builder.numbered('PR', Proposal.objects.all()),
+        'products': cv_builder.numbered('D', DeliveredProduct.objects.all()),
+        'innovations': cv_builder.numbered('I', Innovation.objects.all()),
+        'reports': cv_builder.report_series(),
+    }
+
+
+def _number_map(series):
+    numbers = {}
+    for _, tag, obj in series['publications'] + series['presentations']:
+        numbers[(type(obj), obj.pk)] = tag
+    for name in ('grants', 'proposals', 'products', 'innovations'):
+        for tag, obj in series[name]:
+            numbers[(type(obj), obj.pk)] = tag
+    for _, entries in series['reports']:
+        for tag, report in entries:
+            numbers[(TechReport, report.pk)] = tag
+    return numbers
+
+
+def cv_number_map(profile):
+    """{(model, pk): 'T12', ...} for every entry that carries a number on the CV."""
+    return _number_map(numbered_series(profile))
+
+
 def build_site_data(profile, base_url=None):
     """The whole export as a JSON-ready dict.
 
     ``base_url`` is used for the self links only when the profile has no website.
     """
-    grouped = cv_builder.grouped_publications(profile)
-    publications = list(cv_builder.numbered_entries(grouped, PUBLICATION_GROUPS))
-    presentations = list(cv_builder.numbered_entries(grouped, PRESENTATION_GROUPS))
-    grants = cv_builder.numbered('G', Grant.objects.all())
-    proposals = cv_builder.numbered('PR', Proposal.objects.all())
-    products = cv_builder.numbered('D', DeliveredProduct.objects.all())
-    innovations = cv_builder.numbered('I', Innovation.objects.all())
-    reports = cv_builder.report_series()
-
-    numbers = {}
-    for _, tag, obj in publications + presentations:
-        numbers[(type(obj), obj.pk)] = tag
-    for series in (grants, proposals, products, innovations):
-        for tag, obj in series:
-            numbers[(type(obj), obj.pk)] = tag
-    for _, entries in reports:
-        for tag, report in entries:
-            numbers[(TechReport, report.pk)] = tag
+    series = numbered_series(profile)
+    publications = series['publications']
+    presentations = series['presentations']
+    grants = series['grants']
+    proposals = series['proposals']
+    products = series['products']
+    innovations = series['innovations']
+    reports = series['reports']
+    numbers = _number_map(series)
     resolve = Resolver(numbers)
 
     # A talk on a listed paper is not cited separately; it is noted on the paper.

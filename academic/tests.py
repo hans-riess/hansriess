@@ -846,3 +846,125 @@ class SheafDemoTests(TestCase):
         Demo.objects.filter(slug='coordination-sheaf').update(is_active=False)
         response = self.client.get(reverse('index'))
         self.assertNotContains(response, 'id="sheaf-demo-open"')
+
+
+TOKEN = 'test-token-not-a-secret'
+
+
+@mock.patch.dict(os.environ, {'CV_API_TOKEN': TOKEN})
+class CVApiTests(TestCase):
+    """The token-protected JSON API for correcting CV entries (academic/api.py)."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess")
+        self.talk = Talk.objects.create(
+            title="Towards categorical diffusion",
+            venue="Toposes in Mondovi, Grothendieck Institute",
+            talk_type='workshop', invited=True, date=datetime.date(2024, 9, 1))
+        self.grant = Grant.objects.create(title="SEAMAN", funding_agency="DARPA",
+                                          password="hunter2")
+        self.auth = {'HTTP_AUTHORIZATION': 'Bearer %s' % TOKEN}
+
+    def patch(self, url, body, **extra):
+        return self.client.patch(url, json.dumps(body), content_type='application/json',
+                                 **{**self.auth, **extra})
+
+    def item_url(self, model, obj):
+        return reverse('cv_api_item', args=[model, obj.pk])
+
+    def test_off_without_a_configured_token(self):
+        with mock.patch.dict(os.environ, {'CV_API_TOKEN': ''}):
+            response = self.client.get(reverse('cv_api_index'), **self.auth)
+        self.assertEqual(response.status_code, 404)
+
+    def test_rejects_a_missing_or_wrong_token(self):
+        url = self.item_url('talk', self.talk)
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self.assertEqual(self.client.get(url, HTTP_AUTHORIZATION='Bearer nope').status_code, 401)
+        response = self.client.patch(url, json.dumps({'venue': 'x'}),
+                                     content_type='application/json')
+        self.assertEqual(response.status_code, 401)
+        self.talk.refresh_from_db()
+        self.assertEqual(self.talk.venue, "Toposes in Mondovi, Grothendieck Institute")
+
+    def test_patch_changes_a_field_and_records_admin_history(self):
+        from django.contrib.admin.models import LogEntry
+        response = self.patch(self.item_url('talk', self.talk),
+                              {'note': 'Invited by L. Lafforgue.'})
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.json()
+        self.assertTrue(data['saved'])
+        self.assertEqual(data['changes'], {'note': {'from': '', 'to': 'Invited by L. Lafforgue.'}})
+        self.talk.refresh_from_db()
+        self.assertEqual(self.talk.note, 'Invited by L. Lafforgue.')
+        entry = LogEntry.objects.get(object_id=str(self.talk.pk))
+        self.assertEqual(entry.user.username, 'cv-api')
+        self.assertFalse(entry.user.has_usable_password())
+
+    def test_dry_run_saves_nothing(self):
+        url = self.item_url('talk', self.talk) + '?dry_run=1'
+        data = self.patch(url, {'venue': 'Toposes in Mondovì'}).json()
+        self.assertFalse(data['saved'])
+        self.assertIn('venue', data['changes'])
+        self.talk.refresh_from_db()
+        self.assertEqual(self.talk.venue, "Toposes in Mondovi, Grothendieck Institute")
+
+    def test_rejects_fields_it_does_not_expose(self):
+        for body in ({'password': 'x'}, {'created_at': '2020-01-01'}, {'slides': 'a.pdf'},
+                     {'reference': 1}, {'id': 99}, {'no_such_field': 1}):
+            response = self.patch(self.item_url('talk', self.talk), body)
+            self.assertEqual(response.status_code, 400, body)
+        response = self.patch(self.item_url('grant', self.grant), {'password': 'x'})
+        self.assertEqual(response.status_code, 400)
+        self.grant.refresh_from_db()
+        self.assertEqual(self.grant.password, 'hunter2')
+
+    def test_never_shows_a_grant_password(self):
+        response = self.client.get(self.item_url('grant', self.grant), **self.auth)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('password', response.json())
+        self.assertNotIn('hunter2', response.content.decode())
+
+    def test_invalid_values_fail_validation(self):
+        response = self.patch(self.item_url('talk', self.talk), {'venue': ''})
+        self.assertEqual(response.status_code, 400)
+        response = self.patch(self.item_url('talk', self.talk), {'date': 'not a date'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_no_create_or_delete(self):
+        url = self.item_url('talk', self.talk)
+        self.assertEqual(self.client.delete(url, **self.auth).status_code, 405)
+        response = self.client.post(reverse('cv_api_collection', args=['talk']), {}, **self.auth)
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Talk.objects.filter(pk=self.talk.pk).exists())
+
+    def test_unknown_model_is_404(self):
+        response = self.client.get(reverse('cv_api_collection', args=['user']), **self.auth)
+        self.assertEqual(response.status_code, 404)
+
+    def test_search_finds_rows_by_text(self):
+        url = reverse('cv_api_collection', args=['talk'])
+        rows = self.client.get(url, {'q': 'mondovi'}, **self.auth).json()['rows']
+        self.assertEqual([row['id'] for row in rows], [self.talk.pk])
+        rows = self.client.get(url, {'q': 'nowhere'}, **self.auth).json()['rows']
+        self.assertEqual(rows, [])
+
+    def test_lookup_matches_the_cv_numbering(self):
+        tags = {number: key for key, number in site_data_number_map(self.profile).items()}
+        self.assertIn((Talk, self.talk.pk), tags.values())
+        tag = next(number for number, key in tags.items() if key == (Talk, self.talk.pk))
+        data = self.client.get(reverse('cv_api_lookup', args=[tag.lower()]), **self.auth).json()
+        self.assertEqual((data['model'], data['id']), ('talk', self.talk.pk))
+        response = self.client.get(reverse('cv_api_lookup', args=['T999']), **self.auth)
+        self.assertEqual(response.status_code, 404)
+
+    def test_index_lists_editable_fields(self):
+        data = self.client.get(reverse('cv_api_index'), **self.auth).json()
+        self.assertIn('note', data['models']['talk'])
+        self.assertNotIn('password', data['models']['grant'])
+        self.assertNotIn('slides', data['models']['talk'])
+
+
+def site_data_number_map(profile):
+    from academic.site_data import cv_number_map
+    return cv_number_map(profile)
