@@ -32,6 +32,7 @@ import datetime
 import os
 import re
 
+from django.urls import reverse
 from django.utils import timezone
 
 from .models import (Award, Course, DeliveredProduct, Education, Experience,
@@ -147,6 +148,21 @@ def link(url):
     return r'\href{%s}{%s}' % (url_target(url), url_text(url))
 
 
+def site_link(profile, view_name, slug):
+    """The site's own short address for an uploaded file, built from the
+    profile's website, e.g. ``https://hansriess.com/paper/<slug>/``.
+
+    Uploaded files sit under long S3 bucket URLs. The site's redirect routes
+    give them stable addresses that keep working when a file is replaced or the
+    bucket changes. Returns "" when the profile has no website or the entry no
+    slug, so the caller can fall back to the file's own URL.
+    """
+    website = (profile.website or "").rstrip('/')
+    if not (website and slug):
+        return ""
+    return website + reverse(view_name, args=[slug])
+
+
 def label_for(obj):
     """A ``\\label`` line for an object carrying a cross-reference slug."""
     slug = getattr(obj, 'cv_ref_slug', None)
@@ -249,7 +265,7 @@ def format_reference(ref, profile):
 
     url = ref.url or (("https://doi.org/%s" % ref.doi) if ref.doi else "")
     if not url and ref.pdf_file:
-        url = ref.pdf_file.url
+        url = site_link(profile, 'paper_redirect', ref.slug) or ref.pdf_file.url
     if url:
         parts.append(" [Online]. Available: %s." % link(url))
 
@@ -284,7 +300,8 @@ def format_talk(talk, profile):
     if talk.note:
         parts.append(" [%s]" % clean(' '.join(talk.note.split())))
     if talk.poster:
-        parts.append(" [Online]. Available: %s." % link(talk.poster.url))
+        poster_url = site_link(profile, 'poster_redirect', talk.slug) or talk.poster.url
+        parts.append(" [Online]. Available: %s." % link(poster_url))
     elif talk.event_url:
         parts.append(" [Online]. Available: %s." % link(talk.event_url))
 

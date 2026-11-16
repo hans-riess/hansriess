@@ -440,6 +440,58 @@ class CvLayoutTests(TestCase):
         self.assertNotIn(r'\definecolor', source)
 
 
+class CvFileLinkTests(TestCase):
+    """Uploaded papers and posters are linked by the site's short slug address,
+    not the S3 URL the file happens to sit at."""
+
+    def setUp(self):
+        self.profile = Profile.objects.create(name="Hans Riess", website="https://hansriess.com/")
+
+    def _paper(self, **fields):
+        # Naming the file is enough for .url; nothing is written to storage.
+        defaults = dict(title="A paper", authors="H. Riess", year=2024,
+                        medium='journal_article', journal="TAC",
+                        pdf_file='references/papers/a-paper.pdf')
+        defaults.update(fields)
+        return Reference.objects.create(**defaults)
+
+    def test_uploaded_paper_links_to_its_slug_address(self):
+        ref = self._paper(slug="a-paper")
+        entry = cv_builder.format_reference(ref, self.profile)
+        self.assertIn(r'\href{https://hansriess.com/paper/a-paper/}', entry)
+        self.assertNotIn(ref.pdf_file.url, entry)
+
+    def test_slug_address_redirects_to_the_file(self):
+        ref = self._paper(slug="a-paper")
+        response = self.client.get(reverse('paper_redirect', args=["a-paper"]))
+        self.assertRedirects(response, ref.pdf_file.url, fetch_redirect_response=False)
+
+    def test_paper_without_slug_falls_back_to_the_file_url(self):
+        ref = self._paper(slug=None)
+        entry = cv_builder.format_reference(ref, self.profile)
+        self.assertIn(r'\href{%s}' % ref.pdf_file.url, entry)
+
+    def test_profile_without_website_falls_back_to_the_file_url(self):
+        self.profile.website = ""
+        ref = self._paper(slug="a-paper")
+        entry = cv_builder.format_reference(ref, self.profile)
+        self.assertIn(r'\href{%s}' % ref.pdf_file.url, entry)
+
+    def test_external_link_still_wins_over_an_upload(self):
+        ref = self._paper(slug="a-paper", doi="10.1000/xyz")
+        entry = cv_builder.format_reference(ref, self.profile)
+        self.assertIn(r'\href{https://doi.org/10.1000/xyz}', entry)
+        self.assertNotIn("/paper/a-paper/", entry)
+
+    def test_poster_links_to_its_slug_address(self):
+        talk = Talk.objects.create(title="A poster", venue="V", talk_type='poster',
+                                   date=datetime.date(2025, 1, 1), slug="a-poster",
+                                   poster='talks/posters/a-poster.pdf')
+        entry = cv_builder.format_talk(talk, self.profile)
+        self.assertIn(r'\href{https://hansriess.com/talk/a-poster/poster/}', entry)
+        self.assertNotIn(talk.poster.url, entry)
+
+
 class SiteDataTests(TestCase):
     """/sitedata/data.json mirrors the public CV and leaks nothing it hides."""
 

@@ -57,6 +57,14 @@ references" is ticked on the profile.
 Prose fields may contain `[[ref:some-slug]]`, which renders as a live
 cross-reference such as `[J3]` to whichever entry carries that `cv_ref_slug`.
 
+A paper whose only link is an uploaded PDF is linked by the site's short address,
+`<website>/paper/<slug>/`, rather than the S3 URL the file sits at; an uploaded
+poster likewise gets `<website>/talk/<slug>/poster/`. Those routes redirect to
+the file, so the CV's links survive replacing the upload. This needs the
+profile's Website set and a Slug on the entry (the admin fills it in from the
+title); without either, the S3 URL is printed instead. A URL or DOI on the
+paper still takes precedence over the upload.
+
 To check a change to the layout without touching the real database, load the
 sample data — representative rows for every section, **not** a copy of the live
 content — into a scratch database and build from that:
