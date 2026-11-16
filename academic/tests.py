@@ -793,13 +793,11 @@ class EntryEmphasisTests(TestCase):
         self.assertIn(r'\textbf{Milestone 3}', reports)
 
 
-class SheafDemoTests(TestCase):
-    """The coordination sheaf demo's markup, assets and standalone page.
-
-    These are the first tests in the suite that render the landing page, which
-    needs a headshot: `index.html` reaches for `{{ profile.headshot.url }}`
-    unguarded, and `FieldFile.url` raises `ValueError` on an empty field --
-    something Django's template variable resolution does *not* swallow.
+class LandingPageTestCase(TestCase):
+    """Base for tests that render the landing page, which needs a headshot:
+    `index.html` reaches for `{{ profile.headshot.url }}` unguarded, and
+    `FieldFile.url` raises `ValueError` on an empty field -- something Django's
+    template variable resolution does *not* swallow.
     """
 
     @classmethod
@@ -816,14 +814,50 @@ class SheafDemoTests(TestCase):
         self.profile = Profile.objects.create(name="Hans Riess")
         self.profile.headshot.save('headshot.png', ContentFile(b'x'), save=True)
 
+
+class LandingPageTests(LandingPageTestCase):
+    """The CV tile and the sections the profile can switch off."""
+
+    def test_cv_tile_leads_the_connect_icons(self):
+        self.profile.email = 'someone@example.com'
+        self.profile.github = 'https://github.com/example'
+        self.profile.save()
+        content = self.client.get(reverse('index')).content.decode()
+        icons = content[content.index('class="connect-icons"'):]
+        cv = icons.index('class="cv-tile"')
+        self.assertLess(cv, icons.index('aria-label="Email"'))
+        self.assertLess(cv, icons.index('aria-label="GitHub"'))
+
+    def test_cv_tile_opens_in_a_new_tab(self):
+        response = self.client.get(reverse('index'))
+        self.assertContains(
+            response,
+            f'href="{reverse("cv_redirect")}" class="cv-tile" target="_blank" rel="noopener"')
+
+    def test_cv_tile_hidden_when_the_button_is_off(self):
+        self.profile.cv_button = False
+        self.profile.save()
+        response = self.client.get(reverse('index'))
+        self.assertNotContains(response, 'cv-tile')
+
+    def test_projects_shown_by_default(self):
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, 'id="projects"')
+
+    def test_projects_hidden_when_switched_off(self):
+        self.profile.show_projects = False
+        self.profile.save()
+        response = self.client.get(reverse('index'))
+        self.assertNotContains(response, 'id="projects"')
+
+
+class SheafDemoTests(LandingPageTestCase):
+    """The coordination sheaf demo's markup, assets and standalone page."""
+
     def test_launcher_sits_beside_the_cv_button(self):
         response = self.client.get(reverse('index'))
         self.assertContains(response, 'id="sheaf-demo-open"')
         self.assertContains(response, 'href="#sheaf-demo"')
-
-    def test_cv_button_opens_in_a_new_tab(self):
-        response = self.client.get(reverse('index'))
-        self.assertContains(response, 'target="_blank" rel="noopener">CV</a>')
 
     def test_demo_assets_carry_a_cache_buster(self):
         """S3 serves these with max-age=86400 and does not hash filenames, so an

@@ -706,7 +706,7 @@ ul.icons li {
 }
 
 /* Tech Gold rather than the generic white-on-grey the base rule paints: on the chalkboard
-   those read as unstyled placeholders, and gold ties the row to the button above it. */
+   those read as unstyled placeholders, and gold ties the row to the CV tile leading it. */
 .connect-icons ul.icons li a {
     color: #D4C285;
     background: rgba(179, 163, 105, 0.16);
@@ -717,6 +717,21 @@ ul.icons li {
     color: #fff;
     background: rgba(179, 163, 105, 0.5);
     border-color: #D4C285;
+}
+
+/* The CV is a word, not a glyph, so it gets a glyph's box: a 1em square of the tile's
+   font size (1.25em at the label's own 0.8em), with the letters scaled down to fit inside
+   it and set at 600, the heaviest Source Sans weight loaded, to sit with the solid icons. */
+.connect-icons .cv-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    width: 1.25em;
+    height: 1.25em;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
 ul.icons li a {
@@ -1432,7 +1447,18 @@ ul.icons li a:hover {
         transform: scale(1.1);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
-    
+
+    /* With the CV tile leading the links the row holds eight, and eight 44px tiles need a
+       viewport of about 430px, more than most phones have. Left alone the eighth drops onto
+       a row by itself; capping the row at four tiles (with room for one up to 48px wide,
+       too narrow for a fifth) breaks it evenly into two rows of four instead. */
+    @media screen and (max-width: 440px) {
+        .connect-icons ul.icons:has(> li:nth-child(8):last-child) {
+            max-width: calc(4 * 48px + 3 * 0.35em);
+            margin: 0 auto;
+        }
+    }
+
     /* Hide headshot on mobile */
     .bio-image {
         display: none;

@@ -73,6 +73,10 @@ class Profile(models.Model):
         default=True,
         help_text="Show the publications list on the home page.",
     )
+    show_projects = models.BooleanField(
+        default=True,
+        help_text="Show the Projects section on the home page.",
+    )
     headshot = models.ImageField(upload_to='profile/', blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     twitter = models.URLField(blank=True, null=True)
