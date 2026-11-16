@@ -37,17 +37,10 @@
                         <h3 class="bio-subtitle">
                             {{ profile.occupation }} at {{ profile.institution }}
                         </h3>
-                        <ul class="actions" style="margin-top: 1em;">
-                            <li>
-                                {% if profile.show_cv_button %}
-                                    <a href="{% url 'cv_redirect' %}" class="button bio-button" target="_blank" rel="noopener">CV</a>
-                                {% endif %}
-                            </li>
-                        </ul>
-
-                        <!-- Connect Icons -->
+                        <!-- Connect Icons (the CV leads the row, as a tile like the rest) -->
                         <div class="connect-icons">
                             <ul class="icons">
+                                {% if profile.show_cv_button %}<li><a href="{% url 'cv_redirect' %}" class="cv-tile" target="_blank" rel="noopener" aria-label="CV"><span class="cv-label">CV</span></a></li>{% endif %}
                                 {% if profile.phone %}<li><a href="tel:{{profile.phone}}" aria-label="Phone"><i class="fa-solid fa-phone"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.email %}<li><a href="mailto:{{ profile.email }}" aria-label="Email"><i class="fa-solid fa-envelope"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.github %}<li><a href="{{ profile.github }}" aria-label="GitHub"><i class="fa-brands fa-github"></i><span class="label"></span></a></li>{% endif %}
@@ -140,6 +133,7 @@
         {% endif %}
 
         <!-- Projects Section -->
+        {% if profile.show_projects %}
         <section id="projects" class="wrapper style2">
             <div class="container special">
                 <header>
@@ -163,6 +157,7 @@
                 </div>
             </div>
         </section>
+        {% endif %}
 
         <!-- Publications Section -->
         {% if profile.show_publications %}
