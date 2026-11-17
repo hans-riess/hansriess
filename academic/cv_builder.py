@@ -5,8 +5,8 @@ sponsored research and teaching ahead of the publication list:
 
     Research Interests
     Education
-    Appointments
     Sponsored Research          funded projects [G], proposals [PR]
+    Appointments
     Teaching and Mentoring
     Publications                [J], [C], [S], [P]
     Presentations               [T]
@@ -14,6 +14,9 @@ sponsored research and teaching ahead of the publication list:
                                 technical reports [R]
     Fellowships and Awards
     Service
+
+Sponsored Research comes ahead of Appointments so that the funded projects
+fit on the first page.
 
 Entries that can be cross-referenced are numbered within their series. Numbers
 count down, so the last entry printed in a series is 1 and an entry keeps its
@@ -976,8 +979,8 @@ def build_document(profile, generated_at=None):
     for part in (build_header(profile, generated_at),
                  build_interests(profile),
                  build_education(profile),
-                 build_appointments(profile),
                  build_sponsored_research(profile),
+                 build_appointments(profile),
                  build_teaching_and_mentoring(profile),
                  build_publications(profile),
                  build_presentations(profile),

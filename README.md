@@ -30,9 +30,11 @@ cross-references) reproduces the CV with nothing else alongside it. The PDF is
 compiled from exactly this file. When a custom uploaded CV is being served
 instead, there is no source and `/cv/tex/` returns 404.
 
-Sponsored research and teaching come ahead of the publication list:
+Sponsored research and teaching come ahead of the publication list, and
+sponsored research comes ahead of appointments so that the funded projects fit
+on the first page:
 
-> Research Interests · Education · Appointments · **Sponsored Research** ·
+> Research Interests · Education · **Sponsored Research** · Appointments ·
 > **Teaching and Mentoring** · Publications · Presentations · Technical
 > Contributions · Fellowships and Awards · Service
 

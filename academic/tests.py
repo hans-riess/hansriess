@@ -15,8 +15,8 @@ from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from academic import cv_builder, views
-from academic.models import (Award, Course, Demo, Education, Grant, Profile, Proposal,
-                             Reference, Review, Service, Student, Talk, TechReport)
+from academic.models import (Award, Course, Demo, Education, Experience, Grant, Profile,
+                             Proposal, Reference, Review, Service, Student, Talk, TechReport)
 
 
 class AdminFormTests(TestCase):
@@ -397,6 +397,18 @@ class CvLayoutTests(TestCase):
         tex = cv_builder.build_document(self.profile)
         order = [tex.index(r'\cvsection{%s}' % name) for name in
                  ("Sponsored Research", "Teaching", "Publications", "Presentations")]
+        self.assertEqual(order, sorted(order))
+
+    def test_sponsored_research_comes_before_appointments(self):
+        """So that the funded projects fit on the first page."""
+        Education.objects.create(degree_type="Ph.D.", field_of_study="ESE",
+                                 institution="Penn", graduation_year=2022)
+        Grant.objects.create(title="SEAMAN", funding_agency="DARPA", role='pi')
+        Experience.objects.create(title="Research Scientist II", institution="Georgia Tech",
+                                  start_date=datetime.date(2025, 2, 1))
+        tex = cv_builder.build_document(self.profile)
+        order = [tex.index(r'\cvsection{%s}' % name) for name in
+                 ("Education", "Sponsored Research", "Appointments")]
         self.assertEqual(order, sorted(order))
 
     def test_header_is_the_plain_name_with_contact_details(self):
