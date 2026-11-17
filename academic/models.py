@@ -623,7 +623,6 @@ class Grant(models.Model):
     ROLE_CHOICES = [
         ('pi', 'Principal Investigator'),
         ('co_pi', 'Co-Principal Investigator'),
-        ('task_leader', 'Task Leader'),
         ('senior_personnel', 'Senior Personnel'),
         ('key_personnel', 'Key Personnel'),
         ('unnamed_personnel', 'Unnamed Personnel'),
