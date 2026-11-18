@@ -648,10 +648,10 @@ def _mentoring_block():
 # Headings come from PUBLICATION_CATEGORIES. Groups sharing a prefix form one
 # series, so refereed and non-refereed proceedings run C5 ... C1 between them.
 PUBLICATION_GROUPS = [
+    (('submitted', 'submitted_conf'), 'S'),
     (('journal',), 'J'),
     (('proc_refereed',), 'C'),
     (('proc_nonrefereed',), 'C'),
-    (('submitted', 'submitted_conf'), 'S'),
     (('preprints',), 'P'),
 ]
 PRESENTATION_GROUPS = [

@@ -338,6 +338,14 @@ class SectionBuilderTests(TestCase):
         self.assertIn(r"\cvcite{S2}{\textbf{H. Riess}, ``Conference submission", tex)
         self.assertIn(r"\cvcite{S1}{\textbf{H. Riess}, ``Journal submission", tex)
 
+    def test_papers_under_review_lead_the_publications(self):
+        Reference.objects.create(title="Published paper", authors="H. Riess", year=2025,
+                                 medium='journal_article', journal="TAC")
+        Reference.objects.create(title="Journal submission", authors="H. Riess", year=2026,
+                                 medium='journal_article', status='in_review', journal="TAC")
+        tex = "\n".join(cv_builder.build_publications(self.profile))
+        self.assertLess(tex.index("Papers Under Review"), tex.index("Journal Articles"))
+
     def test_empty_sections_are_skipped(self):
         for build in (cv_builder.build_interests, cv_builder.build_education,
                       cv_builder.build_appointments, cv_builder.build_sponsored_research,
