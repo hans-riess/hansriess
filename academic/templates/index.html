@@ -41,6 +41,7 @@
                         <div class="connect-icons">
                             <ul class="icons">
                                 {% if profile.show_cv_button %}<li><a href="{% url 'cv_redirect' %}" class="cv-tile" target="_blank" rel="noopener" aria-label="CV"><span class="cv-label">CV</span></a></li>{% endif %}
+                                <li><a href="{% url 'collab_redirect' %}" class="tex-tile" target="_blank" rel="noopener" aria-label="TeX"><span class="tex-label">T<span class="tex-e">e</span>X</span></a></li>
                                 {% if profile.phone %}<li><a href="tel:{{profile.phone}}" aria-label="Phone"><i class="fa-solid fa-phone"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.email %}<li><a href="mailto:{{ profile.email }}" aria-label="Email"><i class="fa-solid fa-envelope"></i><span class="label"></span></a></li>{% endif %}
                                 {% if profile.github %}<li><a href="{{ profile.github }}" aria-label="GitHub"><i class="fa-brands fa-github"></i><span class="label"></span></a></li>{% endif %}

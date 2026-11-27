@@ -860,6 +860,21 @@ class LandingPageTests(LandingPageTestCase):
         response = self.client.get(reverse('index'))
         self.assertNotContains(response, 'cv-tile')
 
+    def test_tex_tile_follows_the_cv_tile(self):
+        content = self.client.get(reverse('index')).content.decode()
+        icons = content[content.index('class="connect-icons"'):]
+        self.assertLess(icons.index('class="cv-tile"'), icons.index('class="tex-tile"'))
+        self.assertIn(
+            f'href="{reverse("collab_redirect")}" class="tex-tile" target="_blank" rel="noopener"',
+            icons)
+
+    def test_collab_redirects_to_the_collaboration_server(self):
+        self.assertEqual(reverse('collab_redirect'), '/collab/')
+        response = self.client.get('/collab/')
+        self.assertRedirects(
+            response, 'https://hans.tigris-pythagorean.ts.net',
+            fetch_redirect_response=False)
+
     def test_projects_shown_by_default(self):
         response = self.client.get(reverse('index'))
         self.assertContains(response, 'id="projects"')

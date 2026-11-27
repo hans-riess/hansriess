@@ -131,6 +131,16 @@ def generate_cv_pdf(request):
     # stale cached files on S3.
     return HttpResponse(status=204)
 
+# The collaboration server (a TeX editor on Hans's tailnet). /collab/ is the
+# stable, shareable address for it; change the target here if it moves.
+COLLAB_URL = 'https://hans.tigris-pythagorean.ts.net'
+
+
+def collab_redirect(request):
+    """Sends hansriess.com/collab on to the collaboration server."""
+    return redirect(COLLAB_URL)
+
+
 def cv_redirect(request):
     """
     Serves the profile's current CV at /cv/, giving it a stable, shareable
