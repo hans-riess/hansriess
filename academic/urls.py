@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("cv/", views.cv_redirect, name="cv_redirect"),
     path("cv/tex/", views.cv_tex, name="cv_tex"),
+    path("collab/", views.collab_redirect, name="collab_redirect"),
     path("demo/", views.demo_view, name="demo"),
     path("demo/<slug:demo_slug>/", views.demo_view, name="demo_slug"),
     path("generate_cv/", views.generate_cv_pdf, name="generate_cv_pdf"),
